@@ -23,13 +23,16 @@ export function Modal({ open, title, onClose, children }: Props) {
   return (
     <dialog
       ref={ref}
-      aria-labelledby="modal-title"
+      role="presentation"
       className="m-0 h-dvh w-screen max-h-none max-w-none bg-transparent p-0 [&::backdrop]:bg-black/40"
       onCancel={onClose}
       onClick={onClose}
     >
       <div className="flex h-full items-center justify-center">
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
           className="relative mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >

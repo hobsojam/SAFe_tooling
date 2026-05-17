@@ -43,13 +43,11 @@ export function Setup() {
 
   const updatePIMut = useMutation({
     mutationFn: (body: PIUpdate) => api.updatePI(piId!, body),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pi', piId] });
       qc.invalidateQueries({ queryKey: ['pis'] });
       setDetailsForm(null);
       setDetailsError('');
-      // update local form to reflect saved state
-      void updated;
       toast('PI updated');
     },
     onError: (e: Error) => setDetailsError(e.message),
