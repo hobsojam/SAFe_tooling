@@ -81,6 +81,21 @@ def test_list_filter_by_is_stretch(client):
     assert committed[0]["is_stretch"] is False
 
 
+def test_create_unknown_pi_returns_404(client):
+    team_id = _create_team(client)
+    r = _create_objective(client, team_id, "no-such-pi")
+    assert r.status_code == 404
+    assert "PI" in r.json()["detail"]
+
+
+def test_create_unknown_team_returns_404(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    r = _create_objective(client, "no-such-team", pi_id)
+    assert r.status_code == 404
+    assert "Team" in r.json()["detail"]
+
+
 def test_get_unknown_returns_404(client):
     assert client.get("/objectives/no-such-id").status_code == 404
 

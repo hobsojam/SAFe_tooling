@@ -32,6 +32,10 @@ def list_objectives(
 
 @router.post("", response_model=PIObjective, status_code=201)
 def create_objective(body: PIObjectiveCreate, repos: ReposDep):
+    if repos.pis.get(body.pi_id) is None:
+        raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
+    if repos.teams.get(body.team_id) is None:
+        raise HTTPException(status_code=404, detail=f"Team '{body.team_id}' not found")
     obj = PIObjective(**body.model_dump())
     return repos.objectives.save(obj)
 

@@ -784,6 +784,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PIObjective'
+        '404':
+          description: PI or Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
           $ref: '#/components/responses/ValidationError'
   /objectives/{objective_id}:
@@ -886,6 +892,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Risk'
+        '404':
+          description: PI, Team, or Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
           $ref: '#/components/responses/ValidationError'
   /risks/{risk_id}:
@@ -994,6 +1006,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dependency'
+        '404':
+          description: from_feature_id or to_feature_id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
           $ref: '#/components/responses/ValidationError'
   /dependencies/{dependency_id}:
@@ -1097,6 +1115,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CapacityPlan'
+        '404':
+          description: PI, Team, or Iteration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '422':
           $ref: '#/components/responses/ValidationError'
   /capacity-plans/seed:
@@ -1117,13 +1141,21 @@ paths:
               $ref: '#/components/schemas/CapacityPlanSeed'
       responses:
         '201':
-          description: List of newly created capacity plans (may be empty if all cells already have plans)
+          description: Count of plans created vs skipped
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CapacityPlan'
+                type: object
+                properties:
+                  created:
+                    type: integer
+                    description: Number of new capacity plans created
+                  skipped:
+                    type: integer
+                    description: Number of cells skipped because a plan already existed
+                required:
+                - created
+                - skipped
         '404':
           description: PI not found
           content:

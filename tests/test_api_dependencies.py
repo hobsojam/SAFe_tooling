@@ -109,6 +109,24 @@ def test_roam_unknown_returns_404(client):
     assert r.status_code == 404
 
 
+def test_create_unknown_from_feature_returns_404(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    _, f2 = _create_features(client, pi_id)
+    r = _create_dep(client, pi_id, "no-such-feature", f2)
+    assert r.status_code == 404
+    assert "Feature" in r.json()["detail"]
+
+
+def test_create_unknown_to_feature_returns_404(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    f1, _ = _create_features(client, pi_id)
+    r = _create_dep(client, pi_id, f1, "no-such-feature")
+    assert r.status_code == 404
+    assert "Feature" in r.json()["detail"]
+
+
 def test_get_unknown_returns_404(client):
     assert client.get("/dependencies/no-such-id").status_code == 404
 
