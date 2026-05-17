@@ -4,7 +4,16 @@ from tinydb import TinyDB
 
 from safe.api.deps import get_repos_dep
 from safe.api.main import app
+from safe.store.db import close_db
 from safe.store.repos import Repos
+
+
+@pytest.fixture(autouse=True)
+def reset_db_singleton():
+    """Close the db singleton after every test so CLI tests with different
+    tmp_path values don't trigger the path-conflict RuntimeError."""
+    yield
+    close_db()
 
 
 @pytest.fixture

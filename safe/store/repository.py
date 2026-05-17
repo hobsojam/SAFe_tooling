@@ -41,6 +41,10 @@ class Repository(Generic[T]):
             raise ValueError(
                 "find() requires at least one filter — use get_all() for unrestricted access"
             )
+        valid_fields = self._model.model_fields.keys()
+        for k in kwargs:
+            if k not in valid_fields:
+                raise ValueError(f"Unknown field: {k!r}")
         cond = None
         for k, v in kwargs.items():
             clause = getattr(_Q, k) == v

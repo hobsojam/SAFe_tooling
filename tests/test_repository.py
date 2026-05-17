@@ -228,4 +228,54 @@ def test_close_db_resets_singleton(tmp_path: Path, monkeypatch) -> None:
 
 def test_close_db_when_none_is_safe(monkeypatch) -> None:
     monkeypatch.setattr(db_module, "_instance", None)
+    monkeypatch.setattr(db_module, "_instance_path", None)
     close_db()  # should not raise
+
+
+# --- get_db() path conflict detection ---
+
+
+def test_get_db_same_path_returns_singleton(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(db_module, "_instance", None)
+    monkeypatch.setattr(db_module, "_instance_path", None)
+    p = tmp_path / "same.json"
+    db1 = get_db(path=p)
+    db2 = get_db(path=p)
+    assert db1 is db2
+    close_db()
+
+
+def test_get_db_conflicting_path_raises(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(db_module, "_instance", None)
+    monkeypatch.setattr(db_module, "_instance_path", None)
+    p1 = tmp_path / "first.json"
+    p2 = tmp_path / "second.json"
+    get_db(path=p1)
+    with pytest.raises(RuntimeError, match="different path"):
+        get_db(path=p2)
+    close_db()
+
+
+def test_get_db_no_path_returns_existing_instance(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(db_module, "_instance", None)
+    monkeypatch.setattr(db_module, "_instance_path", None)
+    monkeypatch.setattr(db_module, "_DB_PATH", tmp_path / "default.json")
+    db1 = get_db()
+    db2 = get_db()
+    assert db1 is db2
+    close_db()
+
+
+# --- Repository.find() unknown kwarg validation ---
+
+
+def test_find_unknown_field_raises(db: TinyDB) -> None:
+    repo: Repository[Team] = Repository(db, "teams", Team)
+    with pytest.raises(ValueError, match="Unknown field"):
+        repo.find(nonexistent_field="value")
+
+
+def test_find_unknown_field_error_names_the_key(db: TinyDB) -> None:
+    repo: Repository[Team] = Repository(db, "teams", Team)
+    with pytest.raises(ValueError, match="'bad_kwarg'"):
+        repo.find(bad_kwarg="oops")
