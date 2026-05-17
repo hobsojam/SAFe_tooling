@@ -16,10 +16,10 @@ class Team(SAFeBaseModel):
     name: str
     member_count: int = Field(ge=1)
     art_id: str | None = None
-    velocity_history: list[int] = []
+    velocity_history: list[int] = Field(default_factory=list)
     topology_type: TeamTopologyType | None = None
 
 
 class ART(SAFeBaseModel):
     name: str
-    team_ids: list[str] = []
+    team_ids: list[str] = Field(default_factory=list)

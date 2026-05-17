@@ -10,7 +10,7 @@ class PIObjective(SAFeBaseModel):
     planned_business_value: int = Field(ge=1, le=10)
     actual_business_value: int | None = None
     is_stretch: bool = False
-    feature_ids: list[str] = []
+    feature_ids: list[str] = Field(default_factory=list)
 
     @computed_field
     @property
