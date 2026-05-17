@@ -28,6 +28,7 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.10",
     "mutmut>=2,<3",
+    "pip-audit>=2.7",
 ]
 
 [tool.setuptools.packages.find]
