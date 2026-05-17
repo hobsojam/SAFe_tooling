@@ -34,6 +34,7 @@ env/
 .claude/*
 !.claude/commands
 !.claude/agents
+.mcp.json
 
 # Tool data (stored outside repo at ~/.safe_tooling/)
 
