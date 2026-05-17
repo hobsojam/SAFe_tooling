@@ -45,7 +45,8 @@ class Repository(Generic[T]):
         for k, v in kwargs.items():
             clause = getattr(_Q, k) == v
             cond = clause if cond is None else (cond & clause)
-        assert cond is not None
+        if cond is None:  # pragma: no cover — loop always runs (kwargs non-empty guard above)
+            raise RuntimeError("find() built no query condition despite non-empty kwargs")
         return [self._model.model_validate(r) for r in self._table.search(cond)]
 
     def delete(self, entity_id: str) -> bool:
