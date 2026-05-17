@@ -55,6 +55,18 @@ def get_story(story_id: str, repos: ReposDep):
 def update_story(story_id: str, body: StoryUpdate, repos: ReposDep):
     story = _get_or_404(repos, story_id)
     update_data = body.model_dump(exclude_unset=True)
+    if "feature_id" in update_data and update_data["feature_id"] is not None:
+        if repos.features.get(update_data["feature_id"]) is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Feature '{update_data['feature_id']}' not found",
+            )
+    if "team_id" in update_data and update_data["team_id"] is not None:
+        if repos.teams.get(update_data["team_id"]) is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Team '{update_data['team_id']}' not found",
+            )
     if "iteration_id" in update_data and update_data["iteration_id"] is not None:
         if repos.iterations.get(update_data["iteration_id"]) is None:
             raise HTTPException(

@@ -161,12 +161,23 @@ class TestFeatureDelete:
         assert client.get(f"/stories/{sid}").status_code == 404
 
     def test_delete_cleans_objective_feature_ids(self, client):
+        art_id = _create_art(client)
+        team_id = _create_team(client, art_id)
+        pi_id = client.post(
+            "/pi",
+            json={
+                "name": "PI 1",
+                "art_id": art_id,
+                "start_date": "2026-01-05",
+                "end_date": "2026-03-27",
+            },
+        ).json()["id"]
         fid = _create_feature(client).json()["id"]
         oid = client.post(
             "/objectives",
             json={
-                "team_id": "t1",
-                "pi_id": "p1",
+                "team_id": team_id,
+                "pi_id": pi_id,
                 "description": "Obj",
                 "planned_business_value": 5,
                 "feature_ids": [fid],

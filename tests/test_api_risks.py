@@ -14,6 +14,24 @@ def _create_pi(client, art_id):
     ).json()["id"]
 
 
+def _create_team(client):
+    return client.post("/team", json={"name": "Alpha", "member_count": 5}).json()["id"]
+
+
+def _create_feature(client, pi_id):
+    return client.post(
+        "/features",
+        json={
+            "name": "Auth Service",
+            "pi_id": pi_id,
+            "user_business_value": 8,
+            "time_criticality": 5,
+            "risk_reduction_opportunity_enablement": 3,
+            "job_size": 4,
+        },
+    ).json()["id"]
+
+
 def _create_risk(client, pi_id, **overrides):
     return client.post(
         "/risks", json={"description": "Data loss risk", "pi_id": pi_id, **overrides}
@@ -66,6 +84,28 @@ def test_list_filter_by_roam_status(client):
     owned = client.get("/risks?roam_status=owned").json()
     assert len(owned) == 1
     assert owned[0]["roam_status"] == "owned"
+
+
+def test_create_unknown_pi_returns_404(client):
+    r = _create_risk(client, "no-such-pi")
+    assert r.status_code == 404
+    assert "PI" in r.json()["detail"]
+
+
+def test_create_unknown_team_returns_404(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    r = _create_risk(client, pi_id, team_id="no-such-team")
+    assert r.status_code == 404
+    assert "Team" in r.json()["detail"]
+
+
+def test_create_unknown_feature_returns_404(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    r = _create_risk(client, pi_id, feature_id="no-such-feature")
+    assert r.status_code == 404
+    assert "Feature" in r.json()["detail"]
 
 
 def test_get_unknown_returns_404(client):

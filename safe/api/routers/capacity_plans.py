@@ -42,17 +42,19 @@ def list_capacity_plans(
     return repos.capacity_plans.find(**filters) if filters else repos.capacity_plans.get_all()
 
 
-@router.post("/seed", response_model=list[CapacityPlan], status_code=201)
-def seed_capacity_plans(body: CapacityPlanSeed, repos: ReposDep):
+@router.post("/seed", status_code=201)
+def seed_capacity_plans(body: CapacityPlanSeed, repos: ReposDep) -> dict[str, int]:
     pi = repos.pis.get(body.pi_id)
     if pi is None:
         raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
     teams = repos.teams.find(art_id=pi.art_id)
     iterations = [it for it in repos.iterations.find(pi_id=body.pi_id) if not it.is_ip]
-    created = []
+    created_count = 0
+    skipped_count = 0
     for team in teams:
         for iter_ in iterations:
             if repos.capacity_plans.find(pi_id=body.pi_id, team_id=team.id, iteration_id=iter_.id):
+                skipped_count += 1
                 continue
             plan = CapacityPlan(
                 team_id=team.id,
@@ -64,12 +66,18 @@ def seed_capacity_plans(body: CapacityPlanSeed, repos: ReposDep):
                 overhead_pct=0.2,
             )
             repos.capacity_plans.save(plan)
-            created.append(plan)
-    return created
+            created_count += 1
+    return {"created": created_count, "skipped": skipped_count}
 
 
 @router.post("", response_model=CapacityPlan, status_code=201)
 def create_or_update_capacity_plan(body: CapacityPlanCreate, repos: ReposDep):
+    if repos.pis.get(body.pi_id) is None:
+        raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
+    if repos.teams.get(body.team_id) is None:
+        raise HTTPException(status_code=404, detail=f"Team '{body.team_id}' not found")
+    if repos.iterations.get(body.iteration_id) is None:
+        raise HTTPException(status_code=404, detail=f"Iteration '{body.iteration_id}' not found")
     existing = repos.capacity_plans.find(
         pi_id=body.pi_id, team_id=body.team_id, iteration_id=body.iteration_id
     )

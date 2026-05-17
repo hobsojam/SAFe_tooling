@@ -35,6 +35,10 @@ def list_dependencies(
 
 @router.post("", response_model=Dependency, status_code=201)
 def create_dependency(body: DependencyCreate, repos: ReposDep):
+    if repos.features.get(body.from_feature_id) is None:
+        raise HTTPException(status_code=404, detail=f"Feature '{body.from_feature_id}' not found")
+    if repos.features.get(body.to_feature_id) is None:
+        raise HTTPException(status_code=404, detail=f"Feature '{body.to_feature_id}' not found")
     dep = Dependency(**body.model_dump())
     return repos.dependencies.save(dep)
 

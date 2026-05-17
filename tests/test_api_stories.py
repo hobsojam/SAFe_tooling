@@ -196,6 +196,26 @@ class TestStoryPatch:
         r = client.patch(f"/stories/{sid}", json={"points": 0})
         assert r.status_code == 422
 
+    def test_patch_nonexistent_feature_id_returns_404(self, client):
+        fid, tid = _setup(client)
+        sid = _create_story(client, fid, tid).json()["id"]
+        r = client.patch(f"/stories/{sid}", json={"feature_id": "no-such-feature"})
+        assert r.status_code == 404
+
+    def test_patch_team_id_valid_accepted(self, client):
+        fid, tid = _setup(client)
+        sid = _create_story(client, fid, tid).json()["id"]
+        tid2 = client.post("/team", json={"name": "Beta", "member_count": 4}).json()["id"]
+        r = client.patch(f"/stories/{sid}", json={"team_id": tid2})
+        assert r.status_code == 200
+        assert r.json()["team_id"] == tid2
+
+    def test_patch_nonexistent_team_id_returns_404(self, client):
+        fid, tid = _setup(client)
+        sid = _create_story(client, fid, tid).json()["id"]
+        r = client.patch(f"/stories/{sid}", json={"team_id": "no-such-team"})
+        assert r.status_code == 404
+
     def test_unknown_returns_404(self, client):
         assert client.patch("/stories/no-such-id", json={"points": 5}).status_code == 404
 

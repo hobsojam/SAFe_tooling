@@ -133,16 +133,40 @@ def _setup_for_seed(client):
     return art_id, pi_id
 
 
+def test_create_unknown_pi_returns_404(client):
+    _, team_id, iter_id = _setup(client)
+    r = _create_plan(client, "no-such-pi", team_id, iter_id)
+    assert r.status_code == 404
+    assert "PI" in r.json()["detail"]
+
+
+def test_create_unknown_team_returns_404(client):
+    pi_id, _, iter_id = _setup(client)
+    r = _create_plan(client, pi_id, "no-such-team", iter_id)
+    assert r.status_code == 404
+    assert "Team" in r.json()["detail"]
+
+
+def test_create_unknown_iteration_returns_404(client):
+    pi_id, team_id, _ = _setup(client)
+    r = _create_plan(client, pi_id, team_id, "no-such-iteration")
+    assert r.status_code == 404
+    assert "Iteration" in r.json()["detail"]
+
+
 class TestSeedCapacityPlans:
     def test_creates_plans_for_each_team_iteration_cell(self, client):
         _, pi_id = _setup_for_seed(client)
         r = client.post("/capacity-plans/seed", json={"pi_id": pi_id})
         assert r.status_code == 201
-        assert len(r.json()) == 2  # 1 team × 2 non-IP iterations
+        body = r.json()
+        assert body["created"] == 2  # 1 team × 2 non-IP iterations
+        assert body["skipped"] == 0
 
     def test_seed_uses_iteration_weekdays_as_iteration_days(self, client):
         _, pi_id = _setup_for_seed(client)
-        plans = client.post("/capacity-plans/seed", json={"pi_id": pi_id}).json()
+        client.post("/capacity-plans/seed", json={"pi_id": pi_id})
+        plans = client.get(f"/capacity-plans?pi_id={pi_id}").json()
         # Jan 5–16 = 10 weekdays
         assert plans[0]["iteration_days"] == 10
 
@@ -151,7 +175,9 @@ class TestSeedCapacityPlans:
         client.post("/capacity-plans/seed", json={"pi_id": pi_id})
         r = client.post("/capacity-plans/seed", json={"pi_id": pi_id})
         assert r.status_code == 201
-        assert len(r.json()) == 0  # nothing new created
+        body = r.json()
+        assert body["created"] == 0
+        assert body["skipped"] == 2  # 1 team × 2 iterations, all pre-existing
 
     def test_unknown_pi_returns_404(self, client):
         r = client.post("/capacity-plans/seed", json={"pi_id": "no-such-pi"})

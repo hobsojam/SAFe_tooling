@@ -32,6 +32,12 @@ def list_risks(
 
 @router.post("", response_model=Risk, status_code=201)
 def create_risk(body: RiskCreate, repos: ReposDep):
+    if repos.pis.get(body.pi_id) is None:
+        raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
+    if body.team_id is not None and repos.teams.get(body.team_id) is None:
+        raise HTTPException(status_code=404, detail=f"Team '{body.team_id}' not found")
+    if body.feature_id is not None and repos.features.get(body.feature_id) is None:
+        raise HTTPException(status_code=404, detail=f"Feature '{body.feature_id}' not found")
     risk = Risk(**body.model_dump())
     return repos.risks.save(risk)
 
