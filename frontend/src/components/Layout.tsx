@@ -84,9 +84,11 @@ export function Layout() {
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Mobile backdrop */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+        <button
+          type="button"
+          className="fixed inset-0 z-40 w-full cursor-default bg-black/50 md:hidden"
           onClick={closeSidebar}
+          aria-label="Close navigation"
         />
       )}
 
