@@ -192,34 +192,34 @@ export function TeamSetup() {
                       <form onSubmit={submitEdit} className="space-y-3">
                         {editError && <p className="text-xs text-red-600">{editError}</p>}
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-700">Name</label>
+                          <label htmlFor={`edit-name-${team.id}`} className="mb-1 block text-xs font-medium text-slate-700">Name</label>
                           <input
+                            id={`edit-name-${team.id}`}
                             type="text"
                             value={edit.name}
                             onChange={(e) => setEdit({ ...edit, name: e.target.value })}
-                            aria-label="Team name"
                             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                           />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-700">Members</label>
+                          <label htmlFor={`edit-members-${team.id}`} className="mb-1 block text-xs font-medium text-slate-700">Members</label>
                           <input
+                            id={`edit-members-${team.id}`}
                             type="number"
                             min={1}
                             value={edit.member_count}
                             onChange={(e) => setEdit({ ...edit, member_count: Number(e.target.value) })}
-                            aria-label="Member count"
                             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                           />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-700">Topology Type</label>
+                          <label htmlFor={`edit-topology-${team.id}`} className="mb-1 block text-xs font-medium text-slate-700">Topology Type</label>
                           <select
+                            id={`edit-topology-${team.id}`}
                             value={edit.topology_type ?? ''}
                             onChange={(e) =>
                               setEdit({ ...edit, topology_type: (e.target.value as TeamTopologyType) || null })
                             }
-                            aria-label="Topology type"
                             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                           >
                             <option value="">— None —</option>
