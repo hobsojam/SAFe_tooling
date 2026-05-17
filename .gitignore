@@ -52,3 +52,14 @@ node_modules/
 
 # E2e working DB — generated from tests/e2e_fixture.clean.json at test time
 tests/e2e_fixture.db.json
+
+
+# Claude Code — user-specific, never commit
+.claude/settings.local.json
+
+# Logs
+*.log
+
+# Local test helpers
+# Local developer scripts not intended for repo
+test_script.py
