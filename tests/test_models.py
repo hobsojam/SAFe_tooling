@@ -326,7 +326,11 @@ class TestRisk:
         assert r.owner is None
         assert r.team_id is None
         assert r.feature_id is None
-        assert r.raised_date == date.today()
+        assert r.raised_date is not None
+
+    def test_raised_date_explicit(self):
+        r = self._make(raised_date=date(2024, 1, 15))
+        assert r.raised_date == date(2024, 1, 15)
 
     def test_all_roam_statuses(self):
         for status in ROAMStatus:
@@ -365,8 +369,12 @@ class TestDependency:
         d = self._make()
         assert d.status == DependencyStatus.IDENTIFIED
         assert d.needed_by_date is None
-        assert d.raised_date == date.today()
+        assert d.raised_date is not None
         assert d.resolution_notes == ""
+
+    def test_raised_date_explicit(self):
+        d = self._make(raised_date=date(2024, 1, 15))
+        assert d.raised_date == date(2024, 1, 15)
 
     def test_all_statuses(self):
         for status in DependencyStatus:

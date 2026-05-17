@@ -136,6 +136,20 @@ class TestIterationCreate:
         )
         assert r.json()["name"] == "Sprint Alpha"
 
+    def test_dates_equal_pi_boundary_returns_201(self, client):
+        art_id = _create_art(client)
+        pi_id = _create_pi(client, art_id, start="2026-01-05", end="2026-03-27")
+        r = client.post(
+            "/iterations",
+            json={
+                "pi_id": pi_id,
+                "number": 1,
+                "start_date": "2026-01-05",
+                "end_date": "2026-03-27",
+            },
+        )
+        assert r.status_code == 201
+
 
 class TestIterationList:
     def test_requires_pi_id(self, client):

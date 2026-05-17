@@ -21,7 +21,7 @@ class Feature(SAFeBaseModel):
     iteration_id: str | None = None
     status: FeatureStatus = FeatureStatus.BACKLOG
     acceptance_criteria: str = ""
-    dependency_ids: list[str] = []
+    dependency_ids: list[str] = Field(default_factory=list)
     user_business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction_opportunity_enablement: int = Field(ge=1, le=10)

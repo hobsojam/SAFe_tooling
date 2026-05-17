@@ -32,5 +32,5 @@ class PI(SAFeBaseModel):
     art_id: str
     start_date: date
     end_date: date
-    iteration_ids: list[str] = []
+    iteration_ids: list[str] = Field(default_factory=list)
     status: PIStatus = PIStatus.PLANNING
