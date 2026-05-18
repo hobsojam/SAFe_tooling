@@ -15,6 +15,14 @@ export default defineConfig({
       exclude: ['**/__tests__/**', '**/*.test.{ts,tsx}'],
       reporter: ['json-summary', 'json', 'text', 'lcov'],
       reportOnFailure: true,
+      // Baseline thresholds — raise these as more page tests are added.
+      // SonarCloud enforces 80% coverage on *new* code; these guard the aggregate floor.
+      thresholds: {
+        lines: 8,
+        branches: 5,
+        functions: 8,
+        statements: 8,
+      },
     },
   },
 

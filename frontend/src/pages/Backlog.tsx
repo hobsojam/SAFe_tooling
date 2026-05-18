@@ -268,11 +268,11 @@ function StoryPanel({
                       <td className="px-3 py-2 text-slate-800">{story.name}</td>
                       <td className="px-3 py-2 text-xs text-slate-500">{teamMap[story.team_id] ?? '—'}</td>
                       <td className="px-3 py-2 text-xs text-slate-500">
-                        {story.iteration_id
-                          ? (nonIpIterations.find((i) => i.id === story.iteration_id)?.number != null
-                            ? `Iter ${nonIpIterations.find((i) => i.id === story.iteration_id)!.number}`
-                            : '—')
-                          : '—'}
+                        {(() => {
+                          if (!story.iteration_id) return '—';
+                          const iter = nonIpIterations.find((i) => i.id === story.iteration_id);
+                          return iter != null ? `Iter ${iter.number}` : '—';
+                        })()}
                       </td>
                       <td className="px-3 py-2 tabular-nums text-slate-700">{story.points}</td>
                       <td className="px-3 py-2"><StoryStatusBadge status={story.status} /></td>
@@ -644,7 +644,7 @@ export function Backlog() {
                         <FeatureStatusBadge status={f.status} />
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">
-                        {f.team_id ? (teamMap[f.team_id] ?? f.team_id) : '—'}
+                        {f.team_id ? teamMap[f.team_id] ?? f.team_id : '—'}
                       </td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">{f.cost_of_delay}</td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">{f.job_size}</td>
@@ -779,7 +779,11 @@ export function Backlog() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : editing ? 'Save Changes' : 'Add Feature'}
+              {(() => {
+                if (isPending) return 'Saving…';
+                if (editing) return 'Save Changes';
+                return 'Add Feature';
+              })()}
             </button>
           </div>
         </form>

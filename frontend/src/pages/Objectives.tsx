@@ -26,6 +26,17 @@ const EMPTY_FORM: ObjectiveFormState = {
   is_stretch: false,
 };
 
+export function predictabilityClass(pct: number): string {
+  if (pct >= 80) return 'font-bold text-green-700';
+  if (pct >= 60) return 'font-bold text-amber-600';
+  return 'font-bold text-red-600';
+}
+
+export function objectiveTypeBadgeClass(isStretch: boolean): string {
+  if (isStretch) return 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800';
+  return 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800';
+}
+
 export function Objectives() {
   const { piId } = useParams<{ piId: string }>();
   const qc = useQueryClient();
@@ -92,12 +103,6 @@ export function Objectives() {
     committedPlannedBV > 0 && scoredCommitted.length > 0
       ? Math.round((committedActualBV / committedPlannedBV) * 100)
       : null;
-
-  function predictabilityClass(pct: number): string {
-    if (pct >= 80) return 'font-bold text-green-700';
-    if (pct >= 60) return 'font-bold text-amber-600';
-    return 'font-bold text-red-600';
-  }
 
   function openNew() {
     setEditing(null);
@@ -216,7 +221,7 @@ export function Objectives() {
                     {obj.description}
                   </button>
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${obj.is_stretch ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                    <span className={objectiveTypeBadgeClass(obj.is_stretch)}>
                       {obj.is_stretch ? 'Stretch' : 'Committed'}
                     </span>
                     <span className="text-xs text-slate-500">{teamMap[obj.team_id] ?? '—'}</span>
@@ -465,7 +470,11 @@ export function Objectives() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : editing ? 'Save Changes' : 'Add Objective'}
+              {(() => {
+                if (isPending) return 'Saving…';
+                if (editing) return 'Save Changes';
+                return 'Add Objective';
+              })()}
             </button>
           </div>
         </form>

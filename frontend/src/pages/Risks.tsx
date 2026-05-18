@@ -285,7 +285,7 @@ export function Risks() {
                         </button>
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">
-                        {r.team_id ? (teamMap[r.team_id] ?? r.team_id) : '—'}
+                        {r.team_id ? teamMap[r.team_id] ?? r.team_id : '—'}
                       </td>
                       <td className="px-4 py-2.5">
                         <ROAMBadge status={r.roam_status} />
@@ -400,7 +400,11 @@ export function Risks() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : editing ? 'Save Changes' : 'Add Risk'}
+              {(() => {
+                if (isPending) return 'Saving…';
+                if (editing) return 'Save Changes';
+                return 'Add Risk';
+              })()}
             </button>
           </div>
         </form>

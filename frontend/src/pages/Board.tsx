@@ -30,12 +30,13 @@ interface Arrow {
   resolved: boolean;
 }
 
-function buildBoard(features: Feature[]): BoardGrid {
+export function buildBoard(features: Feature[]): BoardGrid {
   const grid: BoardGrid = {};
   for (const feature of features) {
     if (!feature.team_id) continue;
     const key = feature.iteration_id ?? 'unplanned';
-    (grid[feature.team_id] ??= {})[key] ??= [];
+    if (!grid[feature.team_id]) grid[feature.team_id] = {};
+    if (!grid[feature.team_id][key]) grid[feature.team_id][key] = [];
     grid[feature.team_id][key].push(feature);
   }
   return grid;
@@ -102,12 +103,22 @@ function UnassignedDropZone({ children }: Readonly<{ children: React.ReactNode }
   );
 }
 
-function crossTeamOnly(deps: Dependency[], features: Feature[]): Dependency[] {
+export function crossTeamOnly(deps: Dependency[], features: Feature[]): Dependency[] {
   return deps.filter((d) => {
     const from = features.find((f) => f.id === d.from_feature_id);
     const to = features.find((f) => f.id === d.to_feature_id);
     return from?.team_id && to?.team_id && from.team_id !== to.team_id;
   });
+}
+
+export function buildDepLabel(
+  feature: Feature | undefined,
+  teamMap: Record<string, { name: string }>,
+  fallback: string,
+): string {
+  if (!feature) return fallback;
+  const teamName = feature.team_id ? (teamMap[feature.team_id]?.name ?? '') : '';
+  return teamName ? `${feature.name} (${teamName})` : feature.name;
 }
 
 export function Board() {
@@ -397,11 +408,14 @@ export function Board() {
             </defs>
             {arrows.map((a) => {
               const dx = Math.max(40, Math.abs(a.x2 - a.x1) * 0.4);
+              const cx1 = a.x1 + dx;
+              const cx2 = a.x2 - dx;
+              const pathD = `M ${a.x1} ${a.y1} C ${cx1} ${a.y1}, ${cx2} ${a.y2}, ${a.x2} ${a.y2}`;
               return (
                 <path
                   key={a.depId}
                   data-dep-id={a.depId}
-                  d={`M ${a.x1} ${a.y1} C ${a.x1 + dx} ${a.y1}, ${a.x2 - dx} ${a.y2}, ${a.x2} ${a.y2}`}
+                  d={pathD}
                   stroke="#dc2626"
                   strokeWidth="2"
                   fill="none"
@@ -440,12 +454,8 @@ export function Board() {
                 {deps.map((d) => {
                   const fromFeature = features.find((f) => f.id === d.from_feature_id);
                   const toFeature = features.find((f) => f.id === d.to_feature_id);
-                  const fromLabel = fromFeature
-                    ? `${fromFeature.name}${fromFeature.team_id ? ` (${teamMap[fromFeature.team_id]?.name ?? ''})` : ''}`
-                    : d.from_feature_id;
-                  const toLabel = toFeature
-                    ? `${toFeature.name}${toFeature.team_id ? ` (${teamMap[toFeature.team_id]?.name ?? ''})` : ''}`
-                    : d.to_feature_id;
+                  const fromLabel = buildDepLabel(fromFeature, teamMap, d.from_feature_id);
+                  const toLabel = buildDepLabel(toFeature, teamMap, d.to_feature_id);
                   return (
                     <tr key={d.id}>
                       <td className="px-4 py-2.5 text-slate-700">{fromLabel}</td>
