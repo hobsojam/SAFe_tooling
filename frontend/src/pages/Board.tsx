@@ -111,6 +111,16 @@ export function crossTeamOnly(deps: Dependency[], features: Feature[]): Dependen
   });
 }
 
+export function buildDepLabel(
+  feature: Feature | undefined,
+  teamMap: Record<string, { name: string }>,
+  fallback: string,
+): string {
+  if (!feature) return fallback;
+  const teamName = feature.team_id ? (teamMap[feature.team_id]?.name ?? '') : '';
+  return teamName ? `${feature.name} (${teamName})` : feature.name;
+}
+
 export function Board() {
   const { piId } = useParams<{ piId: string }>();
   const queryClient = useQueryClient();
@@ -444,10 +454,8 @@ export function Board() {
                 {deps.map((d) => {
                   const fromFeature = features.find((f) => f.id === d.from_feature_id);
                   const toFeature = features.find((f) => f.id === d.to_feature_id);
-                  const fromTeamSuffix = fromFeature?.team_id ? ` (${teamMap[fromFeature.team_id]?.name ?? ''})` : '';
-                  const toTeamSuffix = toFeature?.team_id ? ` (${teamMap[toFeature.team_id]?.name ?? ''})` : '';
-                  const fromLabel = fromFeature ? `${fromFeature.name}${fromTeamSuffix}` : d.from_feature_id;
-                  const toLabel = toFeature ? `${toFeature.name}${toTeamSuffix}` : d.to_feature_id;
+                  const fromLabel = buildDepLabel(fromFeature, teamMap, d.from_feature_id);
+                  const toLabel = buildDepLabel(toFeature, teamMap, d.to_feature_id);
                   return (
                     <tr key={d.id}>
                       <td className="px-4 py-2.5 text-slate-700">{fromLabel}</td>

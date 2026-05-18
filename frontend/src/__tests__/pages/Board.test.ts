@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildBoard, crossTeamOnly } from '../../pages/Board';
+import { buildBoard, buildDepLabel, crossTeamOnly } from '../../pages/Board';
 import type { Dependency, Feature } from '../../types';
 
 function makeFeature(overrides: Partial<Feature> = {}): Feature {
@@ -106,5 +106,26 @@ describe('crossTeamOnly', () => {
     const f1 = makeFeature({ id: 'f1', team_id: 't1' });
     const dep = makeDep({ from_feature_id: 'f1', to_feature_id: 'f-missing' });
     expect(crossTeamOnly([dep], [f1])).toHaveLength(0);
+  });
+});
+
+describe('buildDepLabel', () => {
+  it('returns fallback when feature is undefined', () => {
+    expect(buildDepLabel(undefined, {}, 'feature-id')).toBe('feature-id');
+  });
+
+  it('returns feature name only when team_id is null', () => {
+    const f = makeFeature({ id: 'f1', name: 'Auth Service', team_id: null });
+    expect(buildDepLabel(f, {}, 'fallback')).toBe('Auth Service');
+  });
+
+  it('returns name with team suffix when team is found in map', () => {
+    const f = makeFeature({ id: 'f1', name: 'Auth Service', team_id: 't1' });
+    expect(buildDepLabel(f, { t1: { name: 'Alpha' } }, 'fallback')).toBe('Auth Service (Alpha)');
+  });
+
+  it('returns name only when team_id is set but team not in map', () => {
+    const f = makeFeature({ id: 'f1', name: 'Auth Service', team_id: 't1' });
+    expect(buildDepLabel(f, {}, 'fallback')).toBe('Auth Service');
   });
 });
