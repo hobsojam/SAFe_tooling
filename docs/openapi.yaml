@@ -1477,6 +1477,7 @@ components:
           example: Platform ART
     ARTUpdate:
       type: object
+      minProperties: 1
       properties:
         name:
           type: string
