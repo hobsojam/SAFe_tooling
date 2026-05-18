@@ -192,7 +192,7 @@ export function Objectives() {
                   <div key={obj.id} className="bg-red-50 px-4 py-4">
                     {deleteError && <p className="mb-2 text-xs text-red-600">{deleteError}</p>}
                     <p className="mb-3 text-sm text-slate-700">
-                      Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>{' '}?
+                      Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -284,7 +284,7 @@ export function Objectives() {
                           <div className="flex items-center gap-3">
                             {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
                             <span className="text-sm text-slate-700">
-                              Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>{' '}?
+                              Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(obj.id)}
@@ -482,5 +482,3 @@ export function Objectives() {
     </div>
   );
 }
-
-

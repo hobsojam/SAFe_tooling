@@ -405,4 +405,3 @@ export function StoriesPage() {
     </div>
   );
 }
-
