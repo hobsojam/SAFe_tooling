@@ -10,6 +10,8 @@ from safe.store.repos import get_repos
 objective_app = typer.Typer(help="Manage PI Objectives")
 console = Console()
 
+_OBJECTIVE_ID_PARAM = "Objective id"
+
 
 def _repos():
     return get_repos(get_db(state.db_path) if state.db_path else None)
@@ -75,7 +77,7 @@ def objective_list(
 
 @objective_app.command("score")
 def objective_score(
-    objective_id: str = typer.Argument(..., help="Objective id"),
+    objective_id: str = typer.Argument(..., help=_OBJECTIVE_ID_PARAM),
     actual_bv: int = typer.Option(..., "--actual-bv", "-a", help="Actual Business Value (1–10)"),
 ):
     """Record the actual Business Value achieved for an objective."""
@@ -94,7 +96,7 @@ def objective_score(
 
 @objective_app.command("update")
 def objective_update(
-    objective_id: str = typer.Argument(..., help="Objective id"),
+    objective_id: str = typer.Argument(..., help=_OBJECTIVE_ID_PARAM),
     description: str | None = typer.Option(None, "--description", "-d"),
     planned_bv: int | None = typer.Option(None, "--planned-bv", "-p"),
     stretch: bool | None = typer.Option(None, "--stretch/--committed"),
@@ -116,7 +118,7 @@ def objective_update(
 
 
 @objective_app.command("delete")
-def objective_delete(objective_id: str = typer.Argument(..., help="Objective id")):
+def objective_delete(objective_id: str = typer.Argument(..., help=_OBJECTIVE_ID_PARAM)):
     """Delete a PI Objective."""
     repos = _repos()
     obj = repos.objectives.get(objective_id)

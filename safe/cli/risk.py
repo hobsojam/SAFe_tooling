@@ -10,6 +10,8 @@ from safe.store.repos import get_repos
 risk_app = typer.Typer(help="Manage PI Risks (ROAM)")
 console = Console()
 
+_RISK_ID_PARAM = "Risk id"
+
 _STATUS_COLOUR = {
     ROAMStatus.UNROAMED: "red",
     ROAMStatus.OWNED: "yellow",
@@ -83,7 +85,7 @@ def risk_list(
 
 
 @risk_app.command("show")
-def risk_show(risk_id: str = typer.Argument(..., help="Risk id")):
+def risk_show(risk_id: str = typer.Argument(..., help=_RISK_ID_PARAM)):
     """Show full details of a risk."""
     repos = _repos()
     risk = repos.risks.get(risk_id)
@@ -105,7 +107,7 @@ def risk_show(risk_id: str = typer.Argument(..., help="Risk id")):
 
 @risk_app.command("roam")
 def risk_roam(
-    risk_id: str = typer.Argument(..., help="Risk id"),
+    risk_id: str = typer.Argument(..., help=_RISK_ID_PARAM),
     status: ROAMStatus = typer.Option(..., "--status", "-s", help="New ROAM status"),
     owner: str | None = typer.Option(None, "--owner", help="Risk owner name"),
     notes: str | None = typer.Option(None, "--notes", "-n", help="Mitigation notes"),
@@ -128,7 +130,7 @@ def risk_roam(
 
 
 @risk_app.command("delete")
-def risk_delete(risk_id: str = typer.Argument(..., help="Risk id")):
+def risk_delete(risk_id: str = typer.Argument(..., help=_RISK_ID_PARAM)):
     """Delete a risk from the register."""
     repos = _repos()
     risk = repos.risks.get(risk_id)

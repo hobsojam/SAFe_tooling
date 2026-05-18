@@ -17,6 +17,8 @@ iteration_app = typer.Typer(help="Manage PI iterations")
 pi_app.add_typer(iteration_app, name="iteration")
 console = Console()
 
+_PI_ID_PARAM = "PI id"
+
 
 def _repos():
     return get_repos(get_db(state.db_path) if state.db_path else None)
@@ -52,7 +54,7 @@ def pi_create(
 
 
 @pi_app.command("show")
-def pi_show(pi_id: str = typer.Argument(..., help="PI id")):
+def pi_show(pi_id: str = typer.Argument(..., help=_PI_ID_PARAM)):
     """Show PI details."""
     repos = _repos()
     pi = repos.pis.get(pi_id)
@@ -89,7 +91,7 @@ def pi_list(
 
 
 @pi_app.command("activate")
-def pi_activate(pi_id: str = typer.Argument(..., help="PI id")):
+def pi_activate(pi_id: str = typer.Argument(..., help=_PI_ID_PARAM)):
     """Transition a PI from planning to active."""
     repos = _repos()
     pi = repos.pis.get(pi_id)
@@ -111,7 +113,7 @@ def pi_activate(pi_id: str = typer.Argument(..., help="PI id")):
 
 
 @pi_app.command("close")
-def pi_close(pi_id: str = typer.Argument(..., help="PI id")):
+def pi_close(pi_id: str = typer.Argument(..., help=_PI_ID_PARAM)):
     """Close an active PI."""
     repos = _repos()
     pi = repos.pis.get(pi_id)
@@ -150,7 +152,7 @@ def pi_predictability(
 
 @iteration_app.command("add")
 def iteration_add(
-    pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
+    pi_id: str = typer.Option(..., "--pi-id", help=_PI_ID_PARAM),
     number: int = typer.Option(..., "--number", "-n", help="Iteration number"),
     start: str = typer.Option(..., "--start", help="Start date (YYYY-MM-DD)"),
     end: str = typer.Option(..., "--end", help="End date (YYYY-MM-DD)"),
@@ -180,7 +182,7 @@ def iteration_add(
 
 @iteration_app.command("list")
 def iteration_list(
-    pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
+    pi_id: str = typer.Option(..., "--pi-id", help=_PI_ID_PARAM),
 ):
     """List iterations for a PI."""
     repos = _repos()
