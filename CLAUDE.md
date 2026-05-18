@@ -88,6 +88,7 @@ All relationships use ID references (never embedded objects). `PI.iteration_ids`
 | Terminal output | Rich (bundled with Typer) | Colored tables, status indicators |
 | Spreadsheet I/O | openpyxl | Import/export for PI Planning Excel artifacts |
 | Testing | pytest + pytest-cov + httpx | |
+| Contract testing | schemathesis `>=4.0` | Generates test cases from `docs/openapi.yaml` via ASGI; verifies no endpoint returns 5xx |
 | Mutation testing | mutmut `>=2,<3` | Nightly CI job scoped to `safe/logic/`; pinned to v2 because v3 removed the `html` subcommand used in the report step |
 
 Install: `pip install -e ".[dev]"`
@@ -193,6 +194,7 @@ tests/
   test_api_capacity_plans.py
   test_api_compute.py
   test_api_smoke.py          # end-to-end smoke test across all routers
+  test_openapi_contract.py   # schemathesis contract test — parametrizes all OAS 3.1 operations
 Dockerfile
 docker-compose.yml       # podman compose up -d --build
 pyproject.toml
@@ -241,6 +243,14 @@ pyproject.toml
 - Logic tests are pure unit tests with no I/O.
 - CLI tests use `typer.testing.CliRunner` with `--db-path` pointing to a tmp file. Each test module includes an `autouse` `reset_state` fixture that sets `state.db_path = None` before and after each test to prevent state leaking between invocations.
 - API tests use `fastapi.testclient.TestClient` with `app.dependency_overrides` to inject a `tmp_path` TinyDB — see `tests/conftest.py`.
+
+**Contract testing with schemathesis**
+- `tests/test_openapi_contract.py` uses **schemathesis ≥ 4.0** to auto-generate test cases from the live OpenAPI schema served by the ASGI app (`/openapi.json`).
+- The `@schema.parametrize()` decorator expands into one pytest case per operation × example combination; `pytest -v` shows each as `test_api_contract[GET /art]`, etc.
+- The assertion is intentionally minimal: any 5xx response is a failure. 4xx responses (e.g. 422 for missing required fields) are expected and pass.
+- **API version note**: schemathesis 4.x changed its public API. Always use `schemathesis.openapi.from_asgi()` (not `schemathesis.from_asgi()`). To send a case, use `schema.transport.send(case)` (not `case.call_asgi()`).
+- The test injects a fresh `tmp_path` TinyDB via `app.dependency_overrides` — same pattern as `test_api_*.py` — so it never touches the real database.
+- The app uses **OpenAPI 3.1.0**; schemathesis < 4.0 does not support OAS 3.1. Do not downgrade the pinned version.
 
 **Testing standards — follow the test pyramid**
 
