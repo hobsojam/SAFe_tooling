@@ -230,6 +230,24 @@ class TestTeamPatch:
         assert team_id not in client.get(f"/art/{art1_id}").json()["team_ids"]
         assert team_id in client.get(f"/art/{art2_id}").json()["team_ids"]
 
+    def test_patch_remove_from_art(self, client):
+        art_id = client.post("/art", json={"name": "ART"}).json()["id"]
+        team_id = client.post(
+            "/team", json={"name": "Alpha", "member_count": 5, "art_id": art_id}
+        ).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"art_id": None})
+        assert r.status_code == 200
+        assert r.json()["art_id"] is None
+        assert team_id not in client.get(f"/art/{art_id}").json()["team_ids"]
+
+    def test_patch_assign_to_art_when_unassigned(self, client):
+        art_id = client.post("/art", json={"name": "ART"}).json()["id"]
+        team_id = client.post("/team", json={"name": "Unassigned", "member_count": 5}).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"art_id": art_id})
+        assert r.status_code == 200
+        assert r.json()["art_id"] == art_id
+        assert team_id in client.get(f"/art/{art_id}").json()["team_ids"]
+
     def test_patch_invalid_art_returns_404(self, client):
         team_id = client.post("/team", json={"name": "Alpha", "member_count": 5}).json()["id"]
         r = client.patch(f"/team/{team_id}", json={"art_id": "no-such-art"})
