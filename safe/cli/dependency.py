@@ -12,6 +12,8 @@ from safe.store.repos import get_repos
 dependency_app = typer.Typer(help="Manage cross-feature Dependencies")
 console = Console()
 
+_DEPENDENCY_ID_PARAM = "Dependency id"
+
 _STATUS_COLOUR = {
     DependencyStatus.IDENTIFIED: "red",
     DependencyStatus.ACKNOWLEDGED: "yellow",
@@ -116,7 +118,7 @@ def dependency_list(
 
 
 @dependency_app.command("show")
-def dependency_show(dep_id: str = typer.Argument(..., help="Dependency id")):
+def dependency_show(dep_id: str = typer.Argument(..., help=_DEPENDENCY_ID_PARAM)):
     """Show full details of a dependency."""
     repos = _repos()
     dep = repos.dependencies.get(dep_id)
@@ -139,7 +141,7 @@ def dependency_show(dep_id: str = typer.Argument(..., help="Dependency id")):
 
 @dependency_app.command("update-status")
 def dependency_update_status(
-    dep_id: str = typer.Argument(..., help="Dependency id"),
+    dep_id: str = typer.Argument(..., help=_DEPENDENCY_ID_PARAM),
     status: DependencyStatus = typer.Option(..., "--status", "-s", help="New status"),
     owner: str | None = typer.Option(None, "--owner", help="Dependency owner name"),
     notes: str | None = typer.Option(None, "--notes", "-n", help="Resolution notes"),
@@ -162,7 +164,7 @@ def dependency_update_status(
 
 
 @dependency_app.command("delete")
-def dependency_delete(dep_id: str = typer.Argument(..., help="Dependency id")):
+def dependency_delete(dep_id: str = typer.Argument(..., help=_DEPENDENCY_ID_PARAM)):
     """Delete a dependency."""
     repos = _repos()
     dep = repos.dependencies.get(dep_id)

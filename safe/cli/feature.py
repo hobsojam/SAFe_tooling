@@ -10,6 +10,8 @@ from safe.store.repos import get_repos
 feature_app = typer.Typer(help="Manage program backlog features")
 console = Console()
 
+_FEATURE_ID_PARAM = "Feature id"
+
 
 def _repos():
     return get_repos(get_db(state.db_path) if state.db_path else None)
@@ -48,7 +50,7 @@ def feature_add(
 
 
 @feature_app.command("show")
-def feature_show(feature_id: str = typer.Argument(..., help="Feature id")):
+def feature_show(feature_id: str = typer.Argument(..., help=_FEATURE_ID_PARAM)):
     """Show feature details."""
     repos = _repos()
     feature = repos.features.get(feature_id)
@@ -134,7 +136,7 @@ def feature_rank(
 
 @feature_app.command("update")
 def feature_update(
-    feature_id: str = typer.Argument(..., help="Feature id"),
+    feature_id: str = typer.Argument(..., help=_FEATURE_ID_PARAM),
     name: str | None = typer.Option(None, "--name", "-n"),
     description: str | None = typer.Option(None, "--description", "-d"),
     status: str | None = typer.Option(None, "--status", "-s"),
@@ -174,7 +176,7 @@ def feature_update(
 
 @feature_app.command("assign")
 def feature_assign(
-    feature_id: str = typer.Argument(..., help="Feature id"),
+    feature_id: str = typer.Argument(..., help=_FEATURE_ID_PARAM),
     team_id: str = typer.Option(..., "--team-id", help="Team to assign to"),
     pi_id: str | None = typer.Option(None, "--pi-id", help="PI to assign to"),
 ):
@@ -198,7 +200,7 @@ def feature_assign(
 
 
 @feature_app.command("delete")
-def feature_delete(feature_id: str = typer.Argument(..., help="Feature id")):
+def feature_delete(feature_id: str = typer.Argument(..., help=_FEATURE_ID_PARAM)):
     """Delete a feature and its stories."""
     repos = _repos()
     feature = repos.features.get(feature_id)
