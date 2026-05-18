@@ -30,7 +30,7 @@ interface Arrow {
   resolved: boolean;
 }
 
-function buildBoard(features: Feature[]): BoardGrid {
+export function buildBoard(features: Feature[]): BoardGrid {
   const grid: BoardGrid = {};
   for (const feature of features) {
     if (!feature.team_id) continue;
@@ -103,7 +103,7 @@ function UnassignedDropZone({ children }: Readonly<{ children: React.ReactNode }
   );
 }
 
-function crossTeamOnly(deps: Dependency[], features: Feature[]): Dependency[] {
+export function crossTeamOnly(deps: Dependency[], features: Feature[]): Dependency[] {
   return deps.filter((d) => {
     const from = features.find((f) => f.id === d.from_feature_id);
     const to = features.find((f) => f.id === d.to_feature_id);

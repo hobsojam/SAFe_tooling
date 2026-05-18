@@ -26,13 +26,13 @@ const EMPTY_FORM: ObjectiveFormState = {
   is_stretch: false,
 };
 
-function predictabilityClass(pct: number): string {
+export function predictabilityClass(pct: number): string {
   if (pct >= 80) return 'font-bold text-green-700';
   if (pct >= 60) return 'font-bold text-amber-600';
   return 'font-bold text-red-600';
 }
 
-function objectiveTypeBadgeClass(isStretch: boolean): string {
+export function objectiveTypeBadgeClass(isStretch: boolean): string {
   if (isStretch) return 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800';
   return 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800';
 }

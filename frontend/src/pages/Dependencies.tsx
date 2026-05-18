@@ -33,7 +33,7 @@ const EMPTY_FORM: DepFormState = {
   resolution_notes: '',
 };
 
-function featureLabel(feature: Feature, teamMap: Record<string, string>): string {
+export function featureLabel(feature: Feature, teamMap: Record<string, string>): string {
   if (!feature.team_id) return feature.name;
   const team = teamMap[feature.team_id] ?? '';
   return team ? `${feature.name} (${team})` : feature.name;
