@@ -192,7 +192,7 @@ export function Objectives() {
                   <div key={obj.id} className="bg-red-50 px-4 py-4">
                     {deleteError && <p className="mb-2 text-xs text-red-600">{deleteError}</p>}
                     <p className="mb-3 text-sm text-slate-700">
-                      Delete <strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
+                      Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -227,8 +227,8 @@ export function Objectives() {
                     <span className="text-xs text-slate-500">{teamMap[obj.team_id] ?? '—'}</span>
                   </div>
                   <div className="mb-3 flex gap-6 text-xs text-slate-500">
-                    <span>Planned BV: <strong className="text-slate-700">{obj.planned_business_value}</strong></span>
-                    <span>Actual BV: <strong className="text-slate-700">
+                    <span>Planned BV:{' '}<strong className="text-slate-700">{obj.planned_business_value}</strong></span>
+                    <span>Actual BV:{' '}<strong className="text-slate-700">
                       {obj.actual_business_value !== null ? obj.actual_business_value : '—'}
                     </strong></span>
                   </div>
@@ -255,8 +255,8 @@ export function Objectives() {
                   Committed totals · {scoredCommitted.length} of {committed.length} scored
                 </p>
                 <div className="flex items-center gap-6 text-sm">
-                  <span className="text-slate-600">Planned: <strong className="text-slate-800">{committedPlannedBV}</strong></span>
-                  <span className="text-slate-600">Actual: <strong className="text-slate-800">{scoredCommitted.length > 0 ? committedActualBV : '—'}</strong></span>
+                  <span className="text-slate-600">Planned:{' '}<strong className="text-slate-800">{committedPlannedBV}</strong></span>
+                  <span className="text-slate-600">Actual:{' '}<strong className="text-slate-800">{scoredCommitted.length > 0 ? committedActualBV : '—'}</strong></span>
                   {predictabilityPct !== null && (
                     <span className={predictabilityClass(predictabilityPct)}>{predictabilityPct}%</span>
                   )}
@@ -284,7 +284,7 @@ export function Objectives() {
                           <div className="flex items-center gap-3">
                             {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
                             <span className="text-sm text-slate-700">
-                              Delete <strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
+                              Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(obj.id)}
