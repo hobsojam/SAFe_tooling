@@ -26,6 +26,7 @@ dev = [
     "pytest-cov>=5",
     "httpx>=0.27",
     "ruff>=0.4",
+    "schemathesis>=4.0",
     "mypy>=1.10",
     "mutmut>=2,<3",
     "pip-audit>=2.7",
