@@ -130,11 +130,11 @@ The React SPA provides views across all key PI artifacts for a selected PI.
 | **Backlog** | `/pi/:id/backlog` | WSJF-ranked feature list with inline story management per feature |
 | **Objectives** | `/pi/:id/objectives` | PI Objectives — committed and stretch objectives with planned/actual BV scoring; predictability summary footer |
 | **Predictability** | `/pi/:id/predictability` | ART PI Predictability — per-team and ART-level actual vs planned BV with colour-coded predictability % |
-| **Capacity** | `/pi/:id/capacity` | Capacity grid — set team size, PTO, and overhead per iteration; shows available person-days |
+| **Capacity** | `/pi/:id/capacity` | Capacity grid — set team size, PTO, and overhead per iteration; cells colour-coded by load % (amber / blue / red) |
 | **Risks** | `/pi/:id/risks` | ROAM risk register with unroamed count callout |
 | **Dependencies** | `/pi/:id/dependencies` | Cross-team dependency tracker with unresolved count |
 | **PI Setup** | `/pi/:id/setup` | Edit PI details, manage lifecycle (activate/close), add/delete iterations, delete PI |
-| **Team Setup** | `/pi/:id/team-setup` | Create, rename, and delete ART teams; set Team Topologies type (stream-aligned, enabling, complicated-subsystem, platform) |
+| **Team Setup** | `/pi/:id/team-setup` | Create, rename, and delete ART teams; set Team Topologies type; reassign a team to a different ART |
 | **ART Setup** | `/art-setup` | Create, rename, and delete Agile Release Trains (always accessible) |
 
 Built with Vite, React 18, TypeScript, Tailwind CSS v4, TanStack Query, and React Router.
@@ -310,7 +310,7 @@ pytest --cov=safe   # with coverage
 
 ```bash
 cd frontend
-npx playwright test        # runs all 154 e2e tests against a local API + UI
+npx playwright test        # runs all 161 e2e tests against a local API + UI
 npx playwright test --ui   # interactive UI mode
 ```
 
@@ -389,7 +389,7 @@ safe/
     schemas.py      Create/Update/action request body schemas
     routers/        One file per resource (arts, teams, pi, iterations, features, ...)
   store/            TinyDB persistence (Repository[T], get_repos())
-tests/              pytest test suite (495 tests — unit, CLI, API, smoke)
+tests/              pytest test suite (633 tests — unit, CLI, API, smoke)
 Dockerfile          Python API image
 docker-compose.yml  API (port 8000) + frontend/nginx (port 3000)
 pyproject.toml
@@ -403,12 +403,9 @@ Data is stored at `~/.safe_tooling/db.json`. The CLI and API share this file.
 
 | Area | Description |
 |------|-------------|
-| **Feature CRUD in UI** | Add create, edit, assign, and status-update flows for Features in the web UI — the most impactful gap since Features are the core PI planning artefact and currently require the CLI |
-| **Feature-to-PI assignment in UI** | Allow features to be assigned to a PI directly from the web UI; currently requires the CLI (`safe feature assign`) |
-| **Story, Capacity, and Objectives UI** | Extend web UI mutation flows to Stories, Capacity Plans, and PI Objectives, so the full PI planning workflow is available without the CLI |
 | **Inspect & Adapt page** | Add an I&A ceremony page covering the PI System Demo, quantitative measurement (predictability, quality metrics), and a structured problem-solving workshop view |
-| **Better API error messages** | Surface actionable error details in the web UI — e.g. which field failed validation, what state-machine constraint was violated — rather than showing raw HTTP status codes |
-| **Responsive design** | Make the web UI usable across screen sizes (mobile, tablet, desktop) using Tailwind's responsive breakpoints |
+| **Modal accessibility** | Rewrite the `Modal` component to use the native `<dialog>` element for proper focus trapping, Escape-key dismissal, and screen-reader support across all devices |
+| **API response documentation** | Add `responses={...}` annotations to FastAPI route decorators so the generated OpenAPI UI shows 404/409 status codes alongside each endpoint |
 
 ---
 
