@@ -1,3 +1,5 @@
+"""HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
+
 from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException, Query

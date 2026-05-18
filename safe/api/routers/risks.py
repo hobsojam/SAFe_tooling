@@ -1,3 +1,5 @@
+"""HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
