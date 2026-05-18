@@ -52,15 +52,15 @@ const mockArts = [
 ];
 
 function setupMocks() {
-  vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as ReturnType<typeof useQueryClient>);
-  vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn(), isPending: false } as ReturnType<typeof useMutation>);
+  vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as unknown as ReturnType<typeof useQueryClient>);
+  vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useMutation>);
   vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
     const key = (queryKey as string[])[0];
-    if (key === 'pi') return { data: mockPi, isLoading: false } as ReturnType<typeof useQuery>;
-    if (key === 'art') return { data: mockArt } as ReturnType<typeof useQuery>;
-    if (key === 'teams') return { data: mockTeams, isLoading: false } as ReturnType<typeof useQuery>;
-    if (key === 'arts') return { data: mockArts } as ReturnType<typeof useQuery>;
-    return { data: undefined, isLoading: false } as ReturnType<typeof useQuery>;
+    if (key === 'pi') return { data: mockPi, isLoading: false } as unknown as ReturnType<typeof useQuery>;
+    if (key === 'art') return { data: mockArt } as unknown as ReturnType<typeof useQuery>;
+    if (key === 'teams') return { data: mockTeams, isLoading: false } as unknown as ReturnType<typeof useQuery>;
+    if (key === 'arts') return { data: mockArts } as unknown as ReturnType<typeof useQuery>;
+    return { data: undefined, isLoading: false } as unknown as ReturnType<typeof useQuery>;
   });
 }
 
@@ -105,8 +105,8 @@ describe('TeamSetup', () => {
   it('shows loading spinner when data is loading', () => {
     vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
       const key = (queryKey as string[])[0];
-      if (key === 'pi') return { data: undefined, isLoading: true } as ReturnType<typeof useQuery>;
-      return { data: undefined, isLoading: false } as ReturnType<typeof useQuery>;
+      if (key === 'pi') return { data: undefined, isLoading: true } as unknown as ReturnType<typeof useQuery>;
+      return { data: undefined, isLoading: false } as unknown as ReturnType<typeof useQuery>;
     });
     render(<TeamSetup />);
     expect(screen.getByText('Loading…')).toBeInTheDocument();
