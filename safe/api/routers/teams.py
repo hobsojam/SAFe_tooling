@@ -15,6 +15,23 @@ def _get_or_404(repos: Repos, team_id: str) -> Team:
     return team
 
 
+def _reassign_art(
+    repos: Repos, team_id: str, old_art_id: str | None, new_art_id: str | None
+) -> None:
+    if old_art_id is not None:
+        old_art = repos.arts.get(old_art_id)
+        if old_art is not None:
+            repos.arts.save(
+                old_art.model_copy(
+                    update={"team_ids": [t for t in old_art.team_ids if t != team_id]}
+                )
+            )
+    if new_art_id is not None:
+        new_art = repos.arts.get(new_art_id)
+        if new_art is not None and team_id not in new_art.team_ids:
+            repos.arts.save(new_art.model_copy(update={"team_ids": new_art.team_ids + [team_id]}))
+
+
 @router.get("", response_model=list[Team])
 def list_teams(
     repos: ReposDep,
@@ -57,22 +74,7 @@ def update_team(team_id: str, body: TeamUpdate, repos: ReposDep):
             raise HTTPException(status_code=404, detail=f"ART '{update_data['art_id']}' not found")
 
     if "art_id" in update_data and update_data["art_id"] != team.art_id:
-        # Remove from old ART
-        if team.art_id is not None:
-            old_art = repos.arts.get(team.art_id)
-            if old_art is not None:
-                repos.arts.save(
-                    old_art.model_copy(
-                        update={"team_ids": [t for t in old_art.team_ids if t != team_id]}
-                    )
-                )
-        # Add to new ART
-        if update_data["art_id"] is not None:
-            new_art = repos.arts.get(update_data["art_id"])
-            if new_art is not None and team_id not in new_art.team_ids:
-                repos.arts.save(
-                    new_art.model_copy(update={"team_ids": new_art.team_ids + [team_id]})
-                )
+        _reassign_art(repos, team_id, team.art_id, update_data["art_id"])
 
     updated = team.model_copy(update=update_data)
     return repos.teams.save(updated)
