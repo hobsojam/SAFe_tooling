@@ -1,10 +1,9 @@
 export function EmptyState({ message }: Readonly<{ message: string }>) {
   return (
-    <div
+    <output
       className="flex flex-col items-center justify-center py-16 text-slate-400"
-      role="status"
     >
       <p className="text-sm">{message}</p>
-    </div>
+    </output>
   );
 }
