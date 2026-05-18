@@ -1606,15 +1606,19 @@ components:
       properties:
         name:
           type: string
+          example: PI 2026.1
         art_id:
           type: string
           format: uuid
+          example: '00000000-0000-0000-0000-000000000001'
         start_date:
           type: string
           format: date
+          example: '2026-01-05'
         end_date:
           type: string
           format: date
+          example: '2026-03-27'
     PIUpdate:
       type: object
       description: Status transitions use /activate and /close, not this endpoint.
