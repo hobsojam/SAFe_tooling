@@ -206,6 +206,7 @@ export interface TeamCreate {
 export interface TeamUpdate {
   name?: string;
   member_count?: number;
+  art_id?: string | null;
   topology_type?: TeamTopologyType | null;
 }
 
