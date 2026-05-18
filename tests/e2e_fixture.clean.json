@@ -86,6 +86,51 @@
       "start_date": "2026-03-02",
       "end_date": "2026-03-13",
       "is_ip": true
+    },
+    "6": {
+      "id": "b2iter01-0000-4000-8000-000000000001",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "number": 1,
+      "name": "",
+      "start_date": "2026-03-30",
+      "end_date": "2026-04-10",
+      "is_ip": false
+    },
+    "7": {
+      "id": "b2iter02-0000-4000-8000-000000000002",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "number": 2,
+      "name": "",
+      "start_date": "2026-04-13",
+      "end_date": "2026-04-24",
+      "is_ip": false
+    },
+    "8": {
+      "id": "b2iter03-0000-4000-8000-000000000003",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "number": 3,
+      "name": "",
+      "start_date": "2026-04-27",
+      "end_date": "2026-05-08",
+      "is_ip": false
+    },
+    "9": {
+      "id": "b2iter04-0000-4000-8000-000000000004",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "number": 4,
+      "name": "",
+      "start_date": "2026-05-11",
+      "end_date": "2026-05-22",
+      "is_ip": false
+    },
+    "10": {
+      "id": "b2iterip-0000-4000-8000-000000000005",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "number": 5,
+      "name": "",
+      "start_date": "2026-05-25",
+      "end_date": "2026-06-05",
+      "is_ip": true
     }
   },
   "pis": {
@@ -103,6 +148,21 @@
         "435fbcc0-6f20-44bd-b2c5-e6d29353f5ae"
       ],
       "status": "active"
+    },
+    "2": {
+      "id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "name": "PI 2026.2",
+      "art_id": "721983fc-0004-4ff5-8513-f3878ca0410e",
+      "start_date": "2026-03-30",
+      "end_date": "2026-06-05",
+      "iteration_ids": [
+        "b2iter01-0000-4000-8000-000000000001",
+        "b2iter02-0000-4000-8000-000000000002",
+        "b2iter03-0000-4000-8000-000000000003",
+        "b2iter04-0000-4000-8000-000000000004",
+        "b2iterip-0000-4000-8000-000000000005"
+      ],
+      "status": "planning"
     }
   },
   "features": {
@@ -217,6 +277,54 @@
       "time_criticality": 3,
       "risk_reduction_opportunity_enablement": 2,
       "job_size": 3
+    },
+    "8": {
+      "id": "b2feat01-0000-4000-8000-000000000001",
+      "name": "Mobile App Redesign",
+      "description": "",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "team_id": "cb5f9268-1dbf-4976-8884-d2db8c3a988b",
+      "iteration_id": "b2iter01-0000-4000-8000-000000000001",
+      "status": "backlog",
+      "acceptance_criteria": "",
+      "story_ids": [],
+      "dependency_ids": [],
+      "user_business_value": 9,
+      "time_criticality": 6,
+      "risk_reduction_opportunity_enablement": 3,
+      "job_size": 5
+    },
+    "9": {
+      "id": "b2feat02-0000-4000-8000-000000000002",
+      "name": "Search Service",
+      "description": "",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "team_id": "03ed3b95-f268-4c4b-bbec-b6722cb28774",
+      "iteration_id": "b2iter02-0000-4000-8000-000000000002",
+      "status": "backlog",
+      "acceptance_criteria": "",
+      "story_ids": [],
+      "dependency_ids": [],
+      "user_business_value": 7,
+      "time_criticality": 4,
+      "risk_reduction_opportunity_enablement": 5,
+      "job_size": 3
+    },
+    "10": {
+      "id": "b2feat03-0000-4000-8000-000000000003",
+      "name": "Notification Hub",
+      "description": "",
+      "pi_id": "bbbbbbbb-2026-4002-8002-bbbbbbbbbbbb",
+      "team_id": "cccccccc-0003-0003-0003-cccccccccccc",
+      "iteration_id": null,
+      "status": "backlog",
+      "acceptance_criteria": "",
+      "story_ids": [],
+      "dependency_ids": [],
+      "user_business_value": 6,
+      "time_criticality": 5,
+      "risk_reduction_opportunity_enablement": 4,
+      "job_size": 4
     }
   },
   "stories": {
