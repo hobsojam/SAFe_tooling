@@ -97,6 +97,40 @@ def board_show(
         console.print(dep_table)
 
 
+def _build_board_row(repos: Repos, team_id: str, iterations, grid: dict) -> list:
+    """Build one Excel data row for a team, covering each iteration and unplanned work."""
+    team = repos.teams.get(team_id)
+    team_name = team.name if team else team_id
+    team_grid = grid.get(team_id, {})
+    row = [team_name]
+    for i in iterations:
+        feats = team_grid.get(i.id, [])
+        row.append("; ".join(f.name for f in feats) if feats else "")
+    unplanned = team_grid.get(None, [])
+    row.append("; ".join(f.name for f in unplanned) if unplanned else "")
+    return row
+
+
+def _write_deps_sheet(wb, repos: Repos, pi_id: str) -> None:
+    """Add a Dependencies worksheet to *wb* if any dependencies exist for the PI."""
+    deps = repos.dependencies.find(pi_id=pi_id)
+    if not deps:
+        return
+    ws_deps = wb.create_sheet("Dependencies")
+    ws_deps.append(["From Feature", "To Feature", "Description", "Status", "Owner", "Needed By"])
+    for dep in deps:
+        ws_deps.append(
+            [
+                _feature_label(repos, dep.from_feature_id),
+                _feature_label(repos, dep.to_feature_id),
+                dep.description,
+                dep.status,
+                dep.owner or "",
+                str(dep.needed_by_date) if dep.needed_by_date else "",
+            ]
+        )
+
+
 @board_app.command("export")
 def board_export(
     pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
@@ -123,34 +157,9 @@ def board_export(
     ws.append(["Team"] + iter_headers + ["Unplanned"])
 
     for team_id in team_ids:
-        team = repos.teams.get(team_id)
-        team_name = team.name if team else team_id
-        team_grid = grid.get(team_id, {})
-        row = [team_name]
-        for i in iterations:
-            feats = team_grid.get(i.id, [])
-            row.append("; ".join(f.name for f in feats) if feats else "")
-        unplanned = team_grid.get(None, [])
-        row.append("; ".join(f.name for f in unplanned) if unplanned else "")
-        ws.append(row)
+        ws.append(_build_board_row(repos, team_id, iterations, grid))
 
-    deps = repos.dependencies.find(pi_id=pi_id)
-    if deps:
-        ws_deps = wb.create_sheet("Dependencies")
-        ws_deps.append(
-            ["From Feature", "To Feature", "Description", "Status", "Owner", "Needed By"]
-        )
-        for dep in deps:
-            ws_deps.append(
-                [
-                    _feature_label(repos, dep.from_feature_id),
-                    _feature_label(repos, dep.to_feature_id),
-                    dep.description,
-                    dep.status,
-                    dep.owner or "",
-                    str(dep.needed_by_date) if dep.needed_by_date else "",
-                ]
-            )
+    _write_deps_sheet(wb, repos, pi_id)
 
     wb.save(output)
     console.print(f"Exported board for [bold]{pi.name}[/bold] to [bold]{output}[/bold]")

@@ -90,6 +90,25 @@ def capacity_set(
     )
 
 
+def _load_status(committed: int, available: float) -> tuple[str, str]:
+    """Return (load_str, status_str) for a team/iteration pair.
+
+    Returns ("-", "-") when there is no load or no capacity to compare against.
+    Otherwise returns the numeric percentage string and a Rich-coloured status cell.
+    """
+    if committed <= 0 or available <= 0:
+        return "-", "-"
+    load_pct = load_percentage(committed, available)
+    warning = capacity_warning(committed, available)
+    if warning and "OVERLOADED" in warning:
+        status = f"[red]{load_pct}%[/red]"
+    elif warning:
+        status = f"[yellow]{load_pct}%[/yellow]"
+    else:
+        status = f"[green]{load_pct}%[/green]"
+    return str(load_pct), status
+
+
 @capacity_app.command("show")
 def capacity_show(
     pi_id: str | None = typer.Option(None, "--pi-id", help="Filter by PI"),
@@ -112,20 +131,7 @@ def capacity_show(
         iteration = repos.iterations.get(plan.iteration_id)
         team_name = team.name if team else plan.team_id
         iter_label = f"I{iteration.number}" if iteration else plan.iteration_id
-
-        if committed > 0 and plan.available_capacity > 0:
-            load_pct = load_percentage(committed, plan.available_capacity)
-            warning = capacity_warning(committed, plan.available_capacity)
-            if warning and "OVERLOADED" in warning:
-                status = f"[red]{load_pct}%[/red]"
-            elif warning:
-                status = f"[yellow]{load_pct}%[/yellow]"
-            else:
-                status = f"[green]{load_pct}%[/green]"
-            load_str = str(load_pct)
-        else:
-            load_str = "-"
-            status = "-"
+        load_str, status = _load_status(committed, plan.available_capacity)
 
         table.add_row(
             team_name,

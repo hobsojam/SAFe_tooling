@@ -86,6 +86,35 @@ def story_list(
     console.print(table)
 
 
+def _apply_points_update(story: Story, points: int) -> None:
+    """Validate *points* and assign to *story*, or raise typer.Exit(1) on failure."""
+    if points < 1:
+        console.print(f"[red]Error: --points must be at least 1 (got {points})[/red]")
+        raise typer.Exit(1)
+    story.points = points
+
+
+def _apply_status_update(story: Story, status: str) -> None:
+    """Parse *status* into StoryStatus and assign, or raise typer.Exit(1) on failure."""
+    try:
+        story.status = StoryStatus(status)
+    except ValueError:
+        valid = ", ".join(s.value for s in StoryStatus)
+        console.print(f"[red]Error: invalid status '{status}'. Valid: {valid}[/red]")
+        raise typer.Exit(1) from None
+
+
+def _apply_iteration_update(story: Story, repos, iteration_id: str) -> None:
+    """Clear or set *story.iteration_id*, validating existence when a value is provided."""
+    if iteration_id == "":
+        story.iteration_id = None
+    else:
+        if repos.iterations.get(iteration_id) is None:
+            console.print(f"[red]Error: Iteration '{iteration_id}' not found[/red]")
+            raise typer.Exit(1)
+        story.iteration_id = iteration_id
+
+
 @story_app.command("update")
 def story_update(
     story_id: str = typer.Argument(..., help="Story id"),
@@ -106,27 +135,13 @@ def story_update(
     if name is not None:
         story.name = name
     if points is not None:
-        if points < 1:
-            console.print(f"[red]Error: --points must be at least 1 (got {points})[/red]")
-            raise typer.Exit(1)
-        story.points = points
+        _apply_points_update(story, points)
     if status is not None:
-        try:
-            story.status = StoryStatus(status)
-        except ValueError:
-            valid = ", ".join(s.value for s in StoryStatus)
-            console.print(f"[red]Error: invalid status '{status}'. Valid: {valid}[/red]")
-            raise typer.Exit(1) from None
+        _apply_status_update(story, status)
     if description is not None:
         story.description = description
     if iteration_id is not None:
-        if iteration_id == "":
-            story.iteration_id = None
-        else:
-            if repos.iterations.get(iteration_id) is None:
-                console.print(f"[red]Error: Iteration '{iteration_id}' not found[/red]")
-                raise typer.Exit(1)
-            story.iteration_id = iteration_id
+        _apply_iteration_update(story, repos, iteration_id)
     repos.stories.save(story)
     console.print(f"Updated story [bold]{story.name}[/bold]")
 
