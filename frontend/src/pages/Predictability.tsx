@@ -6,7 +6,7 @@ import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
 
 function predictabilityClass(pct: number): string {
-  if (pct >= 80) return 'bg-green-100 text-green-800';
+  if (pct >= 80) return 'bg-teal-100 text-teal-800';
   if (pct >= 60) return 'bg-amber-100 text-amber-800';
   return 'bg-red-100 text-red-800';
 }
