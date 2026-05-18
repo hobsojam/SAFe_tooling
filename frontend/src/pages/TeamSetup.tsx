@@ -5,12 +5,13 @@ import { api } from '../api';
 import { TOPOLOGY_LABELS, TopologyBadge } from '../components/Badge';
 import { Spinner } from '../components/Spinner';
 import { useToast } from '../components/Toaster';
-import type { Team, TeamCreate, TeamTopologyType, TeamUpdate } from '../types';
+import type { ART, Team, TeamCreate, TeamTopologyType, TeamUpdate } from '../types';
 
 interface EditState {
   teamId: string;
   name: string;
   member_count: number;
+  art_id: string | null;
   topology_type: TeamTopologyType | null;
 }
 
@@ -78,6 +79,11 @@ export function TeamSetup() {
     enabled: !!pi?.art_id,
   });
 
+  const { data: arts = [] } = useQuery({
+    queryKey: ['arts'],
+    queryFn: api.listARTs,
+  });
+
   const [edit, setEdit] = useState<EditState | null>(null);
   const [editError, setEditError] = useState('');
 
@@ -129,6 +135,7 @@ export function TeamSetup() {
       teamId: team.id,
       name: team.name,
       member_count: team.member_count,
+      art_id: team.art_id,
       topology_type: team.topology_type,
     });
     setEditError('');
@@ -141,7 +148,12 @@ export function TeamSetup() {
     if (edit!.member_count < 1) { setEditError('Member count must be at least 1.'); return; }
     updateMut.mutate({
       id: edit!.teamId,
-      body: { name: edit!.name, member_count: edit!.member_count, topology_type: edit!.topology_type },
+      body: {
+        name: edit!.name,
+        member_count: edit!.member_count,
+        art_id: edit!.art_id,
+        topology_type: edit!.topology_type,
+      },
     });
   }
 
@@ -225,6 +237,20 @@ export function TeamSetup() {
                             <option value="">— None —</option>
                             {TOPOLOGY_OPTIONS.map((o) => (
                               <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor={`edit-art-${team.id}`} className="mb-1 block text-xs font-medium text-slate-700">ART</label>
+                          <select
+                            id={`edit-art-${team.id}`}
+                            value={edit.art_id ?? ''}
+                            onChange={(e) => setEdit({ ...edit, art_id: e.target.value || null })}
+                            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          >
+                            <option value="">— Unassigned —</option>
+                            {arts.map((a: ART) => (
+                              <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
                           </select>
                         </div>
@@ -345,6 +371,17 @@ export function TeamSetup() {
                                 <option value="">— None —</option>
                                 {TOPOLOGY_OPTIONS.map((o) => (
                                   <option key={o.value} value={o.value}>{o.label}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={edit.art_id ?? ''}
+                                onChange={(e) => setEdit({ ...edit, art_id: e.target.value || null })}
+                                aria-label="ART"
+                                className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                              >
+                                <option value="">— Unassigned —</option>
+                                {arts.map((a: ART) => (
+                                  <option key={a.id} value={a.id}>{a.name}</option>
                                 ))}
                               </select>
                               <button

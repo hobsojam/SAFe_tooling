@@ -32,6 +32,7 @@ class TeamCreate(BaseModel):
 class TeamUpdate(BaseModel):
     name: str | None = None
     member_count: int | None = Field(default=None, ge=1)
+    art_id: str | None = None
     velocity_history: list[int] | None = None
     topology_type: TeamTopologyType | None = None
 

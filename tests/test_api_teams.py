@@ -208,3 +208,51 @@ def test_patch_topology_type(client):
     r = client.patch(f"/team/{team_id}", json={"topology_type": "enabling"})
     assert r.status_code == 200
     assert r.json()["topology_type"] == "enabling"
+
+
+class TestTeamPatch:
+    def test_patch_name(self, client):
+        art_id = client.post("/art", json={"name": "ART"}).json()["id"]
+        payload = {"name": "Alpha", "member_count": 5, "art_id": art_id}
+        team_id = client.post("/team", json=payload).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"name": "Alpha Renamed"})
+        assert r.status_code == 200
+        assert r.json()["name"] == "Alpha Renamed"
+
+    def test_patch_reassign_to_new_art(self, client):
+        art1_id = client.post("/art", json={"name": "ART 1"}).json()["id"]
+        art2_id = client.post("/art", json={"name": "ART 2"}).json()["id"]
+        payload = {"name": "Alpha", "member_count": 5, "art_id": art1_id}
+        team_id = client.post("/team", json=payload).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"art_id": art2_id})
+        assert r.status_code == 200
+        assert r.json()["art_id"] == art2_id
+        assert team_id not in client.get(f"/art/{art1_id}").json()["team_ids"]
+        assert team_id in client.get(f"/art/{art2_id}").json()["team_ids"]
+
+    def test_patch_remove_from_art(self, client):
+        art_id = client.post("/art", json={"name": "ART"}).json()["id"]
+        team_id = client.post(
+            "/team", json={"name": "Alpha", "member_count": 5, "art_id": art_id}
+        ).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"art_id": None})
+        assert r.status_code == 200
+        assert r.json()["art_id"] is None
+        assert team_id not in client.get(f"/art/{art_id}").json()["team_ids"]
+
+    def test_patch_assign_to_art_when_unassigned(self, client):
+        art_id = client.post("/art", json={"name": "ART"}).json()["id"]
+        team_id = client.post("/team", json={"name": "Unassigned", "member_count": 5}).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"art_id": art_id})
+        assert r.status_code == 200
+        assert r.json()["art_id"] == art_id
+        assert team_id in client.get(f"/art/{art_id}").json()["team_ids"]
+
+    def test_patch_invalid_art_returns_404(self, client):
+        team_id = client.post("/team", json={"name": "Alpha", "member_count": 5}).json()["id"]
+        r = client.patch(f"/team/{team_id}", json={"art_id": "no-such-art"})
+        assert r.status_code == 404
+
+    def test_patch_unknown_team_returns_404(self, client):
+        r = client.patch("/team/no-such-id", json={"name": "X"})
+        assert r.status_code == 404

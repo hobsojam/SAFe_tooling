@@ -50,7 +50,31 @@ def get_team(team_id: str, repos: ReposDep):
 @router.patch("/{team_id}", response_model=Team)
 def update_team(team_id: str, body: TeamUpdate, repos: ReposDep):
     team = _get_or_404(repos, team_id)
-    updated = team.model_copy(update=body.model_dump(exclude_unset=True))
+    update_data = body.model_dump(exclude_unset=True)
+
+    if "art_id" in update_data and update_data["art_id"] is not None:
+        if repos.arts.get(update_data["art_id"]) is None:
+            raise HTTPException(status_code=404, detail=f"ART '{update_data['art_id']}' not found")
+
+    if "art_id" in update_data and update_data["art_id"] != team.art_id:
+        # Remove from old ART
+        if team.art_id is not None:
+            old_art = repos.arts.get(team.art_id)
+            if old_art is not None:
+                repos.arts.save(
+                    old_art.model_copy(
+                        update={"team_ids": [t for t in old_art.team_ids if t != team_id]}
+                    )
+                )
+        # Add to new ART
+        if update_data["art_id"] is not None:
+            new_art = repos.arts.get(update_data["art_id"])
+            if new_art is not None and team_id not in new_art.team_ids:
+                repos.arts.save(
+                    new_art.model_copy(update={"team_ids": new_art.team_ids + [team_id]})
+                )
+
+    updated = team.model_copy(update=update_data)
     return repos.teams.save(updated)
 
 
