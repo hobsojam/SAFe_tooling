@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { objectiveTypeBadgeClass, predictabilityClass } from '../../pages/Objectives';
 
 describe('predictabilityClass', () => {
-  it('returns green for pct >= 80', () => {
-    expect(predictabilityClass(80)).toBe('font-bold text-green-700');
-    expect(predictabilityClass(100)).toBe('font-bold text-green-700');
-    expect(predictabilityClass(95)).toBe('font-bold text-green-700');
+  it('returns teal for pct >= 80', () => {
+    expect(predictabilityClass(80)).toBe('font-bold text-teal-700');
+    expect(predictabilityClass(100)).toBe('font-bold text-teal-700');
+    expect(predictabilityClass(95)).toBe('font-bold text-teal-700');
   });
 
   it('returns amber for 60 <= pct < 80', () => {

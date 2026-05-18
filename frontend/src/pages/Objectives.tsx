@@ -27,7 +27,7 @@ const EMPTY_FORM: ObjectiveFormState = {
 };
 
 export function predictabilityClass(pct: number): string {
-  if (pct >= 80) return 'font-bold text-green-700';
+  if (pct >= 80) return 'font-bold text-teal-700';
   if (pct >= 60) return 'font-bold text-amber-600';
   return 'font-bold text-red-600';
 }

@@ -2,11 +2,7 @@
 
 @CLAUDE_SECURITY.md
 
-## Accessibility
-
-Before writing any interactive UI component — button with state, dialog, combobox, tabs, menu, disclosure, tooltip, switch, alert/status, listbox, radio group — call the `check_pattern` MCP tool to get the full ARIA spec. Do this before writing any markup.
-
-Example: building a modal → `check_pattern({ component_type: "dialog" })` first.
+@CLAUDE_ACCESSIBILITY.md
 
 ---
 
