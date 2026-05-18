@@ -8,6 +8,43 @@ import { Modal } from '../components/Modal';
 import { Spinner } from '../components/Spinner';
 import { useToast } from '../components/Toaster';
 
+type CapacityVariant = 'unset' | 'yellow' | 'blue' | 'red';
+
+function getCapacityVariant(availableCapacity: number, committedPoints: number): CapacityVariant {
+  if (availableCapacity <= 0) return committedPoints > 0 ? 'red' : 'yellow';
+  const loadPct = (committedPoints / availableCapacity) * 100;
+  if (loadPct > 100) return 'red';
+  if (loadPct >= 70) return 'blue';
+  return 'yellow';
+}
+
+const variantStyles: Record<CapacityVariant, { button: string; primary: string; secondary: string; detail: string }> = {
+  unset: {
+    button: 'border border-dashed border-slate-300 text-slate-400 hover:border-slate-400 hover:text-slate-600',
+    primary: '',
+    secondary: '',
+    detail: '',
+  },
+  yellow: {
+    button: 'bg-amber-50 hover:bg-amber-100',
+    primary: 'font-semibold text-amber-900',
+    secondary: 'text-amber-700',
+    detail: 'text-amber-600',
+  },
+  blue: {
+    button: 'bg-blue-50 hover:bg-blue-100',
+    primary: 'font-semibold text-blue-900',
+    secondary: 'text-blue-700',
+    detail: 'text-blue-500',
+  },
+  red: {
+    button: 'bg-red-50 hover:bg-red-100',
+    primary: 'font-semibold text-red-900',
+    secondary: 'text-red-700',
+    detail: 'text-red-500',
+  },
+};
+
 interface CapacityFormState {
   team_size: number;
   iteration_days: number;
@@ -157,6 +194,21 @@ export function Capacity() {
         </p>
       </div>
 
+      <div className="mb-3 flex flex-wrap gap-4 text-xs text-slate-500">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-sm bg-amber-100 border border-amber-200" aria-hidden="true" />
+          Under-loaded (&lt;70%)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-sm bg-blue-100 border border-blue-200" aria-hidden="true" />
+          Suitably planned (70–100%)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-200" aria-hidden="true" />
+          Over capacity (&gt;100%)
+        </span>
+      </div>
+
       {nonIpIterations.length === 0 || sortedTeams.length === 0 ? (
         <EmptyState
           message={
@@ -191,30 +243,34 @@ export function Capacity() {
                   </td>
                   {sortedTeams.map((team) => {
                     const plan = planMap[`${team.id}:${iter.id}`];
+                    const committed = storyPts[`${team.id}:${iter.id}`] ?? 0;
+                    const variant = plan ? getCapacityVariant(plan.available_capacity, committed) : 'unset';
+                    const vs = variantStyles[variant];
+                    const loadPct =
+                      plan && plan.available_capacity > 0
+                        ? Math.round((committed / plan.available_capacity) * 100)
+                        : null;
                     return (
                       <td key={team.id} className="px-3 py-2">
                         <button
                           onClick={() => openCell(team.id, iter.id)}
-                          className={`w-full rounded-md px-3 py-2 text-left text-xs transition-colors ${
-                            plan
-                              ? 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                              : 'border border-dashed border-slate-300 text-slate-400 hover:border-slate-400 hover:text-slate-600'
-                          }`}
+                          className={`w-full rounded-md px-3 py-2 text-left text-xs transition-colors ${vs.button}`}
                         >
                           {plan ? (
                             <>
-                              <span className="font-semibold text-slate-900">{plan.available_capacity}</span>
-                              <span className="text-slate-500"> days</span>
-                              <div className="text-xs text-slate-400">
+                              <span className={vs.primary}>{plan.available_capacity}</span>
+                              <span className={vs.secondary}> days</span>
+                              <div className={`text-xs ${vs.detail}`}>
                                 {plan.team_size} ppl · {plan.pto_days}d PTO · {Math.round(plan.overhead_pct * 100)}% OH
                               </div>
                             </>
                           ) : (
                             <span>Not set</span>
                           )}
-                          {(storyPts[`${team.id}:${iter.id}`] ?? 0) > 0 && (
-                            <div className={`mt-0.5 text-xs ${plan ? 'text-slate-500' : 'font-medium text-slate-600'}`}>
-                              {storyPts[`${team.id}:${iter.id}`]} pts committed
+                          {committed > 0 && (
+                            <div className={`mt-0.5 text-xs ${vs.secondary}`}>
+                              {committed} pts committed
+                              {loadPct !== null && ` · ${loadPct}% load`}
                             </div>
                           )}
                         </button>
