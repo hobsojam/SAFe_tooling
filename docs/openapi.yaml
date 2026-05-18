@@ -1477,6 +1477,7 @@ components:
           example: Platform ART
     ARTUpdate:
       type: object
+      additionalProperties: false
       properties:
         name:
           type: string
@@ -1544,6 +1545,7 @@ components:
           nullable: true
     TeamUpdate:
       type: object
+      additionalProperties: false
       properties:
         name:
           type: string
@@ -1621,6 +1623,7 @@ components:
           example: '2026-03-27'
     PIUpdate:
       type: object
+      additionalProperties: false
       description: Status transitions use /activate and /close, not this endpoint.
       properties:
         name:
@@ -1691,6 +1694,7 @@ components:
           default: false
     IterationUpdate:
       type: object
+      additionalProperties: false
       properties:
         number:
           type: integer
@@ -1825,6 +1829,7 @@ components:
           maximum: 13
     FeatureUpdate:
       type: object
+      additionalProperties: false
       properties:
         name:
           type: string
@@ -1933,6 +1938,7 @@ components:
           default: ''
     StoryUpdate:
       type: object
+      additionalProperties: false
       properties:
         name:
           type: string
@@ -2035,6 +2041,7 @@ components:
           default: []
     PIObjectiveUpdate:
       type: object
+      additionalProperties: false
       properties:
         description:
           type: string
@@ -2122,6 +2129,7 @@ components:
           default: ''
     RiskUpdate:
       type: object
+      additionalProperties: false
       properties:
         description:
           type: string
@@ -2217,6 +2225,7 @@ components:
           nullable: true
     DependencyUpdate:
       type: object
+      additionalProperties: false
       properties:
         description:
           type: string
@@ -2324,6 +2333,7 @@ components:
           default: 0.2
     CapacityPlanUpdate:
       type: object
+      additionalProperties: false
       properties:
         team_size:
           type: integer

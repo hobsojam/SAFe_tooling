@@ -1,11 +1,17 @@
 import pytest
 import schemathesis
-from hypothesis import HealthCheck, settings
+from hypothesis import strategies as st
 
 from safe.api.deps import get_repos_dep
 from safe.api.main import app
 from safe.store.db import get_db
 from safe.store.repos import get_repos
+
+# hypothesis-jsonschema has no built-in uuid strategy; without this, path
+# parameters with format:uuid generate arbitrary strings that are almost never
+# valid UUIDs, causing hypothesis to discard them via assume() and trip the
+# filter_too_much health check.
+schemathesis.openapi.format("uuid", st.uuids().map(str))
 
 schema = schemathesis.openapi.from_asgi("/openapi.json", app)
 
@@ -24,7 +30,6 @@ def _fresh_db(tmp_path):
 
 
 @schema.parametrize()
-@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_api_contract(case):
     response = schema.transport.send(case)
     assert response.status_code < 500, (

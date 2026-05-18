@@ -247,6 +247,7 @@ pyproject.toml
 - **API version note**: schemathesis 4.x changed its public API. Always use `schemathesis.openapi.from_asgi()` (not `schemathesis.from_asgi()`). To send a case, use `schema.transport.send(case)` (not `case.call_asgi()`).
 - The test injects a fresh `tmp_path` TinyDB via `app.dependency_overrides` — same pattern as `test_api_*.py` — so it never touches the real database.
 - The app uses **OpenAPI 3.1.0**; schemathesis < 4.0 does not support OAS 3.1. Do not downgrade the pinned version.
+- **`FailedHealthCheck: Too many generated examples are filtered out`** means Hypothesis is discarding too many generated inputs via internal `assume()` calls. The usual cause for PATCH endpoints is an `*Update` schema with very few optional fields and no `minProperties` constraint — Hypothesis generates empty `{}` bodies, schemathesis filters them out as degenerate, and the discard rate crosses the threshold. **Fix: add `minProperties: 1` to the offending `*Update` schema in `docs/openapi.yaml`.** Do not suppress the health check with `@settings(suppress_health_check=...)` — that hides the root cause without fixing it.
 
 **Testing standards — follow the test pyramid**
 
