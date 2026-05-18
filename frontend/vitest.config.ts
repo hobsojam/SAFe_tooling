@@ -15,13 +15,14 @@ export default defineConfig({
       exclude: ['**/__tests__/**', '**/*.test.{ts,tsx}'],
       reporter: ['json-summary', 'json', 'text', 'lcov'],
       reportOnFailure: true,
-      // Baseline thresholds — raise these as more page tests are added.
-      // SonarCloud enforces 80% coverage on *new* code; these guard the aggregate floor.
+      // Coverage floors — prevent regressions and guide toward the SAFe tooling quality target.
+      // Current suite covers all pages and core components. Raise these as coverage improves.
+      // Long-term target: 60% across all metrics (blocked by Board.tsx at ~13%).
       thresholds: {
-        lines: 8,
-        branches: 5,
-        functions: 8,
-        statements: 8,
+        lines: 50,
+        branches: 52,
+        functions: 38,
+        statements: 48,
       },
     },
   },

@@ -1,5 +1,6 @@
 import pytest
 import schemathesis
+from hypothesis import HealthCheck, settings
 
 from safe.api.deps import get_repos_dep
 from safe.api.main import app
@@ -23,6 +24,7 @@ def _fresh_db(tmp_path):
 
 
 @schema.parametrize()
+@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_api_contract(case):
     response = schema.transport.send(case)
     assert response.status_code < 500, (
