@@ -102,6 +102,27 @@ describe('TeamSetup', () => {
     expect(artSelects.length).toBe(2);
   });
 
+  it('changing ART select fires onChange and updates selection', async () => {
+    const user = userEvent.setup();
+    render(<TeamSetup />);
+    await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+    const artSelects = screen.getAllByRole('combobox', { name: /ART/i });
+    await user.selectOptions(artSelects[0], 'art-2');
+    expect((artSelects[0] as HTMLSelectElement).value).toBe('art-2');
+  });
+
+  it('submitting edit form calls mutate with art_id', async () => {
+    const mutate = vi.fn();
+    vi.mocked(useMutation).mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<typeof useMutation>);
+    const user = userEvent.setup();
+    render(<TeamSetup />);
+    await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+    await user.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ body: expect.objectContaining({ art_id: 'art-1' }) }),
+    );
+  });
+
   it('shows loading spinner when data is loading', () => {
     vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
       const key = (queryKey as string[])[0];
