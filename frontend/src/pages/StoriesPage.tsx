@@ -252,7 +252,7 @@ export function StoriesPage() {
                       {teamMap[s.team_id] ?? s.team_id}
                     </td>
                     <td className="px-4 py-2.5 text-slate-500">
-                      {s.iteration_id ? (iterationMap[s.iteration_id] ?? s.iteration_id) : '—'}
+                      {s.iteration_id ? iterationMap[s.iteration_id] ?? s.iteration_id : '—'}
                     </td>
                     <td className="px-4 py-2.5 tabular-nums text-slate-500">{s.points}</td>
                     <td className="px-4 py-2.5">
@@ -394,7 +394,11 @@ export function StoriesPage() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : editing ? 'Save Changes' : 'Add Story'}
+              {(() => {
+                if (isPending) return 'Saving…';
+                if (editing) return 'Save Changes';
+                return 'Add Story';
+              })()}
             </button>
           </div>
         </form>

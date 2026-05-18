@@ -34,7 +34,8 @@ const EMPTY_FORM: DepFormState = {
 };
 
 function featureLabel(feature: Feature, teamMap: Record<string, string>): string {
-  const team = feature.team_id ? (teamMap[feature.team_id] ?? '') : '';
+  if (!feature.team_id) return feature.name;
+  const team = teamMap[feature.team_id] ?? '';
   return team ? `${feature.name} (${team})` : feature.name;
 }
 
@@ -474,7 +475,11 @@ export function Dependencies() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : editing ? 'Save Changes' : 'Add Dependency'}
+              {(() => {
+                if (isPending) return 'Saving…';
+                if (editing) return 'Save Changes';
+                return 'Add Dependency';
+              })()}
             </button>
           </div>
         </form>
