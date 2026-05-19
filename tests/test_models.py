@@ -151,7 +151,7 @@ class TestFeature:
         assert self._make().cost_of_delay == 16
 
     def test_computed_wsjf_score(self):
-        assert self._make().wsjf_score == 4.0
+        assert self._make().wsjf_score == pytest.approx(4.0)
 
     def test_wsjf_rounding(self):
         # CoD = 10, size = 3 → 3.33
@@ -161,7 +161,7 @@ class TestFeature:
             risk_reduction_opportunity_enablement=3,
             job_size=3,
         )
-        assert f.wsjf_score == round(10 / 3, 2)
+        assert f.wsjf_score == pytest.approx(round(10 / 3, 2))
 
     def test_maximum_wsjf(self):
         f = self._make(
@@ -171,7 +171,7 @@ class TestFeature:
             job_size=1,
         )
         assert f.cost_of_delay == 30
-        assert f.wsjf_score == 30.0
+        assert f.wsjf_score == pytest.approx(30.0)
 
     def test_ubv_minimum(self):
         with pytest.raises(ValidationError):
@@ -403,20 +403,20 @@ class TestCapacityPlan:
     def test_defaults(self):
         cp = self._make()
         assert cp.iteration_days == 10
-        assert cp.pto_days == 0.0
-        assert cp.overhead_pct == 0.2
+        assert cp.pto_days == pytest.approx(0.0)
+        assert cp.overhead_pct == pytest.approx(0.2)
 
     def test_available_capacity_default(self):
         # 5 × 10 × 0.8 = 40.0
-        assert self._make().available_capacity == 40.0
+        assert self._make().available_capacity == pytest.approx(40.0)
 
     def test_available_capacity_with_pto(self):
         # (5×10 - 5) × 0.8 = 36.0
-        assert self._make(pto_days=5.0).available_capacity == 36.0
+        assert self._make(pto_days=5.0).available_capacity == pytest.approx(36.0)
 
     def test_available_capacity_zero_overhead(self):
         # 5 × 10 × 1.0 = 50.0
-        assert self._make(overhead_pct=0.0).available_capacity == 50.0
+        assert self._make(overhead_pct=0.0).available_capacity == pytest.approx(50.0)
 
     def test_team_size_minimum(self):
         with pytest.raises(ValidationError):

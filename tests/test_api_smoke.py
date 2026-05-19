@@ -3,6 +3,8 @@ End-to-end smoke test: creates a full PI planning scenario and verifies
 the complete flow from ART creation through predictability calculation.
 """
 
+import pytest
+
 
 def test_full_pi_planning_flow(client):
     # 1. Create ART
@@ -65,7 +67,7 @@ def test_full_pi_planning_flow(client):
             "job_size": 4,
         },
     ).json()
-    assert f1["wsjf_score"] == 4.0
+    assert f1["wsjf_score"] == pytest.approx(4.0)
     assert f1["cost_of_delay"] == 16
 
     f2 = client.post(
@@ -174,5 +176,5 @@ def test_full_pi_planning_flow(client):
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["score_pct"] == 85.7
+    assert body["score_pct"] == pytest.approx(85.7)
     assert body["rating"] == "green"

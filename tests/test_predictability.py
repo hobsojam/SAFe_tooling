@@ -4,11 +4,11 @@ from safe.logic.predictability import art_predictability, predictability_rating,
 
 
 def test_team_predictability_perfect():
-    assert team_predictability(10, 10) == 100.0
+    assert team_predictability(10, 10) == pytest.approx(100.0)
 
 
 def test_team_predictability_partial():
-    assert team_predictability(8, 10) == 80.0
+    assert team_predictability(8, 10) == pytest.approx(80.0)
 
 
 def test_team_predictability_zero_planned():
@@ -18,7 +18,7 @@ def test_team_predictability_zero_planned():
 
 def test_art_predictability():
     pairs = [(8, 10), (9, 10)]
-    assert art_predictability(pairs) == 85.0
+    assert art_predictability(pairs) == pytest.approx(85.0)
 
 
 def test_predictability_rating_green():

@@ -4,19 +4,19 @@ from safe.logic.capacity import available_capacity, capacity_warning, load_perce
 
 
 def test_available_capacity_basic():
-    assert available_capacity(5, 10, 0.0, 0.2) == 40.0
+    assert available_capacity(5, 10, 0.0, 0.2) == pytest.approx(40.0)
 
 
 def test_available_capacity_with_pto():
-    assert available_capacity(5, 10, 5.0, 0.2) == 36.0
+    assert available_capacity(5, 10, 5.0, 0.2) == pytest.approx(36.0)
 
 
 def test_load_percentage():
-    assert load_percentage(30.0, 40.0) == 75.0
+    assert load_percentage(30.0, 40.0) == pytest.approx(75.0)
 
 
 def test_load_overloaded():
-    assert load_percentage(45.0, 40.0) == 112.5
+    assert load_percentage(45.0, 40.0) == pytest.approx(112.5)
 
 
 def test_capacity_warning_overloaded():

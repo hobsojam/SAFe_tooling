@@ -8,11 +8,11 @@ def test_cost_of_delay():
 
 
 def test_wsjf_basic():
-    assert wsjf(8, 5, 3, 4) == 4.0
+    assert wsjf(8, 5, 3, 4) == pytest.approx(4.0)
 
 
 def test_wsjf_rounding():
-    assert wsjf(7, 5, 3, 3) == 5.0
+    assert wsjf(7, 5, 3, 3) == pytest.approx(5.0)
 
 
 def test_wsjf_zero_job_size():
