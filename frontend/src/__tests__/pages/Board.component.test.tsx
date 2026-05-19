@@ -114,7 +114,7 @@ describe('Board page', () => {
   });
 
   it('applies bg-blue-50 to DroppableCell and UnassignedDropZone when isOver', () => {
-    vi.mocked(useDroppable).mockReturnValue({ setNodeRef: vi.fn(), isOver: true });
+    vi.mocked(useDroppable).mockReturnValue({ setNodeRef: vi.fn(), isOver: true } as any);
     setupBoardMocks();
     const { container } = render(<Board />);
     const overCells = container.querySelectorAll('[class*="bg-blue-50"]');
