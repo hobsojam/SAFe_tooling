@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { useDroppable } from '@dnd-kit/core';
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
 
 // jsdom does not implement ResizeObserver
@@ -110,5 +111,13 @@ describe('Board page', () => {
     setupBoardMocks({ teams: [] });
     render(<Board />);
     expect(screen.getByText(/No teams configured/)).toBeInTheDocument();
+  });
+
+  it('applies bg-blue-50 to DroppableCell and UnassignedDropZone when isOver', () => {
+    vi.mocked(useDroppable).mockReturnValue({ setNodeRef: vi.fn(), isOver: true });
+    setupBoardMocks();
+    const { container } = render(<Board />);
+    const overCells = container.querySelectorAll('[class*="bg-blue-50"]');
+    expect(overCells.length).toBeGreaterThan(0);
   });
 });
