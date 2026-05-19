@@ -160,6 +160,9 @@ export function Objectives() {
   }
 
   const isPending = createMut.isPending || updateMut.isPending;
+  let submitLabel: string;
+  if (isPending) submitLabel = 'Saving…';
+  else submitLabel = editing ? 'Save Changes' : 'Add Objective';
 
   return (
     <div className="p-3 sm:p-6">
@@ -192,7 +195,7 @@ export function Objectives() {
                   <div key={obj.id} className="bg-red-50 px-4 py-4">
                     {deleteError && <p className="mb-2 text-xs text-red-600">{deleteError}</p>}
                     <p className="mb-3 text-sm text-slate-700">
-                      Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
+                      Delete <strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -227,8 +230,8 @@ export function Objectives() {
                     <span className="text-xs text-slate-500">{teamMap[obj.team_id] ?? '—'}</span>
                   </div>
                   <div className="mb-3 flex gap-6 text-xs text-slate-500">
-                    <span>Planned BV:{' '}<strong className="text-slate-700">{obj.planned_business_value}</strong></span>
-                    <span>Actual BV:{' '}<strong className="text-slate-700">
+                    <span>Planned BV: <strong className="text-slate-700">{obj.planned_business_value}</strong></span>
+                    <span>Actual BV: <strong className="text-slate-700">
                       {obj.actual_business_value !== null ? obj.actual_business_value : '—'}
                     </strong></span>
                   </div>
@@ -255,8 +258,8 @@ export function Objectives() {
                   Committed totals · {scoredCommitted.length} of {committed.length} scored
                 </p>
                 <div className="flex items-center gap-6 text-sm">
-                  <span className="text-slate-600">Planned:{' '}<strong className="text-slate-800">{committedPlannedBV}</strong></span>
-                  <span className="text-slate-600">Actual:{' '}<strong className="text-slate-800">{scoredCommitted.length > 0 ? committedActualBV : '—'}</strong></span>
+                  <span className="text-slate-600">Planned: <strong className="text-slate-800">{committedPlannedBV}</strong></span>
+                  <span className="text-slate-600">Actual: <strong className="text-slate-800">{scoredCommitted.length > 0 ? committedActualBV : '—'}</strong></span>
                   {predictabilityPct !== null && (
                     <span className={predictabilityClass(predictabilityPct)}>{predictabilityPct}%</span>
                   )}
@@ -284,7 +287,7 @@ export function Objectives() {
                           <div className="flex items-center gap-3">
                             {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
                             <span className="text-sm text-slate-700">
-                              Delete{' '}<strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
+                              Delete <strong>{obj.description.slice(0, 50)}{obj.description.length > 50 ? '…' : ''}</strong>?
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(obj.id)}
@@ -317,7 +320,7 @@ export function Objectives() {
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">{teamMap[obj.team_id] ?? '—'}</td>
                       <td className="px-4 py-2.5">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${obj.is_stretch ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                        <span className={objectiveTypeBadgeClass(obj.is_stretch)}>
                           {obj.is_stretch ? 'Stretch' : 'Committed'}
                         </span>
                       </td>
@@ -470,11 +473,7 @@ export function Objectives() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {(() => {
-                if (isPending) return 'Saving…';
-                if (editing) return 'Save Changes';
-                return 'Add Objective';
-              })()}
+              {submitLabel}
             </button>
           </div>
         </form>
