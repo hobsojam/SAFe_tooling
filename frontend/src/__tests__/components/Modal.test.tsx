@@ -97,7 +97,7 @@ describe('Modal', () => {
         content
       </Modal>,
     );
-    fireEvent.click(screen.getByRole('dialog'));
+    fireEvent.click(screen.getByText('content'));
     expect(onClose).not.toHaveBeenCalled();
   });
 });
