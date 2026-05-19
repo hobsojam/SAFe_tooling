@@ -100,4 +100,19 @@ describe('Modal', () => {
     fireEvent.click(screen.getByText('content'));
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('closes the dialog when transitioning from open to closed', () => {
+    const { rerender } = render(
+      <Modal open={true} title="Test" onClose={() => {}}>
+        content
+      </Modal>,
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    rerender(
+      <Modal open={false} title="Test" onClose={() => {}}>
+        content
+      </Modal>,
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });
