@@ -133,7 +133,7 @@ def test_computed_fields_available_after_load(db: TinyDB) -> None:
     )
     repo.save(feature)
     loaded = repo.get(feature.id)
-    assert loaded.wsjf_score == 4.0
+    assert loaded.wsjf_score == pytest.approx(4.0)
     assert loaded.cost_of_delay == 16
 
 
@@ -153,7 +153,7 @@ def test_capacity_plan_computed_reloads(db: TinyDB) -> None:
     plan = CapacityPlan(team_id="t1", iteration_id="i1", pi_id="p1", team_size=5)
     repo.save(plan)
     loaded = repo.get(plan.id)
-    assert loaded.available_capacity == 40.0
+    assert loaded.available_capacity == pytest.approx(40.0)
 
 
 # --- Date serialisation round-trip ---

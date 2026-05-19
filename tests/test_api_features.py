@@ -1,3 +1,5 @@
+import pytest
+
 FEATURE_BASE = {
     "name": "Auth Service",
     "user_business_value": 8,
@@ -29,7 +31,7 @@ class TestFeatureCreate:
         body = r.json()
         assert body["name"] == "Auth Service"
         assert body["cost_of_delay"] == 16
-        assert body["wsjf_score"] == 4.0
+        assert body["wsjf_score"] == pytest.approx(4.0)
 
     def test_computed_fields_present(self, client):
         body = _create_feature(client).json()
@@ -107,7 +109,7 @@ class TestFeaturePatch:
     def test_patch_recalculates_wsjf(self, client):
         fid = _create_feature(client).json()["id"]
         r = client.patch(f"/features/{fid}", json={"job_size": 8})
-        assert r.json()["wsjf_score"] == 2.0
+        assert r.json()["wsjf_score"] == pytest.approx(2.0)
 
     def test_patch_iteration_id(self, client):
         fid = _create_feature(client).json()["id"]

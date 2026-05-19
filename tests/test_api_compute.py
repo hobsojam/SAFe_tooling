@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_predictability_green(client):
     r = client.post(
         "/compute/predictability",
@@ -10,7 +13,7 @@ def test_predictability_green(client):
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["score_pct"] == 88.9
+    assert body["score_pct"] == pytest.approx(88.9)
     assert body["rating"] == "green"
 
 

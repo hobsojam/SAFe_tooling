@@ -7,10 +7,9 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { Fragment } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api';
 import { DepBadge, FeatureStatusBadge, TopologyBadge } from '../components/Badge';

@@ -1,10 +1,10 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
 interface Props {
-  open: boolean;
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
+  readonly open: boolean;
+  readonly title: string;
+  readonly onClose: () => void;
+  readonly children: ReactNode;
 }
 
 export function Modal({ open, title, onClose, children }: Props) {
@@ -13,28 +13,30 @@ export function Modal({ open, title, onClose, children }: Props) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (open) {
-      if (!el.open) el.showModal();
-    } else {
-      if (el.open) el.close();
+    if (open && !el.open) {
+      el.showModal();
+    } else if (!open && el.open) {
+      el.close();
     }
   }, [open]);
 
   return (
     <dialog
       ref={ref}
-      role="presentation"
+      aria-modal="true"
+      aria-labelledby="modal-title"
       className="m-0 h-dvh w-screen max-h-none max-w-none bg-transparent p-0 [&::backdrop]:bg-black/40"
       onCancel={onClose}
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') e.stopPropagation();
+      }}
     >
       <div className="flex h-full items-center justify-center">
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
           className="relative mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl"
-          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
             <h2 id="modal-title" className="text-base font-semibold text-slate-800">{title}</h2>

@@ -97,7 +97,35 @@ describe('Modal', () => {
         content
       </Modal>,
     );
-    fireEvent.click(screen.getByRole('dialog'));
+    fireEvent.click(screen.getByText('content'));
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('does not propagate Escape keydown (handled by onCancel)', () => {
+    render(
+      <Modal open={true} title="Test" onClose={() => {}}>
+        content
+      </Modal>,
+    );
+    const dialog = screen.getByRole('dialog');
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+    const stopPropagation = vi.spyOn(event, 'stopPropagation');
+    dialog.dispatchEvent(event);
+    expect(stopPropagation).toHaveBeenCalled();
+  });
+
+  it('closes the dialog when transitioning from open to closed', () => {
+    const { rerender } = render(
+      <Modal open={true} title="Test" onClose={() => {}}>
+        content
+      </Modal>,
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    rerender(
+      <Modal open={false} title="Test" onClose={() => {}}>
+        content
+      </Modal>,
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
