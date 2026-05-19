@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
 
-// jsdom does not implement ResizeObserver or requestAnimationFrame
+// jsdom does not implement ResizeObserver
 beforeAll(() => {
-  global.ResizeObserver = class {
+  globalThis.ResizeObserver = class {
     observe() {}
     unobserve() {}
     disconnect() {}
