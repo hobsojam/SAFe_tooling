@@ -505,7 +505,7 @@ export function Backlog() {
   }
 
   function handleDelete(id: string) {
-    if (!window.confirm('Delete this feature?')) return;
+    if (!globalThis.confirm('Delete this feature?')) return;
     deleteMut.mutate(id);
   }
 
@@ -514,6 +514,9 @@ export function Backlog() {
   }
 
   const isPending = createMut.isPending || updateMut.isPending;
+  let featureSubmitLabel: string;
+  if (isPending) featureSubmitLabel = 'Saving…';
+  else featureSubmitLabel = editing ? 'Save Changes' : 'Add Feature';
 
   function numInput(label: string, key: NumKey, min: number, max: number) {
     const id = `feature-${key.replace(/_/g, '-')}`;
@@ -779,11 +782,7 @@ export function Backlog() {
               disabled={isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {(() => {
-                if (isPending) return 'Saving…';
-                if (editing) return 'Save Changes';
-                return 'Add Feature';
-              })()}
+              {featureSubmitLabel}
             </button>
           </div>
         </form>

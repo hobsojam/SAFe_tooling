@@ -80,10 +80,11 @@ function DraggableFeatureCard({ feature, atRisk }: Readonly<{ feature: Feature; 
 
 function DroppableCell({ id, children }: Readonly<{ id: string; children: React.ReactNode }>) {
   const { setNodeRef, isOver } = useDroppable({ id });
+  const overCls = isOver ? ' bg-blue-50' : '';
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[4rem] p-2 space-y-1.5 border-r border-slate-100 transition-colors ${isOver ? 'bg-blue-50' : ''}`}
+      className={`min-h-[4rem] p-2 space-y-1.5 border-r border-slate-100 transition-colors${overCls}`}
     >
       {children}
     </div>
@@ -92,10 +93,11 @@ function DroppableCell({ id, children }: Readonly<{ id: string; children: React.
 
 function UnassignedDropZone({ children }: Readonly<{ children: React.ReactNode }>) {
   const { setNodeRef, isOver } = useDroppable({ id: 'unassigned' });
+  const overCls = isOver ? ' bg-blue-50 ring-2 ring-blue-200' : '';
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[3rem] rounded-md transition-colors ${isOver ? 'bg-blue-50 ring-2 ring-blue-200' : ''}`}
+      className={`min-h-[3rem] rounded-md transition-colors${overCls}`}
     >
       {children}
     </div>

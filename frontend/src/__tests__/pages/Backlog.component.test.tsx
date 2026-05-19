@@ -107,6 +107,48 @@ describe('Backlog page', () => {
     expect(screen.getByText('Iter 1')).toBeInTheDocument();
   });
 
+  it('calls delete mutation when user confirms deletion', async () => {
+    vi.stubGlobal('confirm', () => true);
+    const { mutate } = setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'features') return [baseFeature];
+        if (key === 'teams') return mockTeams;
+        if (key === 'iterations') return [mockIteration];
+        if (key === 'stories') return [];
+        return undefined;
+      },
+    );
+    const user = userEvent.setup();
+    render(<Backlog />);
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    await user.click(deleteButtons[0]);
+    expect(mutate).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it('does not call delete mutation when user cancels deletion', async () => {
+    vi.stubGlobal('confirm', () => false);
+    const { mutate } = setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'features') return [baseFeature];
+        if (key === 'teams') return mockTeams;
+        if (key === 'iterations') return [mockIteration];
+        if (key === 'stories') return [];
+        return undefined;
+      },
+    );
+    const user = userEvent.setup();
+    render(<Backlog />);
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    await user.click(deleteButtons[0]);
+    expect(mutate).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
   it('StoryPanel shows "—" for story with no iteration_id', async () => {
     const storyNoIteration = { ...baseStory, iteration_id: null };
     setupPageMocks({ features: [baseFeature], featureStories: [storyNoIteration] });

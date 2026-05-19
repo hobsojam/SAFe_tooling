@@ -91,4 +91,40 @@ describe('Objectives page', () => {
     await user.click(screen.getByRole('button', { name: '+ New Objective' }));
     expect(screen.getByRole('button', { name: 'Saving…' })).toBeInTheDocument();
   });
+
+  it('shows delete confirmation with short description when Delete clicked', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    await user.click(deleteButtons[0]);
+    expect(screen.getAllByText(/Deliver auth service/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('truncates long description with ellipsis in delete confirmation', async () => {
+    const longDesc = 'A'.repeat(60);
+    const objLong = makePIObjective({ id: 'obj-long', description: longDesc, team_id: 'team-1', pi_id: 'pi-1' });
+    setupQueryMocks({ pi: mockPI, objectives: [objLong], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    await user.click(deleteButtons[0]);
+    expect(document.body.textContent).toContain('…');
+  });
+
+  it('shows actual business value when committed objectives are scored', () => {
+    const scoredObj = makePIObjective({
+      id: 'obj-scored',
+      description: 'Scored objective',
+      team_id: 'team-1',
+      pi_id: 'pi-1',
+      planned_business_value: 8,
+      actual_business_value: 7,
+      is_stretch: false,
+      is_committed: true,
+    });
+    setupQueryMocks({ pi: mockPI, objectives: [scoredObj], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.getAllByText('7').length).toBeGreaterThanOrEqual(1);
+  });
 });
