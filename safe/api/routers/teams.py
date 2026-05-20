@@ -66,7 +66,7 @@ def get_team(team_id: str, repos: ReposDep):
     return _get_or_404(repos, team_id)
 
 
-@router.patch("/{team_id}", response_model=Team)
+@router.patch("/{team_id}", response_model=Team, responses={404: {"description": "Not found"}})
 def update_team(team_id: str, body: TeamUpdate, repos: ReposDep):
     team = _get_or_404(repos, team_id)
     update_data = body.model_dump(exclude_unset=True)

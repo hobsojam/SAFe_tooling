@@ -53,7 +53,7 @@ def get_story(story_id: str, repos: ReposDep):
     return _get_or_404(repos, story_id)
 
 
-@router.patch("/{story_id}", response_model=Story)
+@router.patch("/{story_id}", response_model=Story, responses={404: {"description": "Not found"}})
 def update_story(story_id: str, body: StoryUpdate, repos: ReposDep):
     story = _get_or_404(repos, story_id)
     update_data = body.model_dump(exclude_unset=True)
