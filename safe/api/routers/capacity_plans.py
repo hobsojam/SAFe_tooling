@@ -44,7 +44,7 @@ def list_capacity_plans(
     return repos.capacity_plans.find(**filters) if filters else repos.capacity_plans.get_all()
 
 
-@router.post("/seed", status_code=201)
+@router.post("/seed", status_code=201, responses={404: {"description": "Not found"}})
 def seed_capacity_plans(body: CapacityPlanSeed, repos: ReposDep) -> dict[str, int]:
     pi = repos.pis.get(body.pi_id)
     if pi is None:
@@ -72,7 +72,12 @@ def seed_capacity_plans(body: CapacityPlanSeed, repos: ReposDep) -> dict[str, in
     return {"created": created_count, "skipped": skipped_count}
 
 
-@router.post("", response_model=CapacityPlan, status_code=201)
+@router.post(
+    "",
+    response_model=CapacityPlan,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_or_update_capacity_plan(body: CapacityPlanCreate, repos: ReposDep):
     if repos.pis.get(body.pi_id) is None:
         raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")

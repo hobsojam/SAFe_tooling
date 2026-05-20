@@ -32,7 +32,12 @@ def list_risks(
     return repos.risks.find(**filters) if filters else repos.risks.get_all()
 
 
-@router.post("", response_model=Risk, status_code=201)
+@router.post(
+    "",
+    response_model=Risk,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_risk(body: RiskCreate, repos: ReposDep):
     if repos.pis.get(body.pi_id) is None:
         raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")

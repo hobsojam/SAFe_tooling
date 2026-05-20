@@ -32,7 +32,12 @@ def list_objectives(
     return repos.objectives.find(**filters) if filters else repos.objectives.get_all()
 
 
-@router.post("", response_model=PIObjective, status_code=201)
+@router.post(
+    "",
+    response_model=PIObjective,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_objective(body: PIObjectiveCreate, repos: ReposDep):
     if repos.pis.get(body.pi_id) is None:
         raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")

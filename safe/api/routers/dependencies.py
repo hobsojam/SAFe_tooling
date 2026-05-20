@@ -35,7 +35,12 @@ def list_dependencies(
     return deps
 
 
-@router.post("", response_model=Dependency, status_code=201)
+@router.post(
+    "",
+    response_model=Dependency,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_dependency(body: DependencyCreate, repos: ReposDep):
     if repos.features.get(body.from_feature_id) is None:
         raise HTTPException(status_code=404, detail=f"Feature '{body.from_feature_id}' not found")
