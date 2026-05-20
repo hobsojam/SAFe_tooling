@@ -271,7 +271,7 @@ function StoryPanel({
                         {(() => {
                           if (!story.iteration_id) return '—';
                           const iter = nonIpIterations.find((i) => i.id === story.iteration_id);
-                          return iter != null ? `Iter ${iter.number}` : '—';
+                          return iter == null ? '—' : `Iter ${iter.number}`;
                         })()}
                       </td>
                       <td className="px-3 py-2 tabular-nums text-slate-700">{story.points}</td>

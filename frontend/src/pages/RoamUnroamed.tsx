@@ -99,7 +99,7 @@ export function RoamUnroamed() {
           ROAM Unroamed Risks — {pi?.name}
         </h1>
         <p className="text-sm text-slate-500">
-          {unroamed.length} risk{unroamed.length !== 1 ? 's' : ''} need attention
+          {unroamed.length} risk{unroamed.length === 1 ? '' : 's'} need attention
         </p>
       </div>
 
