@@ -73,8 +73,8 @@ test('iteration form requires dates', async ({ page }) => {
 
 test('can add a new iteration', async ({ page }) => {
   await page.getByRole('button', { name: '+ Add' }).click();
-  await page.getByLabel('Start Date').fill('2026-03-16');
-  await page.getByLabel('End Date').fill('2026-03-27');
+  await page.getByLabel('Start Date').fill('2026-01-12');
+  await page.getByLabel('End Date').fill('2026-01-23');
   await page.getByRole('button', { name: 'Add Iteration' }).click();
   await expect(page.getByRole('heading', { name: 'New Iteration' })).not.toBeVisible();
   // Now 6 rows
