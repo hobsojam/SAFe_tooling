@@ -8,8 +8,8 @@ from safe.api.deps import (
     _dev_session_file,
     _is_hot_reload,
     _write_dev_session,
-    clear_cache,
     get_repos_dep,
+    reload_db,
 )
 
 
@@ -52,19 +52,29 @@ class TestGetReposDep:
             next(gen)
 
 
-class TestClearCache:
-    def test_no_op_when_db_is_none(self, monkeypatch):
-        monkeypatch.setattr(deps_module, "_db", None)
-        clear_cache()  # must not raise
+class TestReloadDb:
+    def test_raises_when_db_path_is_none(self, monkeypatch):
+        monkeypatch.setattr(deps_module, "_db_path", None)
+        with pytest.raises(RuntimeError, match="Database path not initialised"):
+            reload_db()
 
-    def test_clears_all_table_caches(self, monkeypatch):
-        mock_table = MagicMock()
+    def test_closes_existing_db_and_reopens(self, monkeypatch, tmp_path):
+        db_path = tmp_path / "db.json"
+        db_path.write_text("{}")
         mock_db = MagicMock()
-        mock_db.tables.return_value = ["_default", "features"]
-        mock_db.table.return_value = mock_table
         monkeypatch.setattr(deps_module, "_db", mock_db)
+        monkeypatch.setattr(deps_module, "_db_path", db_path)
 
-        clear_cache()
+        reload_db()
 
-        assert mock_db.table.call_count == 2
-        assert mock_table.clear_cache.call_count == 2
+        mock_db.close.assert_called_once()
+
+    def test_opens_fresh_db_when_db_is_none(self, monkeypatch, tmp_path):
+        db_path = tmp_path / "db.json"
+        db_path.write_text("{}")
+        monkeypatch.setattr(deps_module, "_db", None)
+        monkeypatch.setattr(deps_module, "_db_path", db_path)
+
+        reload_db()  # must not raise; no close() to call when _db is None
+
+        assert deps_module._db is not None

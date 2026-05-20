@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { goToPage, resetDb, selectPI } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  resetDb();
+  await resetDb();
   await selectPI(page);
   await goToPage(page, 'Backlog');
 });
@@ -23,7 +23,7 @@ test('create form requires name', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Feature' }).click();
   await page.getByLabel('Name').clear();
   await page.getByRole('button', { name: 'Add Feature' }).click();
-  await expect(page.getByText('Feature name is required.')).toBeVisible();
+  await expect(page.getByText('Feature name is required.').first()).toBeVisible();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
@@ -36,7 +36,7 @@ test('can create a new feature', async ({ page }) => {
   await page.getByLabel('Job Size').fill('3');
   await page.getByRole('button', { name: 'Add Feature' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  await expect(page.getByText('Mobile App Redesign')).toBeVisible();
+  await expect(page.getByRole('row', { name: /Mobile App Redesign/ })).toBeVisible();
 });
 
 test('WSJF score is computed and shown after creation', async ({ page }) => {
@@ -66,7 +66,7 @@ test('can edit a feature name', async ({ page }) => {
   await page.getByLabel('Name').fill('CI/CD Pipeline Upgrade v2');
   await page.getByRole('button', { name: 'Save Changes' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  await expect(page.getByText('CI/CD Pipeline Upgrade v2')).toBeVisible();
+  await expect(page.getByRole('row', { name: /CI\/CD Pipeline Upgrade v2/ })).toBeVisible();
 });
 
 test('can edit a feature status', async ({ page }) => {
@@ -86,10 +86,10 @@ test('can delete a newly created feature', async ({ page }) => {
   await page.getByLabel('Risk Reduction / OE').fill('1');
   await page.getByLabel('Job Size').fill('1');
   await page.getByRole('button', { name: 'Add Feature' }).click();
-  await expect(page.getByText('TEMP: to be deleted')).toBeVisible();
+  await expect(page.getByRole('row', { name: /TEMP: to be deleted/ })).toBeVisible();
 
   const row = page.getByRole('row', { name: /TEMP: to be deleted/ });
   page.once('dialog', (d) => d.accept());
-  await row.getByRole('button', { name: 'Delete' }).click();
-  await expect(page.getByText('TEMP: to be deleted')).not.toBeVisible();
+  await row.getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(page.getByRole('row', { name: /TEMP: to be deleted/ })).not.toBeVisible();
 });

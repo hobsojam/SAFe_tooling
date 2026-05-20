@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { resetDb, selectPI } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  resetDb();
+  await resetDb();
   // Navigate via sidebar — ART Setup is always visible, no PI required
   await page.goto('/');
   await page.getByRole('link', { name: 'ART Setup' }).click();
@@ -18,9 +18,9 @@ test('shows fixture ART', async ({ page }) => {
 });
 
 test('shows team count for the fixture ART', async ({ page }) => {
-  // Fixture has 2 teams in Platform ART
+  // Fixture has 4 teams in Platform ART
   const row = page.getByRole('row', { name: /Platform ART/ });
-  await expect(row.getByRole('cell', { name: '2' })).toBeVisible();
+  await expect(row.getByRole('cell', { name: '4' })).toBeVisible();
 });
 
 test('ART Setup link is visible without a PI selected', async ({ page }) => {
@@ -44,7 +44,7 @@ test('add form requires a name', async ({ page }) => {
   await page.getByRole('button', { name: '+ Add ART' }).click();
   await page.getByLabel('Name').clear();
   await page.getByRole('button', { name: 'Add ART' }).click();
-  await expect(page.getByText('Name is required.')).toBeVisible();
+  await expect(page.getByText('Name is required.').first()).toBeVisible();
 });
 
 test('can add a new ART', async ({ page }) => {
@@ -86,7 +86,7 @@ test('Cancel edit restores read-only row', async ({ page }) => {
 test('Delete button shows inline confirmation', async ({ page }) => {
   const row = page.getByRole('row', { name: /Platform ART/ });
   await row.getByRole('button', { name: 'Delete' }).click();
-  await expect(page.getByText(/Delete.*Platform ART/)).toBeVisible();
+  await expect(page.getByText(/Delete.*Platform ART/).first()).toBeVisible();
 });
 
 test('Cancel delete dismisses confirmation', async ({ page }) => {

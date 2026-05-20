@@ -13,21 +13,23 @@ test('shows risk register heading with PI name', async ({ page }) => {
 
 test('shows unroamed count callout', async ({ page }) => {
   // r1 is unroamed; r2 is mitigated; r3 is owned
-  await expect(page.getByText('1 unroamed')).toBeVisible();
+  await expect(page.getByText('1 unroamed').first()).toBeVisible();
 });
 
 test('shows all three risks', async ({ page }) => {
+  const table = page.locator('table');
   await expect(
-    page.getByText('Auth service external dependency may be unavailable during Iteration 1'),
+    table.getByText('Auth service external dependency may be unavailable during Iteration 1'),
   ).toBeVisible();
-  await expect(page.getByText('SAML library upgrade introduces breaking changes')).toBeVisible();
-  await expect(page.getByText('Grafana Cloud trial expires mid-PI')).toBeVisible();
+  await expect(table.getByText('SAML library upgrade introduces breaking changes')).toBeVisible();
+  await expect(table.getByText('Grafana Cloud trial expires mid-PI')).toBeVisible();
 });
 
 test('shows correct ROAM badges', async ({ page }) => {
-  await expect(page.getByText('unroamed', { exact: true })).toBeVisible();
-  await expect(page.getByText('mitigated', { exact: true })).toBeVisible();
-  await expect(page.getByText('owned', { exact: true })).toBeVisible();
+  const table = page.locator('table');
+  await expect(table.getByText('unroamed', { exact: true })).toBeVisible();
+  await expect(table.getByText('mitigated', { exact: true })).toBeVisible();
+  await expect(table.getByText('owned', { exact: true })).toBeVisible();
 });
 
 test('shows owner names', async ({ page }) => {

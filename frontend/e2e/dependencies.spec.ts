@@ -15,25 +15,27 @@ test('shows dependencies heading with PI name', async ({ page }) => {
 
 test('shows unresolved count callout', async ({ page }) => {
   // d1 is resolved; d2 is identified; d3 is in_progress → 2 unresolved
-  await expect(page.getByText('2 unresolved')).toBeVisible();
+  await expect(page.getByText('2 unresolved').first()).toBeVisible();
 });
 
 test('shows all three dependencies', async ({ page }) => {
+  const table = page.locator('table');
   await expect(
-    page.getByText('Auth API contract must be finalised before SSO integration begins'),
+    table.getByText('Auth API contract must be finalised before SSO integration begins'),
   ).toBeVisible();
   await expect(
-    page.getByText('Observability metrics endpoint needed by CI/CD pipeline health checks'),
+    table.getByText('Observability metrics endpoint needed by CI/CD pipeline health checks'),
   ).toBeVisible();
   await expect(
-    page.getByText('Auth service token validation endpoint needed by Observability team'),
+    table.getByText('Auth service token validation endpoint needed by Observability team'),
   ).toBeVisible();
 });
 
 test('shows correct status badges', async ({ page }) => {
-  await expect(page.getByText('resolved', { exact: true })).toBeVisible();
-  await expect(page.getByText('identified', { exact: true })).toBeVisible();
-  await expect(page.getByText('in_progress', { exact: true })).toBeVisible();
+  const table = page.locator('table');
+  await expect(table.getByText('resolved', { exact: true })).toBeVisible();
+  await expect(table.getByText('identified', { exact: true })).toBeVisible();
+  await expect(table.getByText('in_progress', { exact: true })).toBeVisible();
 });
 
 test('shows owner names', async ({ page }) => {

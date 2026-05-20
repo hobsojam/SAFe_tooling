@@ -351,7 +351,12 @@ export function Board() {
                     <TopologyBadge type={teamMap[teamId]?.topology_type ?? null} />
                   </div>
                   {iterCols.map((c) => (
-                    <div key={`${teamId}-${c.id}`} className={`border-b border-slate-100 ${rowBg}`}>
+                    <div
+                      key={`${teamId}-${c.id}`}
+                      data-cell-team={teamMap[teamId]?.name}
+                      data-cell-iter={c.label}
+                      className={`border-b border-slate-100 ${rowBg}`}
+                    >
                       <DroppableCell id={`${teamId}|${c.id}`}>
                         {(teamGrid[c.id] ?? []).map((f) => (
                           <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
@@ -359,7 +364,12 @@ export function Board() {
                       </DroppableCell>
                     </div>
                   ))}
-                  <div key={`${teamId}-unplanned`} className={`border-b border-slate-100 ${rowBg}`}>
+                  <div
+                    key={`${teamId}-unplanned`}
+                    data-cell-team={teamMap[teamId]?.name}
+                    data-cell-iter="Unplanned"
+                    className={`border-b border-slate-100 ${rowBg}`}
+                  >
                     <DroppableCell id={`${teamId}|unplanned`}>
                       {(teamGrid['unplanned'] ?? []).map((f) => (
                         <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
