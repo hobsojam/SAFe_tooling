@@ -14,7 +14,7 @@ test('shows dependencies heading with PI name', async ({ page }) => {
 });
 
 test('shows unresolved count callout', async ({ page }) => {
-  // d1 is resolved; d2 is identified; d3 is mitigated → 2 unresolved
+  // d1 is resolved; d2 is identified; d3 is in_progress → 2 unresolved
   await expect(page.getByText('2 unresolved')).toBeVisible();
 });
 
@@ -33,7 +33,7 @@ test('shows all three dependencies', async ({ page }) => {
 test('shows correct status badges', async ({ page }) => {
   await expect(page.getByText('resolved', { exact: true })).toBeVisible();
   await expect(page.getByText('identified', { exact: true })).toBeVisible();
-  await expect(page.getByText('mitigated', { exact: true })).toBeVisible();
+  await expect(page.getByText('in_progress', { exact: true })).toBeVisible();
 });
 
 test('shows owner names', async ({ page }) => {
