@@ -167,7 +167,7 @@ export function StoriesPage() {
             Stories — {pi?.name}
           </h1>
           <p className="text-sm text-slate-500">
-            {stories.length} stor{stories.length !== 1 ? 'ies' : 'y'}
+            {stories.length} stor{stories.length === 1 ? 'y' : 'ies'}
           </p>
         </div>
         <button

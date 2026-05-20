@@ -117,7 +117,7 @@ export function Objectives() {
       description: o.description,
       team_id: o.team_id,
       planned_business_value: o.planned_business_value,
-      actual_business_value: o.actual_business_value !== null ? String(o.actual_business_value) : '',
+      actual_business_value: o.actual_business_value === null ? '' : String(o.actual_business_value),
       is_stretch: o.is_stretch,
     });
     setError('');
@@ -135,7 +135,7 @@ export function Objectives() {
     if (!form.description.trim()) { setError('Description is required.'); return; }
     if (!form.team_id) { setError('Team is required.'); return; }
 
-    const actualBV = form.actual_business_value !== '' ? Number(form.actual_business_value) : null;
+    const actualBV = form.actual_business_value === '' ? null : Number(form.actual_business_value);
 
     if (editing) {
       updateMut.mutate({
@@ -232,7 +232,7 @@ export function Objectives() {
                   <div className="mb-3 flex gap-6 text-xs text-slate-500">
                     <span>Planned BV: <strong className="text-slate-700">{obj.planned_business_value}</strong></span>
                     <span>Actual BV: <strong className="text-slate-700">
-                      {obj.actual_business_value !== null ? obj.actual_business_value : '—'}
+                      {obj.actual_business_value === null ? '—' : obj.actual_business_value}
                     </strong></span>
                   </div>
                   <div className="flex gap-2">
@@ -326,9 +326,9 @@ export function Objectives() {
                       </td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">{obj.planned_business_value}</td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">
-                        {obj.actual_business_value !== null
-                          ? obj.actual_business_value
-                          : <span className="text-slate-400">—</span>}
+                        {obj.actual_business_value === null
+                          ? <span className="text-slate-400">—</span>
+                          : obj.actual_business_value}
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap text-right">
                         <button
@@ -361,12 +361,12 @@ export function Objectives() {
                       {scoredCommitted.length > 0 ? committedActualBV : '—'}
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      {predictabilityPct !== null ? (
+                      {predictabilityPct === null ? (
+                        <span className="text-xs text-slate-400">Not yet scored</span>
+                      ) : (
                         <span className={`text-sm ${predictabilityClass(predictabilityPct)}`}>
                           {predictabilityPct}%
                         </span>
-                      ) : (
-                        <span className="text-xs text-slate-400">Not yet scored</span>
                       )}
                     </td>
                   </tr>

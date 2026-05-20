@@ -121,14 +121,14 @@ export function Predictability() {
                       {scored} / {objs.length}
                     </td>
                     <td className="px-4 py-3">
-                      {predictability !== null ? (
+                      {predictability === null ? (
+                        <span className="text-xs text-slate-400">Not yet scored</span>
+                      ) : (
                         <span
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${predictabilityClass(predictability)}`}
                         >
                           {predictability}%
                         </span>
-                      ) : (
-                        <span className="text-xs text-slate-400">Not yet scored</span>
                       )}
                     </td>
                   </tr>
@@ -155,14 +155,14 @@ export function Predictability() {
                   {artScoredObjs.length} / {committed.length}
                 </td>
                 <td className="px-4 py-3">
-                  {artPredictability !== null ? (
+                  {artPredictability === null ? (
+                    <span className="text-xs text-slate-400">Not yet scored</span>
+                  ) : (
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-bold ${predictabilityClass(artPredictability)}`}
                     >
                       {artPredictability}%
                     </span>
-                  ) : (
-                    <span className="text-xs text-slate-400">Not yet scored</span>
                   )}
                 </td>
               </tr>
