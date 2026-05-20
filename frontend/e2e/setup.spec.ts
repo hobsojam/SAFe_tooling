@@ -73,6 +73,9 @@ test('iteration form requires dates', async ({ page }) => {
 
 test('can add a new iteration', async ({ page }) => {
   await page.getByRole('button', { name: '+ Add' }).click();
+  // Dates must fall within PI 2026.1 (2026-01-05 – 2026-03-13); anything outside
+  // that range is rejected by the API with 422. These dates also avoid overlapping
+  // the five existing fixture iterations.
   await page.getByLabel('Start Date').fill('2026-01-12');
   await page.getByLabel('End Date').fill('2026-01-23');
   await page.getByRole('button', { name: 'Add Iteration' }).click();
