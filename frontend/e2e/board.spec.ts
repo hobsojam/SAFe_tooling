@@ -91,9 +91,16 @@ test('unassigned feature appears in the Unassigned section as a draggable card',
 test('dragging an assigned feature to the Unassigned section removes its team', async ({ page }) => {
   // Auth Service starts assigned to Alpha. Drag it onto Reporting Module which is
   // already in the unassigned drop zone — the zone covers the whole area.
-  await page.getByText('Auth Service', { exact: true }).dragTo(
-    page.getByText('Reporting Module', { exact: true }),
-  );
+  // Use explicit mouse steps to generate enough intermediate pointermove events to
+  // cross dnd-kit PointerSensor's activationConstraint: { distance: 5 } in headless CI.
+  const src = page.getByText('Auth Service', { exact: true }).first();
+  const dest = page.getByText('Reporting Module', { exact: true }).first();
+  const srcBox = (await src.boundingBox())!;
+  const destBox = (await dest.boundingBox())!;
+  await page.mouse.move(srcBox.x + srcBox.width / 2, srcBox.y + srcBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(destBox.x + destBox.width / 2, destBox.y + destBox.height / 2, { steps: 20 });
+  await page.mouse.up();
   // Count increases from 1 to 2 and Auth Service appears in the unassigned list
   await expect(page.getByText(/Unassigned \(2\)/)).toBeVisible();
 });
