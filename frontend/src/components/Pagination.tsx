@@ -1,7 +1,7 @@
 interface PaginationProps {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+  readonly page: number;
+  readonly totalPages: number;
+  readonly onPageChange: (page: number) => void;
 }
 
 function pageRange(current: number, total: number): (number | 'e1' | 'e2')[] {
