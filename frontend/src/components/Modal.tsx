@@ -29,6 +29,9 @@ export function Modal({ open, title, onClose, children }: Props) {
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') e.stopPropagation();
+      }}
     >
       <div className="flex h-full items-center justify-center">
         <div
