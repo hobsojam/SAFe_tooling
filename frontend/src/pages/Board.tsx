@@ -122,6 +122,11 @@ export function buildDepLabel(
   return teamName ? `${feature.name} (${teamName})` : feature.name;
 }
 
+function iterNumForKey(key: string | undefined, iterMap: Record<string, number>): number | null {
+  if (!key || key === 'unplanned') return null;
+  return iterMap[key] ?? null;
+}
+
 export function Board() {
   const { piId } = useParams<{ piId: string }>();
   const queryClient = useQueryClient();
@@ -183,10 +188,8 @@ export function Board() {
     for (const d of deps) {
       if (d.status === 'resolved') continue;
       // from = consumer (has the dependency), to = provider (must fulfil it first)
-      const fromKey = featureIterKey[d.from_feature_id];
-      const toKey = featureIterKey[d.to_feature_id];
-      const fromNum = fromKey && fromKey !== 'unplanned' ? iterNum[fromKey] : null;
-      const toNum = toKey && toKey !== 'unplanned' ? iterNum[toKey] : null;
+      const fromNum = iterNumForKey(featureIterKey[d.from_feature_id], iterNum);
+      const toNum = iterNumForKey(featureIterKey[d.to_feature_id], iterNum);
       // Consumer is at-risk when provider is not planned in a strictly earlier iteration.
       // Skip the check when consumer has no iteration (unsequenced features aren't a board concern).
       if (fromNum !== null && (toNum === null || toNum >= fromNum)) {
