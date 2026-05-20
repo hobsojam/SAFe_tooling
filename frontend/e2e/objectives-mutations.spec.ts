@@ -36,7 +36,7 @@ test('can create a committed objective', async ({ page }) => {
   await page.getByLabel('Planned BV (1–10)').fill('8');
   await page.getByRole('button', { name: 'Add Objective' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  await expect(page.locator('table').getByText('Deliver auth service v2')).toBeVisible();
+  await expect(page.locator('table').getByText('Deliver auth service v2', { exact: true })).toBeVisible();
   const newRow = page.getByRole('row', { name: /Deliver auth service v2/ });
   await expect(newRow.getByText('Committed')).toBeVisible();
 });

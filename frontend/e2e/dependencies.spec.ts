@@ -35,7 +35,7 @@ test('shows correct status badges', async ({ page }) => {
   const table = page.locator('table');
   await expect(table.getByText('resolved', { exact: true })).toBeVisible();
   await expect(table.getByText('identified', { exact: true })).toBeVisible();
-  await expect(table.getByText('in_progress', { exact: true })).toBeVisible();
+  await expect(table.getByText('in progress', { exact: true })).toBeVisible();
 });
 
 test('shows owner names', async ({ page }) => {
