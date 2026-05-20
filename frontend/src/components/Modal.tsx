@@ -23,16 +23,11 @@ export function Modal({ open, title, onClose, children }: Props) {
   return (
     <dialog
       ref={ref}
-      role="dialog"
-      aria-modal="true"
       aria-labelledby="modal-title"
       className="m-0 h-dvh w-screen max-h-none max-w-none bg-transparent p-0 [&::backdrop]:bg-black/40"
       onCancel={onClose}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') e.stopPropagation();
       }}
     >
       <div className="flex h-full items-center justify-center">
