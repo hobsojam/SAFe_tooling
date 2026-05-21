@@ -63,7 +63,7 @@ function ObjectiveTypeBadge({ isStretch }: Readonly<{ isStretch: boolean }>) {
 }
 
 export function InspectAdapt() {
-  const { pi, objectives, isLoading: loadingObj } = usePIObjectives();
+  const { piId, pi, objectives, isLoading: loadingObj } = usePIObjectives();
 
   const { data: risks = [], isLoading: loadingRisks } = useQuery({
     queryKey: ['risks', piId],
