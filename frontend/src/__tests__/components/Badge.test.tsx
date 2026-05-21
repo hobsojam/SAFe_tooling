@@ -22,19 +22,19 @@ describe('Badge', () => {
 
 describe('ROAMBadge', () => {
   it.each([
-    ['unroamed', 'bg-red-100'],
-    ['owned', 'bg-yellow-100'],
-    ['accepted', 'bg-amber-100'],
-    ['mitigated', 'bg-cyan-100'],
-    ['resolved', 'bg-green-100'],
-  ])('status "%s" renders with class "%s"', (status, cls) => {
+    ['unroamed', 'Unroamed', 'bg-red-100'],
+    ['owned', 'Owned', 'bg-yellow-100'],
+    ['accepted', 'Accepted', 'bg-amber-100'],
+    ['mitigated', 'Mitigated', 'bg-cyan-100'],
+    ['resolved', 'Resolved', 'bg-green-100'],
+  ])('status "%s" renders label "%s" with class "%s"', (status, label, cls) => {
     render(<ROAMBadge status={status} />);
-    expect(screen.getByText(status)).toHaveClass(cls);
+    expect(screen.getByText(label)).toHaveClass(cls);
   });
 
   it('falls back to gray for an unknown status', () => {
     render(<ROAMBadge status="unknown" />);
-    expect(screen.getByText('unknown')).toHaveClass('bg-gray-100');
+    expect(screen.getByText('Unknown')).toHaveClass('bg-gray-100');
   });
 });
 

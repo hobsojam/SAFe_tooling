@@ -4,12 +4,7 @@ import { api } from '../api';
 import type { PIObjective, Team } from '../types';
 import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
-
-function predictabilityClass(pct: number): string {
-  if (pct >= 80) return 'bg-teal-100 text-teal-800';
-  if (pct >= 60) return 'bg-amber-100 text-amber-800';
-  return 'bg-red-100 text-red-800';
-}
+import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
 
 interface TeamRow {
   team: Team;
@@ -22,14 +17,15 @@ interface TeamRow {
 
 function buildRow(team: Team, committed: PIObjective[]): TeamRow {
   const objs = committed.filter((o) => o.team_id === team.id);
-  const plannedBV = objs.reduce((s, o) => s + o.planned_business_value, 0);
-  const scoredObjs = objs.filter((o) => o.actual_business_value !== null);
-  const actualBV = scoredObjs.reduce((s, o) => s + (o.actual_business_value ?? 0), 0);
-  const predictability =
-    plannedBV > 0 && scoredObjs.length > 0
-      ? Math.round((actualBV / plannedBV) * 100)
-      : null;
-  return { team, objectives: objs, plannedBV, actualBV, scored: scoredObjs.length, predictability };
+  const summary = buildPredictabilitySummary(objs);
+  return {
+    team,
+    objectives: objs,
+    plannedBV: summary.plannedBV,
+    actualBV: summary.actualBV,
+    scored: summary.scoredCount,
+    predictability: summary.pct,
+  };
 }
 
 export function Predictability() {
@@ -60,13 +56,7 @@ export function Predictability() {
   const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
   const rows = sortedTeams.map((t) => buildRow(t, committed));
 
-  const artPlannedBV = committed.reduce((s, o) => s + o.planned_business_value, 0);
-  const artScoredObjs = committed.filter((o) => o.actual_business_value !== null);
-  const artActualBV = artScoredObjs.reduce((s, o) => s + (o.actual_business_value ?? 0), 0);
-  const artPredictability =
-    artPlannedBV > 0 && artScoredObjs.length > 0
-      ? Math.round((artActualBV / artPlannedBV) * 100)
-      : null;
+  const artPredictability = buildPredictabilitySummary(committed);
 
   return (
     <div className="p-6">
@@ -125,7 +115,7 @@ export function Predictability() {
                         <span className="text-xs text-slate-400">Not yet scored</span>
                       ) : (
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${predictabilityClass(predictability)}`}
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${predictabilityBadgeClass(predictability)}`}
                         >
                           {predictability}%
                         </span>
@@ -142,26 +132,26 @@ export function Predictability() {
                 </td>
                 <td className="px-4 py-3 font-semibold text-slate-800">{committed.length}</td>
                 <td className="px-4 py-3 tabular-nums font-semibold text-slate-800">
-                  {artPlannedBV}
+                  {artPredictability.plannedBV}
                 </td>
                 <td className="px-4 py-3 tabular-nums font-semibold text-slate-800">
-                  {artScoredObjs.length > 0 ? (
-                    artActualBV
+                  {artPredictability.scoredCount > 0 ? (
+                    artPredictability.actualBV
                   ) : (
                     <span className="font-normal text-slate-400">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 font-semibold text-slate-800">
-                  {artScoredObjs.length} / {committed.length}
+                  {artPredictability.scoredCount} / {artPredictability.totalCount}
                 </td>
                 <td className="px-4 py-3">
-                  {artPredictability === null ? (
+                  {artPredictability.pct === null ? (
                     <span className="text-xs text-slate-400">Not yet scored</span>
                   ) : (
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-bold ${predictabilityClass(artPredictability)}`}
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-bold ${predictabilityBadgeClass(artPredictability.pct)}`}
                     >
-                      {artPredictability}%
+                      {artPredictability.pct}%
                     </span>
                   )}
                 </td>

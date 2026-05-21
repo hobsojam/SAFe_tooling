@@ -1,44 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { api } from '../api';
-import type { PIObjective, Risk, Team, ROAMStatus } from '../types';
+import type { Risk, Team, ROAMStatus } from '../types';
+import { ROAMBadge } from '../components/Badge';
 import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
-
-function predictabilityClass(pct: number): string {
-  if (pct >= 80) return 'bg-teal-100 text-teal-800';
-  if (pct >= 60) return 'bg-amber-100 text-amber-800';
-  return 'bg-red-100 text-red-800';
-}
+import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
 
 const ROAM_ORDER: ROAMStatus[] = ['resolved', 'owned', 'accepted', 'mitigated', 'unroamed'];
-
-const ROAM_LABELS: Record<ROAMStatus, string> = {
-  resolved: 'Resolved',
-  owned: 'Owned',
-  accepted: 'Accepted',
-  mitigated: 'Mitigated',
-  unroamed: 'Unroamed',
-};
-
-const ROAM_CLASSES: Record<ROAMStatus, string> = {
-  resolved: 'bg-teal-100 text-teal-800',
-  owned: 'bg-blue-100 text-blue-800',
-  accepted: 'bg-amber-100 text-amber-800',
-  mitigated: 'bg-blue-100 text-blue-800',
-  unroamed: 'bg-red-100 text-red-800',
-};
-
-function buildPredictability(committed: PIObjective[]) {
-  const plannedBV = committed.reduce((s, o) => s + o.planned_business_value, 0);
-  const scoredObjs = committed.filter((o) => o.actual_business_value !== null);
-  const actualBV = scoredObjs.reduce((s, o) => s + (o.actual_business_value ?? 0), 0);
-  const pct =
-    plannedBV > 0 && scoredObjs.length > 0
-      ? Math.round((actualBV / plannedBV) * 100)
-      : null;
-  return { plannedBV, actualBV, scoredCount: scoredObjs.length, totalCount: committed.length, pct };
-}
 
 function buildRoamCounts(risks: Risk[]): Record<ROAMStatus, number> {
   const counts = { resolved: 0, owned: 0, accepted: 0, mitigated: 0, unroamed: 0 };
@@ -82,7 +51,7 @@ export function InspectAdapt() {
 
   const committed = objectives.filter((o) => !o.is_stretch);
   const stretch = objectives.filter((o) => o.is_stretch);
-  const pred = buildPredictability(committed);
+  const pred = buildPredictabilitySummary(committed);
   const roamCounts = buildRoamCounts(risks);
 
   const sortedObjectives = [...objectives].sort((a, b) => {
@@ -134,7 +103,7 @@ export function InspectAdapt() {
                   <span className="text-sm text-slate-400">Not yet scored</span>
                 ) : (
                   <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-lg font-bold ${predictabilityClass(pred.pct)}`}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-lg font-bold ${predictabilityBadgeClass(pred.pct)}`}
                   >
                     {pred.pct}%
                   </span>
@@ -224,11 +193,7 @@ export function InspectAdapt() {
                   key={status}
                   className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
                 >
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ROAM_CLASSES[status]}`}
-                  >
-                    {ROAM_LABELS[status]}
-                  </span>
+                  <ROAMBadge status={status} />
                   <p className="mt-2 text-2xl font-bold tabular-nums text-slate-800">
                     {roamCounts[status]}
                   </p>
