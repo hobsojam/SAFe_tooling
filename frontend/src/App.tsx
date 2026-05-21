@@ -6,6 +6,7 @@ import { Board } from './pages/Board';
 import { Capacity } from './pages/Capacity';
 import { Dependencies } from './pages/Dependencies';
 import { Objectives } from './pages/Objectives';
+import { PIHealth } from './pages/PIHealth';
 import { Risks } from './pages/Risks';
 import { RoamUnroamed } from './pages/RoamUnroamed';
 import { StoriesPage } from './pages/StoriesPage';
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/pi" replace />} />
           <Route path="pi" element={null} />
+          <Route path="pi/:piId/health" element={<PIHealth />} />
           <Route path="pi/:piId/board" element={<Board />} />
           <Route path="pi/:piId/backlog" element={<Backlog />} />
           <Route path="pi/:piId/objectives" element={<Objectives />} />
