@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
@@ -14,6 +14,9 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
+vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
+
+import { useMutation } from '@tanstack/react-query';
 import { Dependencies } from '../../pages/Dependencies';
 import { makeDependency, makeFeature, makePI, makeTeam } from '../factories';
 import { setupQueryMocks } from '../setupMocks';
@@ -85,5 +88,40 @@ describe('Dependencies page', () => {
     render(<Dependencies />);
     await user.click(screen.getByRole('button', { name: '+ New Dependency' }));
     expect(screen.getByRole('button', { name: 'Saving…' })).toBeInTheDocument();
+  });
+
+  it('shows loading spinner while data is loading', () => {
+    setupQueryMocks({ pi: mockPI, dependencies: [], features: [featureFrom, featureTo], teams: mockTeams }, { isLoading: true });
+    render(<Dependencies />);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('renders gracefully when dependencies data fails to load (isError)', () => {
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'features') return [featureFrom, featureTo];
+        if (key === 'teams') return mockTeams;
+        return undefined; // dependencies returns undefined → defaults to []
+      },
+      { isError: true },
+    );
+    render(<Dependencies />);
+    expect(screen.getByText(/\+ New Dependency/)).toBeInTheDocument();
+  });
+
+  it('shows error message in modal when dependency create mutation fails', async () => {
+    setupMocks({ deps: [] });
+    const onErrors: Array<(e: Error) => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    const user = userEvent.setup();
+    render(<Dependencies />);
+    await user.click(screen.getByRole('button', { name: '+ New Dependency' }));
+    act(() => { onErrors[0]?.(new Error('Server error')); });
+    expect(screen.getByText('Server error')).toBeInTheDocument();
   });
 });

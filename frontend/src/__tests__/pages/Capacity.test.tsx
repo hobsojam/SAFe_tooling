@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Capacity } from '../../pages/Capacity';
@@ -157,5 +158,53 @@ describe('Capacity color coding', () => {
     const planButton = buttons.find((b) => b.textContent?.includes('48') && b.textContent?.includes('days'));
     expect(planButton).toBeDefined();
     expect(planButton!.className).toContain('bg-amber-50');
+  });
+
+  it('shows loading spinner while capacity plans are loading', () => {
+    (useQueryClient as ReturnType<typeof vi.fn>).mockReturnValue({ invalidateQueries: vi.fn() });
+    (useMutation as ReturnType<typeof vi.fn>).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (useQuery as ReturnType<typeof vi.fn>).mockImplementation(({ queryKey }: { queryKey: string[] }) => {
+      if (queryKey[0] === 'capacity-plans') return { data: undefined, isLoading: true };
+      if (queryKey[0] === 'pi') return { data: mockPi };
+      if (queryKey[0] === 'iterations') return { data: mockIterations };
+      if (queryKey[0] === 'teams') return { data: mockTeams };
+      if (queryKey[0] === 'stories') return { data: [] };
+      return { data: undefined };
+    });
+    render(<Capacity />);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('renders gracefully when capacity-plans data fails to load (isError)', () => {
+    (useQueryClient as ReturnType<typeof vi.fn>).mockReturnValue({ invalidateQueries: vi.fn() });
+    (useMutation as ReturnType<typeof vi.fn>).mockReturnValue({ mutate: vi.fn(), isPending: false });
+    (useQuery as ReturnType<typeof vi.fn>).mockImplementation(({ queryKey }: { queryKey: string[] }) => {
+      if (queryKey[0] === 'capacity-plans') return { data: undefined, isLoading: false, isError: true };
+      if (queryKey[0] === 'pi') return { data: mockPi };
+      if (queryKey[0] === 'iterations') return { data: mockIterations };
+      if (queryKey[0] === 'teams') return { data: mockTeams };
+      if (queryKey[0] === 'stories') return { data: [] };
+      return { data: undefined };
+    });
+    render(<Capacity />);
+    // plans default to [] → capacity grid renders without crashing
+    expect(screen.getByText(/Under-loaded/)).toBeInTheDocument();
+  });
+
+  it('shows error message in modal when capacity plan upsert fails', async () => {
+    const plans = [makePlan('team-1', 'iter-1', 48)];
+    setupQueries({ plans });
+    const onErrors: Array<(e: Error) => void> = [];
+    (useMutation as ReturnType<typeof vi.fn>).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false };
+    });
+    const user = userEvent.setup();
+    render(<Capacity />);
+    const planButtons = screen.getAllByRole('button');
+    const planButton = planButtons.find((b) => b.textContent?.includes('48') && b.textContent?.includes('days'));
+    await user.click(planButton!);
+    act(() => { onErrors[0]?.(new Error('Save failed')); });
+    expect(screen.getByText('Save failed')).toBeInTheDocument();
   });
 });

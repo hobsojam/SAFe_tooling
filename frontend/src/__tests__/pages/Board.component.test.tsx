@@ -38,6 +38,8 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
+vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
+
 import { Board } from '../../pages/Board';
 import { makeFeature, makeIteration, makePI, makeTeam } from '../factories';
 import { setupQueryMocks } from '../setupMocks';
@@ -133,5 +135,39 @@ describe('Board page', () => {
     const { container } = render(<Board />);
     const cell = container.querySelector('[data-cell-team="Alpha"][data-cell-iter="Unplanned"]');
     expect(cell).not.toBeNull();
+  });
+
+  it('shows loading spinner while data is loading', () => {
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'teams') return [mockTeam];
+        if (key === 'iterations') return [mockIteration];
+        if (key === 'features') return [mockFeature];
+        if (key === 'dependencies') return [];
+        return undefined;
+      },
+      { isLoading: true },
+    );
+    render(<Board />);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('renders gracefully when data fails to load (isError)', () => {
+    // With pi undefined, artTeams is empty → shows empty-state fallback
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'teams') return [mockTeam];
+        if (key === 'iterations') return [];
+        if (key === 'features') return [];
+        if (key === 'dependencies') return [];
+        return undefined; // pi returns undefined
+      },
+      { isError: true },
+    );
+    render(<Board />);
+    expect(screen.getByText(/No teams configured/)).toBeInTheDocument();
   });
 });

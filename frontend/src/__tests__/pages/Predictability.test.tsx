@@ -120,4 +120,14 @@ describe('Predictability', () => {
     const cells = screen.getAllByText('2');
     expect(cells.length).toBeGreaterThan(0);
   });
+
+  it('renders gracefully when objectives data fails to load (isError)', () => {
+    vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
+      const key = (queryKey as string[])[0];
+      if (key === 'pi') return { data: mockPI, isLoading: false, isError: false } as unknown as ReturnType<typeof useQuery>;
+      return { data: undefined, isLoading: false, isError: true } as unknown as ReturnType<typeof useQuery>;
+    });
+    render(<Predictability />);
+    expect(screen.getByText(/No committed objectives/)).toBeInTheDocument();
+  });
 });
