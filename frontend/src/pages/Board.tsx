@@ -20,7 +20,7 @@ import type { Dependency, Feature, Team } from '../types';
 
 type BoardGrid = Record<string, Record<string, Feature[]>>;
 
-interface Arrow {
+export interface Arrow {
   depId: string;
   x1: number;
   y1: number;
@@ -127,7 +127,7 @@ function iterNumForKey(key: string | undefined, iterMap: Record<string, number>)
   return iterMap[key] ?? null;
 }
 
-function DependencyArrows({ arrows }: Readonly<{ arrows: Arrow[] }>) {
+export function DependencyArrows({ arrows }: Readonly<{ arrows: Arrow[] }>) {
   if (arrows.length === 0) return null;
   return (
     <svg
