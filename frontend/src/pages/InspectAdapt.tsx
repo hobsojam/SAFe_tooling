@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api';
 import type { Risk, Team, ROAMStatus } from '../types';
@@ -8,6 +9,12 @@ import { Spinner } from '../components/Spinner';
 import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
 
 const ROAM_ORDER: ROAMStatus[] = ['resolved', 'owned', 'accepted', 'mitigated', 'unroamed'];
+const SUMMARY_CARD_CLASS = 'rounded-lg border border-slate-200 bg-white p-4 shadow-sm';
+const STAT_LABEL_CLASS = 'text-xs font-medium uppercase tracking-wide text-slate-500';
+const STAT_VALUE_CLASS = 'mt-1 text-2xl font-bold tabular-nums text-slate-800';
+const ROAM_COUNT_CLASS = 'mt-2 text-2xl font-bold tabular-nums text-slate-800';
+const TABLE_HEADER_CLASS = 'px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600';
+const OBJECTIVE_HEADERS = ['Objective', 'Team', 'Type', 'Planned BV', 'Actual BV'];
 
 function buildRoamCounts(risks: Risk[]): Record<ROAMStatus, number> {
   const counts = { resolved: 0, owned: 0, accepted: 0, mitigated: 0, unroamed: 0 };
@@ -18,6 +25,42 @@ function buildRoamCounts(risks: Risk[]): Record<ROAMStatus, number> {
 function teamName(teams: Team[], teamId: string | null): string {
   if (!teamId) return '—';
   return teams.find((t) => t.id === teamId)?.name ?? '—';
+}
+
+function Section({
+  title,
+  headingId,
+  children,
+}: Readonly<{ title: string; headingId: string; children: ReactNode }>) {
+  return (
+    <section aria-labelledby={headingId}>
+      <h2 id={headingId} className="mb-3 text-base font-semibold text-slate-700">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function StatCard({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
+  return (
+    <div className={SUMMARY_CARD_CLASS}>
+      <p className={STAT_LABEL_CLASS}>{label}</p>
+      <div className={STAT_VALUE_CLASS}>{children}</div>
+    </div>
+  );
+}
+
+function ObjectiveTypeBadge({ isStretch }: Readonly<{ isStretch: boolean }>) {
+  const styles = isStretch
+    ? 'bg-amber-100 text-amber-800'
+    : 'bg-teal-100 text-teal-800';
+
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles}`}>
+      {isStretch ? 'Stretch' : 'Committed'}
+    </span>
+  );
 }
 
 export function InspectAdapt() {
@@ -70,34 +113,20 @@ export function InspectAdapt() {
         </p>
       </div>
 
-      {/* Predictability summary */}
-      <section aria-labelledby="pred-heading">
-        <h2 id="pred-heading" className="mb-3 text-base font-semibold text-slate-700">
-          ART Predictability
-        </h2>
-
+      <Section title="ART Predictability" headingId="pred-heading">
         {committed.length === 0 ? (
           <EmptyState message="No committed objectives — add objectives on the Objectives page." />
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Planned BV</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-slate-800">{pred.plannedBV}</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Actual BV</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-slate-800">
-                {pred.scoredCount > 0 ? pred.actualBV : <span className="text-slate-400">—</span>}
-              </p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Objectives Scored</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-slate-800">
-                {pred.scoredCount} / {pred.totalCount}
-              </p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Predictability</p>
+            <StatCard label="Planned BV">{pred.plannedBV}</StatCard>
+            <StatCard label="Actual BV">
+              {pred.scoredCount > 0 ? pred.actualBV : <span className="text-slate-400">—</span>}
+            </StatCard>
+            <StatCard label="Objectives Scored">
+              {pred.scoredCount} / {pred.totalCount}
+            </StatCard>
+            <div className={SUMMARY_CARD_CLASS}>
+              <p className={STAT_LABEL_CLASS}>Predictability</p>
               <div className="mt-1">
                 {pred.pct === null ? (
                   <span className="text-sm text-slate-400">Not yet scored</span>
@@ -118,14 +147,9 @@ export function InspectAdapt() {
             {stretch.length} stretch {stretch.length === 1 ? 'objective' : 'objectives'} excluded from predictability calculation.
           </p>
         )}
-      </section>
+      </Section>
 
-      {/* PI Objectives */}
-      <section aria-labelledby="obj-heading">
-        <h2 id="obj-heading" className="mb-3 text-base font-semibold text-slate-700">
-          PI Objectives
-        </h2>
-
+      <Section title="PI Objectives" headingId="obj-heading">
         {objectives.length === 0 ? (
           <EmptyState message="No objectives for this PI." />
         ) : (
@@ -133,11 +157,8 @@ export function InspectAdapt() {
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {['Objective', 'Team', 'Type', 'Planned BV', 'Actual BV'].map((h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
-                    >
+                  {OBJECTIVE_HEADERS.map((h) => (
+                    <th key={h} className={TABLE_HEADER_CLASS}>
                       {h}
                     </th>
                   ))}
@@ -149,15 +170,7 @@ export function InspectAdapt() {
                     <td className="px-4 py-3 text-slate-800">{obj.description}</td>
                     <td className="px-4 py-3 text-slate-600">{teamName(teams, obj.team_id)}</td>
                     <td className="px-4 py-3">
-                      {obj.is_stretch ? (
-                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                          Stretch
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
-                          Committed
-                        </span>
-                      )}
+                      <ObjectiveTypeBadge isStretch={obj.is_stretch} />
                     </td>
                     <td className="px-4 py-3 tabular-nums text-slate-700">
                       {obj.planned_business_value}
@@ -175,28 +188,18 @@ export function InspectAdapt() {
             </table>
           </div>
         )}
-      </section>
+      </Section>
 
-      {/* Risk ROAM breakdown */}
-      <section aria-labelledby="roam-heading">
-        <h2 id="roam-heading" className="mb-3 text-base font-semibold text-slate-700">
-          Risk Disposition (ROAM)
-        </h2>
-
+      <Section title="Risk Disposition (ROAM)" headingId="roam-heading">
         {risks.length === 0 ? (
           <EmptyState message="No risks recorded for this PI." />
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
               {ROAM_ORDER.map((status) => (
-                <div
-                  key={status}
-                  className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-                >
+                <div key={status} className={SUMMARY_CARD_CLASS}>
                   <ROAMBadge status={status} />
-                  <p className="mt-2 text-2xl font-bold tabular-nums text-slate-800">
-                    {roamCounts[status]}
-                  </p>
+                  <p className={ROAM_COUNT_CLASS}>{roamCounts[status]}</p>
                 </div>
               ))}
             </div>
@@ -206,7 +209,7 @@ export function InspectAdapt() {
             </p>
           </>
         )}
-      </section>
+      </Section>
     </div>
   );
 }
