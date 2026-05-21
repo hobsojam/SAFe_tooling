@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
 import { api } from '../api';
 import type { PIObjective, Team } from '../types';
 import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
+import { usePIObjectives } from '../hooks/usePIObjectives';
 import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
 
 interface TeamRow {
@@ -29,19 +29,7 @@ function buildRow(team: Team, committed: PIObjective[]): TeamRow {
 }
 
 export function Predictability() {
-  const { piId } = useParams<{ piId: string }>();
-
-  const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
-    enabled: !!piId,
-  });
-
-  const { data: objectives = [], isLoading: loadingObj } = useQuery({
-    queryKey: ['objectives', piId],
-    queryFn: () => api.listObjectives(piId!),
-    enabled: !!piId,
-  });
+  const { pi, objectives, isLoading: loadingObj } = usePIObjectives();
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
     queryKey: ['teams', pi?.art_id],

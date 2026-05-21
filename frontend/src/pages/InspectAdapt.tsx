@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
 import { api } from '../api';
 import type { Risk, Team, ROAMStatus } from '../types';
 import { ROAMBadge } from '../components/Badge';
 import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
+import { usePIObjectives } from '../hooks/usePIObjectives';
 import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
 
 const ROAM_ORDER: ROAMStatus[] = ['resolved', 'owned', 'accepted', 'mitigated', 'unroamed'];
@@ -63,19 +63,7 @@ function ObjectiveTypeBadge({ isStretch }: Readonly<{ isStretch: boolean }>) {
 }
 
 export function InspectAdapt() {
-  const { piId } = useParams<{ piId: string }>();
-
-  const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
-    enabled: !!piId,
-  });
-
-  const { data: objectives = [], isLoading: loadingObj } = useQuery({
-    queryKey: ['objectives', piId],
-    queryFn: () => api.listObjectives(piId!),
-    enabled: !!piId,
-  });
+  const { pi, objectives, isLoading: loadingObj } = usePIObjectives();
 
   const { data: risks = [], isLoading: loadingRisks } = useQuery({
     queryKey: ['risks', piId],
