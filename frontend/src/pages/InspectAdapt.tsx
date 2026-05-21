@@ -12,7 +12,6 @@ const ROAM_ORDER: ROAMStatus[] = ['resolved', 'owned', 'accepted', 'mitigated', 
 const SUMMARY_CARD_CLASS = 'rounded-lg border border-slate-200 bg-white p-4 shadow-sm';
 const STAT_LABEL_CLASS = 'text-xs font-medium uppercase tracking-wide text-slate-500';
 const STAT_VALUE_CLASS = 'mt-1 text-2xl font-bold tabular-nums text-slate-800';
-const ROAM_COUNT_CLASS = 'mt-2 text-2xl font-bold tabular-nums text-slate-800';
 const TABLE_HEADER_CLASS = 'px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600';
 const OBJECTIVE_HEADERS = ['Objective', 'Team', 'Type', 'Planned BV', 'Actual BV'];
 
@@ -42,10 +41,10 @@ function Section({
   );
 }
 
-function StatCard({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
+function StatCard({ label, children }: Readonly<{ label: ReactNode; children: ReactNode }>) {
   return (
     <div className={SUMMARY_CARD_CLASS}>
-      <p className={STAT_LABEL_CLASS}>{label}</p>
+      {typeof label === 'string' ? <p className={STAT_LABEL_CLASS}>{label}</p> : label}
       <div className={STAT_VALUE_CLASS}>{children}</div>
     </div>
   );
@@ -197,10 +196,9 @@ export function InspectAdapt() {
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
               {ROAM_ORDER.map((status) => (
-                <div key={status} className={SUMMARY_CARD_CLASS}>
-                  <ROAMBadge status={status} />
-                  <p className={ROAM_COUNT_CLASS}>{roamCounts[status]}</p>
-                </div>
+                <StatCard key={status} label={<ROAMBadge status={status} />}>
+                  {roamCounts[status]}
+                </StatCard>
               ))}
             </div>
             <p className="mt-2 text-xs text-slate-400">
