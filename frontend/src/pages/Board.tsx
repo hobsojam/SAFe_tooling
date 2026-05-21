@@ -16,7 +16,7 @@ import { DepBadge, FeatureStatusBadge, TopologyBadge } from '../components/Badge
 import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
 import { useToast } from '../components/Toaster';
-import type { Dependency, Feature } from '../types';
+import type { Dependency, Feature, Team } from '../types';
 
 type BoardGrid = Record<string, Record<string, Feature[]>>;
 
@@ -125,6 +125,88 @@ export function buildDepLabel(
 function iterNumForKey(key: string | undefined, iterMap: Record<string, number>): number | null {
   if (!key || key === 'unplanned') return null;
   return iterMap[key] ?? null;
+}
+
+function DependencyArrows({ arrows }: Readonly<{ arrows: Arrow[] }>) {
+  if (arrows.length === 0) return null;
+  return (
+    <svg
+      aria-hidden="true"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
+    >
+      <defs>
+        <marker id="dep-arrow" markerWidth="6" markerHeight="4" refX="5.5" refY="2" orient="auto">
+          <polygon points="0 0, 6 2, 0 4" fill="#dc2626" />
+        </marker>
+      </defs>
+      {arrows.map((a) => {
+        const dx = Math.max(40, Math.abs(a.x2 - a.x1) * 0.4);
+        const cx1 = a.x1 + dx;
+        const cx2 = a.x2 - dx;
+        const pathD = `M ${a.x1} ${a.y1} C ${cx1} ${a.y1}, ${cx2} ${a.y2}, ${a.x2} ${a.y2}`;
+        return (
+          <path
+            key={a.depId}
+            data-dep-id={a.depId}
+            d={pathD}
+            stroke="#dc2626"
+            strokeWidth="2"
+            fill="none"
+            opacity={a.resolved ? 0.35 : 0.85}
+            strokeDasharray={a.resolved ? '5 3' : undefined}
+            markerEnd="url(#dep-arrow)"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+interface TeamBoardRowProps {
+  teamId: string;
+  teamGrid: Record<string, Feature[]>;
+  iterCols: ReadonlyArray<{ id: string; label: string }>;
+  rowBg: string;
+  teamMap: Record<string, Team>;
+  atRiskFeatureIds: ReadonlySet<string>;
+}
+
+function TeamBoardRow({ teamId, teamGrid, iterCols, rowBg, teamMap, atRiskFeatureIds }: Readonly<TeamBoardRowProps>) {
+  return (
+    <Fragment>
+      <div className={`border-b border-r border-slate-100 px-3 py-2 flex flex-col gap-1 ${rowBg}`}>
+        <span className="font-medium text-sm text-slate-700">
+          {teamMap[teamId]?.name ?? teamId}
+        </span>
+        <TopologyBadge type={teamMap[teamId]?.topology_type ?? null} />
+      </div>
+      {iterCols.map((c) => (
+        <div
+          key={`${teamId}-${c.id}`}
+          data-cell-team={teamMap[teamId]?.name}
+          data-cell-iter={c.label}
+          className={`border-b border-slate-100 ${rowBg}`}
+        >
+          <DroppableCell id={`${teamId}|${c.id}`}>
+            {(teamGrid[c.id] ?? []).map((f) => (
+              <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
+            ))}
+          </DroppableCell>
+        </div>
+      ))}
+      <div
+        data-cell-team={teamMap[teamId]?.name}
+        data-cell-iter="Unplanned"
+        className={`border-b border-slate-100 ${rowBg}`}
+      >
+        <DroppableCell id={`${teamId}|unplanned`}>
+          {(teamGrid['unplanned'] ?? []).map((f) => (
+            <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
+          ))}
+        </DroppableCell>
+      </div>
+    </Fragment>
+  );
 }
 
 export function Board() {
@@ -336,49 +418,17 @@ export function Board() {
             </div>
 
             {/* Team rows */}
-            {teamIds.map((teamId, rowIdx) => {
-              const teamGrid = grid[teamId] ?? {};
-              const rowBg = rowIdx % 2 === 0 ? '' : 'bg-slate-50/60';
-              return (
-                <Fragment key={teamId}>
-                  <div
-                    key={`${teamId}-name`}
-                    className={`border-b border-r border-slate-100 px-3 py-2 flex flex-col gap-1 ${rowBg}`}
-                  >
-                    <span className="font-medium text-sm text-slate-700">
-                      {teamMap[teamId]?.name ?? teamId}
-                    </span>
-                    <TopologyBadge type={teamMap[teamId]?.topology_type ?? null} />
-                  </div>
-                  {iterCols.map((c) => (
-                    <div
-                      key={`${teamId}-${c.id}`}
-                      data-cell-team={teamMap[teamId]?.name}
-                      data-cell-iter={c.label}
-                      className={`border-b border-slate-100 ${rowBg}`}
-                    >
-                      <DroppableCell id={`${teamId}|${c.id}`}>
-                        {(teamGrid[c.id] ?? []).map((f) => (
-                          <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
-                        ))}
-                      </DroppableCell>
-                    </div>
-                  ))}
-                  <div
-                    key={`${teamId}-unplanned`}
-                    data-cell-team={teamMap[teamId]?.name}
-                    data-cell-iter="Unplanned"
-                    className={`border-b border-slate-100 ${rowBg}`}
-                  >
-                    <DroppableCell id={`${teamId}|unplanned`}>
-                      {(teamGrid['unplanned'] ?? []).map((f) => (
-                        <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
-                      ))}
-                    </DroppableCell>
-                  </div>
-                </Fragment>
-              );
-            })}
+            {teamIds.map((teamId, rowIdx) => (
+              <TeamBoardRow
+                key={teamId}
+                teamId={teamId}
+                teamGrid={grid[teamId] ?? {}}
+                iterCols={iterCols}
+                rowBg={rowIdx % 2 === 0 ? '' : 'bg-slate-50/60'}
+                teamMap={teamMap}
+                atRiskFeatureIds={atRiskFeatureIds}
+              />
+            ))}
           </div>
 
           <div className="border-t border-slate-200 p-3">
@@ -410,37 +460,7 @@ export function Board() {
             ) : null}
           </DragOverlay>
         </DndContext>
-        {arrows.length > 0 && (
-          <svg
-            aria-hidden="true"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
-          >
-            <defs>
-              <marker id="dep-arrow" markerWidth="6" markerHeight="4" refX="5.5" refY="2" orient="auto">
-                <polygon points="0 0, 6 2, 0 4" fill="#dc2626" />
-              </marker>
-            </defs>
-            {arrows.map((a) => {
-              const dx = Math.max(40, Math.abs(a.x2 - a.x1) * 0.4);
-              const cx1 = a.x1 + dx;
-              const cx2 = a.x2 - dx;
-              const pathD = `M ${a.x1} ${a.y1} C ${cx1} ${a.y1}, ${cx2} ${a.y2}, ${a.x2} ${a.y2}`;
-              return (
-                <path
-                  key={a.depId}
-                  data-dep-id={a.depId}
-                  d={pathD}
-                  stroke="#dc2626"
-                  strokeWidth="2"
-                  fill="none"
-                  opacity={a.resolved ? 0.35 : 0.85}
-                  strokeDasharray={a.resolved ? '5 3' : undefined}
-                  markerEnd="url(#dep-arrow)"
-                />
-              );
-            })}
-          </svg>
-        )}
+        <DependencyArrows arrows={arrows} />
         </div>
       </div>
 
