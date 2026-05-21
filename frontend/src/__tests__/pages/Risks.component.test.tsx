@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
@@ -14,6 +14,9 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
+vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
+
+import { useMutation } from '@tanstack/react-query';
 import { Risks } from '../../pages/Risks';
 import { makePI, makeRisk, makeTeam } from '../factories';
 import { setupQueryMocks } from '../setupMocks';
@@ -75,5 +78,39 @@ describe('Risks page', () => {
     render(<Risks />);
     await user.click(screen.getByRole('button', { name: '+ New Risk' }));
     expect(screen.getByRole('button', { name: 'Saving…' })).toBeInTheDocument();
+  });
+
+  it('shows loading spinner while data is loading', () => {
+    setupQueryMocks({ pi: mockPI, risks: [], teams: mockTeams }, { isLoading: true });
+    render(<Risks />);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('renders gracefully when risks data fails to load (isError)', () => {
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'teams') return mockTeams;
+        return undefined; // risks returns undefined → defaults to []
+      },
+      { isError: true },
+    );
+    render(<Risks />);
+    expect(screen.getByText('No risks for this PI.')).toBeInTheDocument();
+  });
+
+  it('shows error message in modal when risk create mutation fails', async () => {
+    setupQueryMocks({ pi: mockPI, risks: [], teams: mockTeams });
+    const onErrors: Array<(e: Error) => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    const user = userEvent.setup();
+    render(<Risks />);
+    await user.click(screen.getByRole('button', { name: '+ New Risk' }));
+    act(() => { onErrors[0]?.(new Error('Server error')); });
+    expect(screen.getByText('Server error')).toBeInTheDocument();
   });
 });
