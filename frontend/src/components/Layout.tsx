@@ -8,6 +8,7 @@ import { PIStatusBadge } from './Badge';
 import { useToast } from './Toaster';
 
 const NAV = [
+  { to: 'health', label: 'PI Health' },
   { to: 'board', label: 'Board' },
   { to: 'backlog', label: 'Backlog' },
   { to: 'objectives', label: 'Objectives' },

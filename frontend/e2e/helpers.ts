@@ -26,11 +26,12 @@ export async function selectPI(page: Page, name = 'PI 2026.1') {
 }
 
 const PAGE_SLUGS: Partial<Record<string, string>> = {
+  'PI Health': 'health',
   'PI Setup': 'setup',
   'Team Setup': 'team-setup',
 };
 
-export async function goToPage(page: Page, label: 'Board' | 'Backlog' | 'Objectives' | 'Predictability' | 'Capacity' | 'Risks' | 'Dependencies' | 'PI Setup' | 'Team Setup') {
+export async function goToPage(page: Page, label: 'PI Health' | 'Board' | 'Backlog' | 'Objectives' | 'Predictability' | 'Capacity' | 'Risks' | 'Dependencies' | 'PI Setup' | 'Team Setup') {
   await page.getByRole('link', { name: label }).click();
   const slug = PAGE_SLUGS[label] ?? label.toLowerCase();
   await page.waitForURL(new RegExp(`/${slug}`));
