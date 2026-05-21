@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { resetDb, selectPI } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  resetDb();
+  await resetDb();
   // Navigate via sidebar — ART Setup is always visible, no PI required
   await page.goto('/');
   await page.getByRole('link', { name: 'ART Setup' }).click();
