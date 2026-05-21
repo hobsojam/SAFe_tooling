@@ -29,8 +29,7 @@ export function ROAMBadge({ status }: Readonly<{ status: string }>) {
     mitigated: 'cyan',
     resolved: 'green',
   };
-  const label = status.charAt(0).toUpperCase() + status.slice(1);
-  return <Badge label={label} variant={map[status] ?? 'gray'} />;
+  return <Badge label={status} variant={map[status] ?? 'gray'} />;
 }
 
 export function DepBadge({ status }: Readonly<{ status: string }>) {

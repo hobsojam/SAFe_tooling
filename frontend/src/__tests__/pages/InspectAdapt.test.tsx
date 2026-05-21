@@ -138,11 +138,11 @@ describe('InspectAdapt', () => {
 
   it('renders ROAM breakdown cards for each status', () => {
     render(<InspectAdapt />);
-    expect(screen.getByText('Resolved')).toBeInTheDocument();
-    expect(screen.getByText('Owned')).toBeInTheDocument();
-    expect(screen.getByText('Accepted')).toBeInTheDocument();
-    expect(screen.getByText('Mitigated')).toBeInTheDocument();
-    expect(screen.getByText('Unroamed')).toBeInTheDocument();
+    expect(screen.getByText('resolved')).toBeInTheDocument();
+    expect(screen.getByText('owned')).toBeInTheDocument();
+    expect(screen.getByText('accepted')).toBeInTheDocument();
+    expect(screen.getByText('mitigated')).toBeInTheDocument();
+    expect(screen.getByText('unroamed')).toBeInTheDocument();
   });
 
   it('shows correct ROAM counts', () => {
