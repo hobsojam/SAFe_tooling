@@ -114,10 +114,24 @@ describe('Board page', () => {
   });
 
   it('applies bg-blue-50 to DroppableCell and UnassignedDropZone when isOver', () => {
-    vi.mocked(useDroppable).mockReturnValue({ setNodeRef: vi.fn(), isOver: true } as any);
+    vi.mocked(useDroppable).mockReturnValue({ setNodeRef: vi.fn(), isOver: true, active: null, rect: { current: null }, node: { current: null }, over: null });
     setupBoardMocks();
     const { container } = render(<Board />);
     const overCells = container.querySelectorAll('[class*="bg-blue-50"]');
     expect(overCells.length).toBeGreaterThan(0);
+  });
+
+  it('sets data-cell-team and data-cell-iter on iteration cells', () => {
+    setupBoardMocks();
+    const { container } = render(<Board />);
+    const cell = container.querySelector('[data-cell-team="Alpha"][data-cell-iter="I1"]');
+    expect(cell).not.toBeNull();
+  });
+
+  it('sets data-cell-iter="Unplanned" on the unplanned column cell', () => {
+    setupBoardMocks();
+    const { container } = render(<Board />);
+    const cell = container.querySelector('[data-cell-team="Alpha"][data-cell-iter="Unplanned"]');
+    expect(cell).not.toBeNull();
   });
 });

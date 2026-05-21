@@ -16,7 +16,7 @@ test('shows PI name in details section', async ({ page }) => {
 });
 
 test('shows PI status badge', async ({ page }) => {
-  await expect(page.getByText('active')).toBeVisible();
+  await expect(page.getByText('active').first()).toBeVisible();
 });
 
 test('shows five iterations', async ({ page }) => {
@@ -55,9 +55,9 @@ test('Close button is enabled when PI is active', async ({ page }) => {
 });
 
 test('can close an active PI', async ({ page }) => {
-  await page.getByRole('button', { name: 'Close' }).click();
-  await expect(page.getByText('closed')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Close' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByText('closed').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
 });
 
 test('+ Add link shows new iteration form', async ({ page }) => {
@@ -68,7 +68,7 @@ test('+ Add link shows new iteration form', async ({ page }) => {
 test('iteration form requires dates', async ({ page }) => {
   await page.getByRole('button', { name: '+ Add' }).click();
   await page.getByRole('button', { name: 'Add Iteration' }).click();
-  await expect(page.getByText('Start and end dates are required.')).toBeVisible();
+  await expect(page.getByText('Start and end dates are required.').first()).toBeVisible();
 });
 
 test('can add a new iteration', async ({ page }) => {
@@ -79,9 +79,9 @@ test('can add a new iteration', async ({ page }) => {
   await page.getByLabel('Start Date').fill('2026-01-12');
   await page.getByLabel('End Date').fill('2026-01-23');
   await page.getByRole('button', { name: 'Add Iteration' }).click();
-  await expect(page.getByRole('heading', { name: 'New Iteration' })).not.toBeVisible();
-  // Now 6 rows
+  // Wait for the table to update first (proves mutation succeeded and form was reset)
   await expect(page.locator('tbody tr')).toHaveCount(6);
+  await expect(page.getByRole('heading', { name: 'New Iteration' })).not.toBeVisible();
 });
 
 test('can delete an iteration', async ({ page }) => {
@@ -92,12 +92,12 @@ test('can delete an iteration', async ({ page }) => {
 });
 
 test('delete PI section is visible', async ({ page }) => {
-  await expect(page.getByText('Delete this PI')).toBeVisible();
+  await expect(page.getByText('Delete this PI').first()).toBeVisible();
 });
 
 test('Delete PI requires confirmation', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete PI' }).click();
-  await expect(page.getByText('Are you sure? This cannot be undone.')).toBeVisible();
+  await expect(page.getByText('Are you sure? This cannot be undone.').first()).toBeVisible();
 });
 
 test('can cancel PI deletion', async ({ page }) => {

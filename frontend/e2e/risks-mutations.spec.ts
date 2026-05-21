@@ -22,7 +22,7 @@ test('modal closes on Cancel', async ({ page }) => {
 test('create form requires description', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Risk' }).click();
   await page.getByRole('button', { name: 'Add Risk' }).click();
-  await expect(page.getByText('Description is required.')).toBeVisible();
+  await expect(page.getByText('Description is required.').first()).toBeVisible();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
@@ -33,7 +33,7 @@ test('can create a new risk', async ({ page }) => {
   await page.getByLabel('Owner').fill('Dave');
   await page.getByRole('button', { name: 'Add Risk' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  await expect(page.getByText('Database failover risk')).toBeVisible();
+  await expect(page.locator('table').getByText('Database failover risk')).toBeVisible();
   await expect(page.getByRole('cell', { name: 'Dave' })).toBeVisible();
 });
 
@@ -76,7 +76,7 @@ test('can change ROAM status via edit', async ({ page }) => {
 test('delete shows inline confirmation row', async ({ page }) => {
   const row = page.getByRole('row', { name: /Grafana Cloud trial expires mid-PI/ });
   await row.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(page.getByText(/Delete.*Grafana Cloud trial expires mid-PI/)).toBeVisible();
+  await expect(page.locator('table').getByText(/Delete.*Grafana Cloud trial expires mid-PI/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Yes, delete' })).toBeVisible();
 });
 
@@ -85,18 +85,18 @@ test('cancel delete dismisses inline confirmation', async ({ page }) => {
   await row.getByRole('button', { name: 'Delete', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByRole('button', { name: 'Yes, delete' })).not.toBeVisible();
-  await expect(page.getByText('Grafana Cloud trial expires mid-PI')).toBeVisible();
+  await expect(page.locator('table').getByText('Grafana Cloud trial expires mid-PI')).toBeVisible();
 });
 
 test('can delete a newly created risk', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Risk' }).click();
   await page.getByLabel('Description').fill('TEMP: to be deleted');
   await page.getByRole('button', { name: 'Add Risk' }).click();
-  await expect(page.getByText('TEMP: to be deleted')).toBeVisible();
+  await expect(page.locator('table').getByText('TEMP: to be deleted')).toBeVisible();
 
   const row = page.getByRole('row', { name: /TEMP: to be deleted/ });
   await row.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(page.getByText(/Delete.*TEMP: to be deleted/)).toBeVisible();
+  await expect(page.locator('table').getByText(/Delete.*TEMP: to be deleted/)).toBeVisible();
   await page.getByRole('button', { name: 'Yes, delete' }).click();
-  await expect(page.getByText('TEMP: to be deleted')).not.toBeVisible();
+  await expect(page.locator('table').getByText('TEMP: to be deleted')).not.toBeVisible();
 });

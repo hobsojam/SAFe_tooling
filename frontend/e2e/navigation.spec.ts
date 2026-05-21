@@ -1,15 +1,20 @@
 import { expect, test } from '@playwright/test';
+import { resetDb } from './helpers';
+
+test.beforeEach(async () => {
+  await resetDb();
+});
 
 test('sidebar shows app name and PI selector on load', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('SAFe Tools')).toBeVisible();
+  await expect(page.getByText('SAFe Tools').first()).toBeVisible();
   await expect(page.getByRole('combobox')).toBeVisible();
   await expect(page.getByRole('combobox')).toContainText('Select PI…');
 });
 
 test('placeholder shown when no PI selected', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('Select a Program Increment to get started.')).toBeVisible();
+  await expect(page.getByText('Select a Program Increment to get started.').first()).toBeVisible();
 });
 
 test('selecting a PI navigates to the board page', async ({ page }) => {
@@ -64,5 +69,5 @@ test('New PI button is visible in the sidebar', async ({ page }) => {
 
 test('disclaimer is visible in the sidebar', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText(/Not an official Scaled Agile product/)).toBeVisible();
+  await expect(page.getByText(/Not an official Scaled Agile product/).first()).toBeVisible();
 });

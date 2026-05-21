@@ -22,7 +22,7 @@ test('modal closes on Cancel', async ({ page }) => {
 test('create form requires description', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Dependency' }).click();
   await page.getByRole('button', { name: 'Add Dependency' }).click();
-  await expect(page.getByText('Description is required.')).toBeVisible();
+  await expect(page.getByText('Description is required.').first()).toBeVisible();
 });
 
 test('create form requires from and to features', async ({ page }) => {
@@ -30,7 +30,7 @@ test('create form requires from and to features', async ({ page }) => {
   await page.getByLabel('Description').fill('A dependency');
   await page.getByLabel('From Feature').selectOption({ value: '' });
   await page.getByRole('button', { name: 'Add Dependency' }).click();
-  await expect(page.getByText('From and To features are required.')).toBeVisible();
+  await expect(page.getByText('From and To features are required.').first()).toBeVisible();
 });
 
 test('can create a new dependency', async ({ page }) => {
@@ -41,7 +41,7 @@ test('can create a new dependency', async ({ page }) => {
   await page.getByLabel('Owner').fill('Eve');
   await page.getByRole('button', { name: 'Add Dependency' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  await expect(page.getByText('Payment gateway API needed by checkout')).toBeVisible();
+  await expect(page.locator('table').getByText('Payment gateway API needed by checkout')).toBeVisible();
   await expect(page.getByRole('cell', { name: 'Eve' })).toBeVisible();
 });
 
@@ -68,7 +68,7 @@ test('can edit dependency status', async ({ page }) => {
 test('delete shows inline confirmation row', async ({ page }) => {
   const row = page.getByRole('row', { name: /Observability metrics endpoint/ });
   await row.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(page.getByText(/Delete.*Observability metrics endpoint/)).toBeVisible();
+  await expect(page.locator('table').getByText(/Delete.*Observability metrics endpoint/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Yes, delete' })).toBeVisible();
 });
 
@@ -77,7 +77,7 @@ test('cancel delete dismisses inline confirmation', async ({ page }) => {
   await row.getByRole('button', { name: 'Delete', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByRole('button', { name: 'Yes, delete' })).not.toBeVisible();
-  await expect(page.getByText('Observability metrics endpoint needed by CI/CD pipeline health checks')).toBeVisible();
+  await expect(page.locator('table').getByText('Observability metrics endpoint needed by CI/CD pipeline health checks')).toBeVisible();
 });
 
 test('can delete a newly created dependency', async ({ page }) => {
@@ -86,11 +86,11 @@ test('can delete a newly created dependency', async ({ page }) => {
   await page.getByLabel('From Feature').selectOption({ label: 'Auth Service (Alpha)' });
   await page.getByLabel('To Feature').selectOption({ label: 'Observability Dashboard (Beta)' });
   await page.getByRole('button', { name: 'Add Dependency' }).click();
-  await expect(page.getByText('TEMP: to be deleted')).toBeVisible();
+  await expect(page.locator('table').getByText('TEMP: to be deleted')).toBeVisible();
 
   const row = page.getByRole('row', { name: /TEMP: to be deleted/ });
   await row.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(page.getByText(/Delete.*TEMP: to be deleted/)).toBeVisible();
+  await expect(page.locator('table').getByText(/Delete.*TEMP: to be deleted/)).toBeVisible();
   await page.getByRole('button', { name: 'Yes, delete' }).click();
-  await expect(page.getByText('TEMP: to be deleted')).not.toBeVisible();
+  await expect(page.locator('table').getByText('TEMP: to be deleted')).not.toBeVisible();
 });

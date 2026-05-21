@@ -14,6 +14,7 @@ _DEFAULT_DB_PATH = Path.home() / ".safe_tooling" / "db.json"
 _DEV_SESSION_FILE = ".dev_session"
 
 _db: TinyDB | None = None
+_db_path: Path | None = None
 _db_lock = threading.Lock()
 
 
@@ -41,9 +42,10 @@ def _write_dev_session(db_path: Path) -> None:
 
 @asynccontextmanager
 async def lifespan(app):
-    global _db
+    global _db, _db_path
     path = Path(os.environ.get("SAFE_DB_PATH", str(_DEFAULT_DB_PATH)))
     path.parent.mkdir(parents=True, exist_ok=True)
+    _db_path = path
     _db = TinyDB(path)
     if os.environ.get("SAFE_SEED_DEV") == "1":
         from safe.dev_seed import seed
@@ -82,7 +84,11 @@ def get_repos_dep() -> Generator[Repos, None, None]:
 ReposDep = Annotated[Repos, Depends(get_repos_dep)]
 
 
-def clear_cache() -> None:
-    if _db is not None:
-        for table_name in _db.tables():
-            _db.table(table_name).clear_cache()
+def reload_db() -> None:
+    global _db
+    if _db_path is None:
+        raise RuntimeError("Database path not initialised")
+    with _db_lock:
+        if _db is not None:
+            _db.close()
+        _db = TinyDB(_db_path)
