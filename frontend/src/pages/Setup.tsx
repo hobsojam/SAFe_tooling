@@ -363,7 +363,7 @@ export function Setup() {
                 checked={iterForm.is_ip}
                 onChange={(e) => setIterForm({ ...iterForm, is_ip: e.target.checked })}
                 className="rounded"
-              />
+              />{' '}
               Innovation &amp; Planning (IP) iteration
             </label>
             <div className="flex gap-3 justify-end">
