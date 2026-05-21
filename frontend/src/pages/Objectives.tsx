@@ -9,6 +9,7 @@ import { Pagination } from '../components/Pagination';
 import { Spinner } from '../components/Spinner';
 import { useToast } from '../components/Toaster';
 import { usePagination } from '../hooks/usePagination';
+import { buildPredictabilitySummary, predictabilityTextClass } from '../utils/predictability';
 
 interface ObjectiveFormState {
   description: string;
@@ -27,9 +28,7 @@ const EMPTY_FORM: ObjectiveFormState = {
 };
 
 export function predictabilityClass(pct: number): string {
-  if (pct >= 80) return 'font-bold text-teal-700';
-  if (pct >= 60) return 'font-bold text-amber-600';
-  return 'font-bold text-red-600';
+  return predictabilityTextClass(pct);
 }
 
 export function objectiveTypeBadgeClass(isStretch: boolean): string {
@@ -96,13 +95,7 @@ export function Objectives() {
 
   const teamMap = Object.fromEntries(teams.map((t) => [t.id, t.name]));
 
-  const committedPlannedBV = committed.reduce((s, o) => s + o.planned_business_value, 0);
-  const scoredCommitted = committed.filter((o) => o.actual_business_value !== null);
-  const committedActualBV = scoredCommitted.reduce((s, o) => s + (o.actual_business_value ?? 0), 0);
-  const predictabilityPct =
-    committedPlannedBV > 0 && scoredCommitted.length > 0
-      ? Math.round((committedActualBV / committedPlannedBV) * 100)
-      : null;
+  const committedPredictability = buildPredictabilitySummary(committed);
 
   function openNew() {
     setEditing(null);
@@ -255,13 +248,13 @@ export function Objectives() {
             {committed.length > 0 && (
               <div className="border-t-2 border-slate-200 bg-slate-50 px-4 py-3">
                 <p className="mb-1 text-xs text-slate-500">
-                  Committed totals · {scoredCommitted.length} of {committed.length} scored
+                  Committed totals · {committedPredictability.scoredCount} of {committedPredictability.totalCount} scored
                 </p>
                 <div className="flex items-center gap-6 text-sm">
-                  <span className="text-slate-600">Planned:{' '}<strong className="text-slate-800">{committedPlannedBV}</strong></span>
-                  <span className="text-slate-600">Actual:{' '}<strong className="text-slate-800">{scoredCommitted.length > 0 ? committedActualBV : '—'}</strong></span>
-                  {predictabilityPct !== null && (
-                    <span className={predictabilityClass(predictabilityPct)}>{predictabilityPct}%</span>
+                  <span className="text-slate-600">Planned:{' '}<strong className="text-slate-800">{committedPredictability.plannedBV}</strong></span>
+                  <span className="text-slate-600">Actual:{' '}<strong className="text-slate-800">{committedPredictability.scoredCount > 0 ? committedPredictability.actualBV : '—'}</strong></span>
+                  {committedPredictability.pct !== null && (
+                    <span className={predictabilityClass(committedPredictability.pct)}>{committedPredictability.pct}%</span>
                   )}
                 </div>
               </div>
@@ -352,20 +345,20 @@ export function Objectives() {
                 <tfoot className="border-t-2 border-slate-200 bg-slate-50">
                   <tr>
                     <td colSpan={3} className="px-4 py-2.5 text-xs text-slate-500">
-                      Committed totals · {scoredCommitted.length} of {committed.length} scored
+                      Committed totals · {committedPredictability.scoredCount} of {committedPredictability.totalCount} scored
                     </td>
                     <td className="px-4 py-2.5 tabular-nums text-sm font-semibold text-slate-700">
-                      {committedPlannedBV}
+                      {committedPredictability.plannedBV}
                     </td>
                     <td className="px-4 py-2.5 tabular-nums text-sm font-semibold text-slate-700">
-                      {scoredCommitted.length > 0 ? committedActualBV : '—'}
+                      {committedPredictability.scoredCount > 0 ? committedPredictability.actualBV : '—'}
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      {predictabilityPct === null ? (
+                      {committedPredictability.pct === null ? (
                         <span className="text-xs text-slate-400">Not yet scored</span>
                       ) : (
-                        <span className={`text-sm ${predictabilityClass(predictabilityPct)}`}>
-                          {predictabilityPct}%
+                        <span className={`text-sm ${predictabilityClass(committedPredictability.pct)}`}>
+                          {committedPredictability.pct}%
                         </span>
                       )}
                     </td>
