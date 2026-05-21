@@ -10,6 +10,7 @@ import { Risks } from './pages/Risks';
 import { RoamUnroamed } from './pages/RoamUnroamed';
 import { StoriesPage } from './pages/StoriesPage';
 import { ARTSetup } from './pages/ARTSetup';
+import { InspectAdapt } from './pages/InspectAdapt';
 import { Predictability } from './pages/Predictability';
 import { Setup } from './pages/Setup';
 import { TeamSetup } from './pages/TeamSetup';
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="pi/:piId/risks" element={<Risks />} />
           <Route path="pi/:piId/dependencies" element={<Dependencies />} />
           <Route path="pi/:piId/stories" element={<StoriesPage />} />
+          <Route path="pi/:piId/inspect-adapt" element={<InspectAdapt />} />
           <Route path="pi/:piId/setup" element={<Setup />} />
           <Route path="pi/:piId/team-setup" element={<TeamSetup />} />
           <Route path="art-setup" element={<ARTSetup />} />
