@@ -5,13 +5,13 @@ import { PIStatusBadge } from '../components/Badge';
 import { EmptyState } from '../components/EmptyState';
 import { Spinner } from '../components/Spinner';
 
-function predictabilityClass(pct: number): string {
+export function predictabilityClass(pct: number): string {
   if (pct >= 80) return 'text-teal-700';
   if (pct >= 60) return 'text-amber-600';
   return 'text-red-600';
 }
 
-function loadPctClass(pct: number): string {
+export function loadPctClass(pct: number): string {
   if (pct > 100) return 'text-red-600';
   if (pct >= 70) return 'text-blue-700';
   return 'text-amber-600';
