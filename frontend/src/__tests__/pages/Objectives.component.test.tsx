@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
@@ -14,6 +14,9 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
+vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
+
+import { useMutation } from '@tanstack/react-query';
 import { Objectives } from '../../pages/Objectives';
 import { makePI, makePIObjective, makeTeam } from '../factories';
 import { setupQueryMocks } from '../setupMocks';
@@ -110,6 +113,40 @@ describe('Objectives page', () => {
     const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
     expect(document.body.textContent).toContain('…');
+  });
+
+  it('shows loading spinner while data is loading', () => {
+    setupQueryMocks({ pi: mockPI, objectives: [], teams: mockTeams }, { isLoading: true });
+    render(<Objectives />);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('renders gracefully when objectives data fails to load (isError)', () => {
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'teams') return mockTeams;
+        return undefined; // objectives returns undefined → defaults to []
+      },
+      { isError: true },
+    );
+    render(<Objectives />);
+    expect(screen.getByRole('button', { name: '+ New Objective' })).toBeInTheDocument();
+  });
+
+  it('shows error message in modal when objective create mutation fails', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [], teams: mockTeams });
+    const onErrors: Array<(e: Error) => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getByRole('button', { name: '+ New Objective' }));
+    act(() => { onErrors[0]?.(new Error('Server error')); });
+    expect(screen.getByText('Server error')).toBeInTheDocument();
   });
 
   it('shows actual business value when committed objectives are scored', () => {

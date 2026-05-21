@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -154,5 +154,25 @@ describe('ARTSetup', () => {
     await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(mutate).toHaveBeenCalled();
+  });
+
+  it('renders gracefully when data fails to load (isError)', () => {
+    vi.mocked(useQuery).mockReturnValue({ data: undefined, isLoading: false, isError: true } as unknown as ReturnType<typeof useQuery>);
+    render(<ARTSetup />);
+    expect(screen.getByText(/No ARTs yet/)).toBeInTheDocument();
+  });
+
+  it('shows add-form error message when create mutation fails', async () => {
+    setupMocks();
+    const onErrors: Array<(e: Error) => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useMutation>;
+    });
+    const user = userEvent.setup();
+    render(<ARTSetup />);
+    await user.click(screen.getByText('+ Add ART'));
+    act(() => { onErrors[1]?.(new Error('Name already taken')); }); // createMut is 2nd (after updateMut)
+    expect(screen.getByText('Name already taken')).toBeInTheDocument();
   });
 });

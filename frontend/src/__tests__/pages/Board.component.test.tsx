@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { useDroppable } from '@dnd-kit/core';
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
 
@@ -9,10 +9,21 @@ beforeAll(() => {
     unobserve() {}
     disconnect() {}
   };
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { cb(0); return 0; });
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
 });
 
+const dndCallbacks = vi.hoisted(() => ({
+  onDragStart: undefined as ((e: any) => void) | undefined,
+  onDragEnd: undefined as ((e: any) => void) | undefined,
+}));
+
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DndContext: ({ children, onDragStart, onDragEnd }: any) => {
+    dndCallbacks.onDragStart = onDragStart;
+    dndCallbacks.onDragEnd = onDragEnd;
+    return <>{children}</>;
+  },
   DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children ?? null}</>,
   PointerSensor: class {},
   useSensor: vi.fn(() => ({})),
@@ -38,6 +49,8 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
+vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
+
 import { Board, DependencyArrows } from '../../pages/Board';
 import type { Arrow } from '../../pages/Board';
 import { makeFeature, makeIteration, makePI, makeTeam, makeDependency } from '../factories';
@@ -61,7 +74,7 @@ function setupBoardMocks({
   features = [mockFeature] as ReturnType<typeof makeFeature>[],
   deps = [] as unknown[],
 } = {}) {
-  setupQueryMocks(({ queryKey }) => {
+  return setupQueryMocks(({ queryKey }) => {
     const key = queryKey[0] as string;
     if (key === 'pi') return pi;
     if (key === 'teams') return teams;
@@ -75,6 +88,8 @@ function setupBoardMocks({
 describe('Board page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    dndCallbacks.onDragStart = undefined;
+    dndCallbacks.onDragEnd = undefined;
   });
 
   it('renders the board header with PI name', () => {
@@ -114,6 +129,39 @@ describe('Board page', () => {
     expect(screen.getByText(/No teams configured/)).toBeInTheDocument();
   });
 
+  it('shows loading spinner while data is loading', () => {
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'pi') return mockPI;
+        if (key === 'teams') return [mockTeam];
+        if (key === 'iterations') return [mockIteration];
+        if (key === 'features') return [mockFeature];
+        if (key === 'dependencies') return [];
+        return undefined;
+      },
+      { isLoading: true },
+    );
+    render(<Board />);
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('renders gracefully when data fails to load (isError)', () => {
+    setupQueryMocks(
+      ({ queryKey }) => {
+        const key = queryKey[0] as string;
+        if (key === 'teams') return [mockTeam];
+        if (key === 'iterations') return [];
+        if (key === 'features') return [];
+        if (key === 'dependencies') return [];
+        return undefined; // pi returns undefined
+      },
+      { isError: true },
+    );
+    render(<Board />);
+    expect(screen.getByText(/No teams configured/)).toBeInTheDocument();
+  });
+
   it('applies bg-blue-50 to DroppableCell and UnassignedDropZone when isOver', () => {
     vi.mocked(useDroppable).mockReturnValue({ setNodeRef: vi.fn(), isOver: true, active: null, rect: { current: null }, node: { current: null }, over: null });
     setupBoardMocks();
@@ -132,6 +180,15 @@ describe('Board page', () => {
   it('sets data-cell-iter="Unplanned" on the unplanned column cell', () => {
     setupBoardMocks();
     const { container } = render(<Board />);
+    const cell = container.querySelector('[data-cell-team="Alpha"][data-cell-iter="Unplanned"]');
+    expect(cell).not.toBeNull();
+  });
+
+  it('renders team feature in unplanned column when iteration not assigned', () => {
+    const f = makeFeature({ pi_id: 'pi-1', team_id: 'team-1', iteration_id: null, name: 'Team Unplanned' });
+    setupBoardMocks({ features: [f] });
+    const { container } = render(<Board />);
+    expect(screen.getByText('Team Unplanned')).toBeInTheDocument();
     const cell = container.querySelector('[data-cell-team="Alpha"][data-cell-iter="Unplanned"]');
     expect(cell).not.toBeNull();
   });
@@ -196,6 +253,25 @@ describe('Board page', () => {
     expect(container.querySelector('[data-at-risk="true"]')).toBeNull();
   });
 
+  it('does not mark consumer at-risk when consumer has no iteration (unplanned)', () => {
+    const consumer = makeFeature({ pi_id: 'pi-1', team_id: 'team-1', iteration_id: null, name: 'Consumer' });
+    const provider = makeFeature({ pi_id: 'pi-1', team_id: 'team-1', iteration_id: 'iter-1', name: 'Provider' });
+    const dep = makeDependency({
+      from_feature_id: consumer.id,
+      to_feature_id: provider.id,
+      status: 'identified',
+    });
+    setupBoardMocks({
+      features: [consumer, provider],
+      iterations: [mockIteration],
+      deps: [dep],
+    });
+    const { container } = render(<Board />);
+    // consumer.team_id is set so it's not flagged by the no-team check
+    // fromNum is null (unplanned) so the dep at-risk check is skipped
+    expect(container.querySelector('[data-at-risk="true"]')).toBeNull();
+  });
+
   it('renders the IP iteration column header', () => {
     const ipIter = makeIteration({ id: 'iter-ip', pi_id: 'pi-1', number: 2, is_ip: true });
     setupBoardMocks({ iterations: [mockIteration, ipIter] });
@@ -227,6 +303,93 @@ describe('Board page', () => {
     setupBoardMocks({ deps: [dep] });
     render(<Board />);
     expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('handleDragStart shows the dragged feature in the overlay', () => {
+    setupBoardMocks();
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragStart?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+      });
+    });
+    expect(screen.getAllByText('Auth Service').length).toBeGreaterThan(0);
+  });
+
+  it('handleDragEnd with no over target clears active feature without mutating', () => {
+    const { mutate } = setupBoardMocks();
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragStart?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+      });
+      dndCallbacks.onDragEnd?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+        over: null,
+      });
+    });
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it('handleDragEnd to unassigned zone removes team assignment', () => {
+    const { mutate } = setupBoardMocks();
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragEnd?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+        over: { id: 'unassigned' },
+      });
+    });
+    expect(mutate).toHaveBeenCalledWith({ featureId: mockFeature.id, teamId: null, iterationId: null });
+  });
+
+  it('handleDragEnd to unassigned zone with already-unassigned feature does nothing', () => {
+    const unassigned = makeFeature({ pi_id: 'pi-1', team_id: null, name: 'Unassigned' });
+    const { mutate } = setupBoardMocks({ features: [unassigned] });
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragEnd?.({
+        active: { id: unassigned.id, data: { current: { feature: unassigned } } },
+        over: { id: 'unassigned' },
+      });
+    });
+    expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it('handleDragEnd to a different cell triggers moveMutation', () => {
+    const { mutate } = setupBoardMocks();
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragEnd?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+        over: { id: 'team-2|iter-2' },
+      });
+    });
+    expect(mutate).toHaveBeenCalledWith({ featureId: mockFeature.id, teamId: 'team-2', iterationId: 'iter-2' });
+  });
+
+  it('handleDragEnd to unplanned column sends null iterationId', () => {
+    const { mutate } = setupBoardMocks();
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragEnd?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+        over: { id: 'team-2|unplanned' },
+      });
+    });
+    expect(mutate).toHaveBeenCalledWith({ featureId: mockFeature.id, teamId: 'team-2', iterationId: null });
+  });
+
+  it('handleDragEnd to same cell is a no-op', () => {
+    const { mutate } = setupBoardMocks();
+    render(<Board />);
+    act(() => {
+      dndCallbacks.onDragEnd?.({
+        active: { id: mockFeature.id, data: { current: { feature: mockFeature } } },
+        over: { id: `${mockFeature.team_id}|${mockFeature.iteration_id}` },
+      });
+    });
+    expect(mutate).not.toHaveBeenCalled();
   });
 });
 

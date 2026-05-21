@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -201,5 +201,30 @@ describe('Setup', () => {
     await user.click(screen.getByRole('button', { name: 'Delete PI' }));
     await user.click(screen.getByRole('button', { name: 'Yes, delete' }));
     expect(mutate).toHaveBeenCalled();
+  });
+
+  it('shows spinner when PI data fails to load (isError)', () => {
+    vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
+      const key = (queryKey as string[])[0];
+      if (key === 'pi') return { data: undefined, isLoading: false, isError: true } as unknown as ReturnType<typeof useQuery>;
+      if (key === 'iterations') return { data: mockIterations, isLoading: false } as unknown as ReturnType<typeof useQuery>;
+      return { data: undefined, isLoading: false } as unknown as ReturnType<typeof useQuery>;
+    });
+    render(<Setup />);
+    // When pi is undefined (due to error), the component shows the same spinner as loading
+    expect(screen.getByText('Loading…')).toBeInTheDocument();
+  });
+
+  it('shows error message when PI update mutation fails', async () => {
+    const onErrors: Array<(e: Error) => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof useMutation>;
+    });
+    const user = userEvent.setup();
+    render(<Setup />);
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    act(() => { onErrors[0]?.(new Error('Update failed')); }); // updatePIMut is 1st
+    expect(screen.getByText('Update failed')).toBeInTheDocument();
   });
 });
