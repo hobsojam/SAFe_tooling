@@ -372,6 +372,8 @@ interface FeatureFormState {
   description: string;
   team_id: string | null;
   status: FeatureStatus;
+  acceptance_criteria: string;
+  nfr: string;
   user_business_value: number;
   time_criticality: number;
   risk_reduction_opportunity_enablement: number;
@@ -383,6 +385,8 @@ const EMPTY_FORM: FeatureFormState = {
   description: '',
   team_id: null,
   status: 'backlog',
+  acceptance_criteria: '',
+  nfr: '',
   user_business_value: 5,
   time_criticality: 5,
   risk_reduction_opportunity_enablement: 5,
@@ -479,6 +483,8 @@ export function Backlog() {
       description: f.description,
       team_id: f.team_id,
       status: f.status,
+      acceptance_criteria: f.acceptance_criteria,
+      nfr: f.nfr,
       user_business_value: f.user_business_value,
       time_criticality: f.time_criticality,
       risk_reduction_opportunity_enablement: f.risk_reduction_opportunity_enablement,
@@ -725,6 +731,32 @@ export function Backlog() {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={2}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="feature-ac" className="mb-1 block text-sm font-medium text-slate-700">Acceptance Criteria</label>
+            <textarea
+              id="feature-ac"
+              value={form.acceptance_criteria}
+              onChange={(e) => setForm({ ...form, acceptance_criteria: e.target.value })}
+              rows={3}
+              placeholder="Given / When / Then…"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="feature-nfr" className="mb-1 block text-sm font-medium text-slate-700">
+              Non-Functional Requirements
+            </label>
+            <textarea
+              id="feature-nfr"
+              value={form.nfr}
+              onChange={(e) => setForm({ ...form, nfr: e.target.value })}
+              rows={3}
+              placeholder="Performance, security, scalability constraints…"
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             />
           </div>

@@ -55,6 +55,8 @@ export interface Feature {
   team_id: string | null;
   iteration_id: string | null;
   status: FeatureStatus;
+  acceptance_criteria: string;
+  nfr: string;
   user_business_value: number;
   time_criticality: number;
   risk_reduction_opportunity_enablement: number;
@@ -259,6 +261,8 @@ export interface FeatureCreate {
   team_id?: string | null;
   iteration_id?: string | null;
   status?: FeatureStatus;
+  acceptance_criteria?: string;
+  nfr?: string;
   user_business_value: number;
   time_criticality: number;
   risk_reduction_opportunity_enablement: number;
@@ -272,6 +276,8 @@ export interface FeatureUpdate {
   team_id?: string | null;
   iteration_id?: string | null;
   status?: FeatureStatus;
+  acceptance_criteria?: string;
+  nfr?: string;
   user_business_value?: number;
   time_criticality?: number;
   risk_reduction_opportunity_enablement?: number;

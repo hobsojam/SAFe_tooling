@@ -84,6 +84,7 @@ class FeatureCreate(BaseModel):
     iteration_id: str | None = None
     status: FeatureStatus = FeatureStatus.BACKLOG
     acceptance_criteria: str = ""
+    nfr: str = ""
     user_business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction_opportunity_enablement: int = Field(ge=1, le=10)
@@ -98,6 +99,7 @@ class FeatureUpdate(BaseModel):
     iteration_id: str | None = None
     status: FeatureStatus | None = None
     acceptance_criteria: str | None = None
+    nfr: str | None = None
     user_business_value: int | None = Field(default=None, ge=1, le=10)
     time_criticality: int | None = Field(default=None, ge=1, le=10)
     risk_reduction_opportunity_enablement: int | None = Field(default=None, ge=1, le=10)
