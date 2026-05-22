@@ -199,6 +199,42 @@ describe('Backlog page', () => {
     vi.unstubAllGlobals();
   });
 
+  it('updates acceptance_criteria textarea in the add-feature form', async () => {
+    setupPageMocks({ features: [] });
+    const user = userEvent.setup();
+    render(<Backlog />);
+    await user.click(screen.getByRole('button', { name: '+ New Feature' }));
+    const acField = screen.getByRole('textbox', { name: /acceptance criteria/i });
+    await user.type(acField, 'Given X When Y Then Z');
+    expect(acField).toHaveValue('Given X When Y Then Z');
+  });
+
+  it('updates nfr textarea in the add-feature form', async () => {
+    setupPageMocks({ features: [] });
+    const user = userEvent.setup();
+    render(<Backlog />);
+    await user.click(screen.getByRole('button', { name: '+ New Feature' }));
+    const nfrField = screen.getByRole('textbox', { name: /non-functional requirements/i });
+    await user.type(nfrField, 'Must handle 1000 RPS');
+    expect(nfrField).toHaveValue('Must handle 1000 RPS');
+  });
+
+  it('pre-populates acceptance_criteria and nfr in the edit modal', async () => {
+    const feature = makeFeature({
+      id: 'feat-1',
+      pi_id: 'pi-1',
+      acceptance_criteria: 'Given X When Y Then Z',
+      nfr: 'Handle 1000 RPS',
+    });
+    setupPageMocks({ features: [feature] });
+    const user = userEvent.setup();
+    render(<Backlog />);
+    const editButtons = screen.getAllByRole('button', { name: 'Edit' });
+    await user.click(editButtons[0]);
+    expect(screen.getByRole('textbox', { name: /acceptance criteria/i })).toHaveValue('Given X When Y Then Z');
+    expect(screen.getByRole('textbox', { name: /non-functional requirements/i })).toHaveValue('Handle 1000 RPS');
+  });
+
   it('StoryPanel shows "—" for story with no iteration_id', async () => {
     const storyNoIteration = { ...baseStory, iteration_id: null };
     setupPageMocks({ features: [baseFeature], featureStories: [storyNoIteration] });
