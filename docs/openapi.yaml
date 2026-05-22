@@ -1788,6 +1788,10 @@ components:
         acceptance_criteria:
           type: string
           default: ''
+        nfr:
+          type: string
+          default: ''
+          description: Non-functional requirements for this feature
         user_business_value:
           type: integer
           minimum: 1
@@ -1850,6 +1854,10 @@ components:
         acceptance_criteria:
           type: string
           default: ''
+        nfr:
+          type: string
+          default: ''
+          description: Non-functional requirements for this feature
         user_business_value:
           type: integer
           minimum: 1
@@ -1890,6 +1898,9 @@ components:
           $ref: '#/components/schemas/FeatureStatus'
         acceptance_criteria:
           type: string
+        nfr:
+          type: string
+          description: Non-functional requirements for this feature
         user_business_value:
           type: integer
           minimum: 1
