@@ -210,15 +210,15 @@ jobs:
         working-directory: frontend
         run: npx playwright test --config playwright.screenshots.config.ts
 
-      - name: Commit and push screenshots
+      - name: Publish screenshots to dedicated branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan screenshots-tmp
+          git rm -rf --cached .
           git add docs/screenshots/
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update screenshots [skip ci]"
-            git push
-          fi
+          git commit -m "chore: update screenshots"
+          git push origin HEAD:screenshots --force
 
   e2e:
     name: End-to-end tests
