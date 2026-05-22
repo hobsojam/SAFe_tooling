@@ -14,6 +14,8 @@ from safe.store.repos import get_repos
 capacity_app = typer.Typer(help="Manage team capacity plans")
 console = Console()
 
+_PI_ID_HELP = "PI id"
+
 
 def _repos():
     return get_repos(get_db(state.db_path) if state.db_path else None)
@@ -42,7 +44,7 @@ def capacity_calc(
 
 @capacity_app.command("set")
 def capacity_set(
-    pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
+    pi_id: str = typer.Option(..., "--pi-id", help=_PI_ID_HELP),
     team_id: str = typer.Option(..., "--team-id", help="Team id"),
     iteration_id: str = typer.Option(..., "--iteration-id", "-i", help="Iteration id"),
     team_size: int = typer.Option(..., "--team-size", "-n", help="Number of team members"),
@@ -146,9 +148,22 @@ def capacity_show(
     console.print(table)
 
 
+def _velocity_row(repos, pi_id: str, team, iteration) -> tuple[str, str, str, str, str]:
+    stories = repos.stories.find(team_id=team.id, iteration_id=iteration.id)
+    done_pts = team_velocity(stories)
+    plan_list = repos.capacity_plans.find(pi_id=pi_id, team_id=team.id, iteration_id=iteration.id)
+    plan = plan_list[0] if plan_list else None
+    cap_str = str(plan.available_capacity) if plan else "-"
+    if plan and plan.available_capacity > 0:
+        vel_str = f"{round((done_pts / plan.available_capacity) * 100, 1)}%"
+    else:
+        vel_str = "-"
+    return team.name, f"I{iteration.number}", str(done_pts), cap_str, vel_str
+
+
 @capacity_app.command("velocity")
 def capacity_velocity(
-    pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
+    pi_id: str = typer.Option(..., "--pi-id", help=_PI_ID_HELP),
     team_id: str | None = typer.Option(None, "--team-id", help="Filter by team"),
 ):
     """Show completed story points per team per iteration (derived from done/accepted stories)."""
@@ -170,31 +185,13 @@ def capacity_velocity(
         if team is None:
             continue
         for iteration in iterations:
-            stories = repos.stories.find(team_id=team.id, iteration_id=iteration.id)
-            done_pts = team_velocity(stories)
-            plan_list = repos.capacity_plans.find(
-                pi_id=pi_id, team_id=team.id, iteration_id=iteration.id
-            )
-            plan = plan_list[0] if plan_list else None
-            cap_str = str(plan.available_capacity) if plan else "-"
-            if plan and plan.available_capacity > 0:
-                vel_pct = round((done_pts / plan.available_capacity) * 100, 1)
-                vel_str = f"{vel_pct}%"
-            else:
-                vel_str = "-"
-            table.add_row(
-                team.name,
-                f"I{iteration.number}",
-                str(done_pts),
-                cap_str,
-                vel_str,
-            )
+            table.add_row(*_velocity_row(repos, pi_id, team, iteration))
     console.print(table)
 
 
 @capacity_app.command("export")
 def capacity_export(
-    pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
+    pi_id: str = typer.Option(..., "--pi-id", help=_PI_ID_HELP),
     output: Path = typer.Option(Path("capacity.csv"), "--output", "-o", help="Output CSV file"),
 ):
     """Export capacity plans for a PI to CSV."""
