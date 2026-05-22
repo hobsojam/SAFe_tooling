@@ -24,15 +24,15 @@ A local PI Planning platform for Scaled Agile Framework (SAFe) teams. Manage you
 
 | Board | Backlog |
 |-------|---------|
-| ![Program Board](docs/screenshots/board.png) | ![Program Backlog](docs/screenshots/backlog.png) |
+| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
 
 | Capacity | PI Health |
 |----------|-----------|
-| ![Capacity Planning](docs/screenshots/capacity.png) | ![PI Health](docs/screenshots/pi-health.png) |
+| ![Capacity Planning](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/capacity.png) | ![PI Health](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/pi-health.png) |
 
-![Risks](docs/screenshots/risks.png)
+![Risks](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/risks.png)
 
-> Screenshots are captured automatically from the fixture dataset on every merge to `main`.
+> **How it works:** on every merge to `main`, CI takes Playwright screenshots of the live app against the fixture dataset and force-pushes them as a single orphan commit to the [`screenshots`](https://github.com/hobsojam/SAFe_tooling/tree/screenshots) branch. The branch is auto-managed and should **never** be merged — any PR opened from it will be closed automatically.
 
 ---
 
