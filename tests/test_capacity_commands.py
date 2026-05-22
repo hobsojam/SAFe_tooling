@@ -288,6 +288,83 @@ class TestCapacityShowLoad:
         assert "125.0" in patch_console.getvalue()
 
 
+def _add_story_with_status(db_path, fid, tid, iter_id, points, status="not_started"):
+    return invoke(
+        db_path,
+        "story",
+        "add",
+        "--name",
+        "S",
+        "--feature-id",
+        fid,
+        "--team-id",
+        tid,
+        "--points",
+        str(points),
+        "--iteration-id",
+        iter_id,
+    )
+
+
+def _mark_story_done(db_path, story_id):
+    return invoke(db_path, "story", "update", story_id, "--status", "done")
+
+
+class TestCapacityVelocity:
+    def _setup_with_done_stories(self, db_path, done_pts=5, other_pts=3):
+        pi_id, team_id, iter_id = _setup(db_path)
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        fid = repos_for(db_path).features.get_all()[0].id
+        _add_story(db_path, fid, team_id, iter_id, done_pts)
+        story_id = repos_for(db_path).stories.get_all()[0].id
+        _mark_story_done(db_path, story_id)
+        _add_story(db_path, fid, team_id, iter_id, other_pts)
+        return pi_id, team_id, iter_id
+
+    def test_shows_done_points(self, db_path, patch_console):
+        pi_id, _, _ = self._setup_with_done_stories(db_path, done_pts=5)
+        patch_console.truncate(0)
+        patch_console.seek(0)
+        result = invoke(db_path, "capacity", "velocity", "--pi-id", pi_id)
+        assert result.exit_code == 0
+        assert "5" in patch_console.getvalue()
+
+    def test_excludes_not_done_points(self, db_path, patch_console):
+        pi_id, _, _ = self._setup_with_done_stories(db_path, done_pts=5, other_pts=99)
+        patch_console.truncate(0)
+        patch_console.seek(0)
+        invoke(db_path, "capacity", "velocity", "--pi-id", pi_id)
+        output = patch_console.getvalue()
+        assert "99" not in output
+
+    def test_unknown_pi_exits_1(self, db_path, patch_console):
+        result = invoke(db_path, "capacity", "velocity", "--pi-id", "bad")
+        assert result.exit_code == 1
+
+    def test_unknown_team_exits_1(self, db_path, patch_console):
+        pi_id, _, _ = _setup(db_path)
+        result = invoke(db_path, "capacity", "velocity", "--pi-id", pi_id, "--team-id", "bad")
+        assert result.exit_code == 1
+
+    def test_shows_capacity_when_plan_set(self, db_path, patch_console):
+        pi_id, team_id, iter_id = self._setup_with_done_stories(db_path, done_pts=5)
+        _set_plan(db_path, pi_id, team_id, iter_id, team_size=5)
+        patch_console.truncate(0)
+        patch_console.seek(0)
+        invoke(db_path, "capacity", "velocity", "--pi-id", pi_id)
+        output = patch_console.getvalue()
+        assert "40.0" in output
+
+    def test_velocity_pct_shown_when_plan_set(self, db_path, patch_console):
+        pi_id, team_id, iter_id = self._setup_with_done_stories(db_path, done_pts=20)
+        _set_plan(db_path, pi_id, team_id, iter_id, team_size=5)
+        patch_console.truncate(0)
+        patch_console.seek(0)
+        invoke(db_path, "capacity", "velocity", "--pi-id", pi_id)
+        # 20 done / 40 capacity = 50%
+        assert "50.0%" in patch_console.getvalue()
+
+
 class TestCapacityExport:
     def test_creates_csv(self, db_path, patch_console, tmp_path):
         pi_id, team_id, iter_id = _setup(db_path)

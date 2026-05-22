@@ -1162,6 +1162,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /capacity-plans/velocity:
+    get:
+      tags:
+      - capacity-plans
+      summary: Get completed story points per team per iteration
+      operationId: get_velocity
+      description: >
+        Returns the number of story points completed (done or accepted) per team
+        per iteration for the given PI, derived from story status. Also includes
+        the planned available capacity when a capacity plan exists.
+      parameters:
+      - name: pi_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: PI to compute velocity for
+      - name: team_id
+        in: query
+        schema:
+          type: string
+          format: uuid
+        description: Filter to a single team
+      responses:
+        '200':
+          description: Velocity entries per team per iteration
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VelocityEntry'
+        '404':
+          description: PI or team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /capacity-plans/{plan_id}:
     parameters:
     - $ref: '#/components/parameters/plan_id'
@@ -2288,6 +2327,32 @@ components:
           format: float
           readOnly: true
           description: 'Computed: (team_size x iteration_days - pto_days) x (1 - overhead_pct)'
+    VelocityEntry:
+      type: object
+      required:
+      - team_id
+      - iteration_id
+      - pi_id
+      - completed_points
+      properties:
+        team_id:
+          type: string
+          format: uuid
+        iteration_id:
+          type: string
+          format: uuid
+        pi_id:
+          type: string
+          format: uuid
+        completed_points:
+          type: integer
+          minimum: 0
+          description: Sum of story points for done/accepted stories
+        available_capacity:
+          type: number
+          format: float
+          nullable: true
+          description: Planned available person-days (null when no capacity plan exists)
     CapacityPlanSeed:
       type: object
       required:

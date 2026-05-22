@@ -132,6 +132,14 @@ export interface CapacityPlan {
   available_capacity: number;
 }
 
+export interface VelocityEntry {
+  team_id: string;
+  iteration_id: string;
+  pi_id: string;
+  completed_points: number;
+  available_capacity: number | null;
+}
+
 export interface CapacityPlanCreate {
   team_id: string;
   iteration_id: string;

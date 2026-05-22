@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from safe.api.routers.capacity_plans import _weekdays
 
 
@@ -152,6 +154,117 @@ def test_create_unknown_iteration_returns_404(client):
     r = _create_plan(client, pi_id, team_id, "no-such-iteration")
     assert r.status_code == 404
     assert "Iteration" in r.json()["detail"]
+
+
+class TestVelocityEndpoint:
+    def _setup_with_stories(self, client):
+        pi_id, team_id, iter_id = _setup(client)
+        feature_id = client.post(
+            "/features",
+            json={
+                "name": "F",
+                "pi_id": pi_id,
+                "team_id": team_id,
+                "user_business_value": 5,
+                "time_criticality": 5,
+                "risk_reduction_opportunity_enablement": 5,
+                "job_size": 5,
+            },
+        ).json()["id"]
+        done_story_id = client.post(
+            "/stories",
+            json={
+                "name": "done story",
+                "feature_id": feature_id,
+                "team_id": team_id,
+                "iteration_id": iter_id,
+                "points": 8,
+                "status": "done",
+            },
+        ).json()["id"]
+        client.post(
+            "/stories",
+            json={
+                "name": "in progress story",
+                "feature_id": feature_id,
+                "team_id": team_id,
+                "iteration_id": iter_id,
+                "points": 5,
+                "status": "in_progress",
+            },
+        )
+        return pi_id, team_id, iter_id, done_story_id
+
+    def test_returns_200(self, client):
+        pi_id, _, _, _ = self._setup_with_stories(client)
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}")
+        assert r.status_code == 200
+
+    def test_completed_points_counts_done_only(self, client):
+        pi_id, team_id, iter_id, _ = self._setup_with_stories(client)
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}")
+        entries = r.json()
+        entry = next((e for e in entries if e["team_id"] == team_id), None)
+        assert entry is not None
+        assert entry["completed_points"] == 8
+
+    def test_accepted_stories_count_as_velocity(self, client):
+        pi_id, team_id, iter_id = _setup(client)
+        feature_id = client.post(
+            "/features",
+            json={
+                "name": "F2",
+                "pi_id": pi_id,
+                "team_id": team_id,
+                "user_business_value": 5,
+                "time_criticality": 5,
+                "risk_reduction_opportunity_enablement": 5,
+                "job_size": 5,
+            },
+        ).json()["id"]
+        client.post(
+            "/stories",
+            json={
+                "name": "accepted story",
+                "feature_id": feature_id,
+                "team_id": team_id,
+                "iteration_id": iter_id,
+                "points": 3,
+                "status": "accepted",
+            },
+        )
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}")
+        entry = next(e for e in r.json() if e["team_id"] == team_id)
+        assert entry["completed_points"] == 3
+
+    def test_available_capacity_null_without_plan(self, client):
+        pi_id, team_id, iter_id, _ = self._setup_with_stories(client)
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}")
+        entry = next(e for e in r.json() if e["team_id"] == team_id)
+        assert entry["available_capacity"] is None
+
+    def test_available_capacity_populated_with_plan(self, client):
+        pi_id, team_id, iter_id, _ = self._setup_with_stories(client)
+        _create_plan(client, pi_id, team_id, iter_id, team_size=5)
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}")
+        entry = next(e for e in r.json() if e["team_id"] == team_id)
+        assert entry["available_capacity"] == pytest.approx(40.0)
+
+    def test_filter_by_team_id(self, client):
+        pi_id, team_id, iter_id, _ = self._setup_with_stories(client)
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}&team_id={team_id}")
+        assert r.status_code == 200
+        entries = r.json()
+        assert all(e["team_id"] == team_id for e in entries)
+
+    def test_unknown_pi_returns_404(self, client):
+        r = client.get("/capacity-plans/velocity?pi_id=no-such-pi")
+        assert r.status_code == 404
+
+    def test_unknown_team_returns_404(self, client):
+        pi_id, _, _ = _setup(client)
+        r = client.get(f"/capacity-plans/velocity?pi_id={pi_id}&team_id=no-such-team")
+        assert r.status_code == 404
 
 
 class TestSeedCapacityPlans:

@@ -1,3 +1,11 @@
+from safe.models.backlog import Story, StoryStatus
+
+
+def team_velocity(stories: list[Story]) -> int:
+    """Sum story points for done or accepted stories."""
+    return sum(s.points for s in stories if s.status in (StoryStatus.DONE, StoryStatus.ACCEPTED))
+
+
 def available_capacity(
     team_size: int,
     iteration_days: int,

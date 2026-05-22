@@ -5,7 +5,8 @@ from datetime import date, timedelta
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
-from safe.api.schemas import CapacityPlanCreate, CapacityPlanSeed, CapacityPlanUpdate
+from safe.api.schemas import CapacityPlanCreate, CapacityPlanSeed, CapacityPlanUpdate, VelocityEntry
+from safe.logic.capacity import team_velocity
 from safe.models.capacity_plan import CapacityPlan
 from safe.store.repos import Repos
 
@@ -93,6 +94,43 @@ def create_or_update_capacity_plan(body: CapacityPlanCreate, repos: ReposDep):
         return repos.capacity_plans.save(plan)
     plan = CapacityPlan(**body.model_dump())
     return repos.capacity_plans.save(plan)
+
+
+@router.get("/velocity", response_model=list[VelocityEntry])
+def get_velocity(
+    repos: ReposDep,
+    pi_id: str = Query(..., description="PI id"),
+    team_id: str | None = Query(default=None, description="Filter by team"),
+):
+    if repos.pis.get(pi_id) is None:
+        raise HTTPException(status_code=404, detail=f"PI '{pi_id}' not found")
+    if team_id is not None:
+        team = repos.teams.get(team_id)
+        if team is None:
+            raise HTTPException(status_code=404, detail=f"Team '{team_id}' not found")
+        teams = [team]
+    else:
+        teams = repos.teams.get_all()
+    iterations = repos.iterations.find(pi_id=pi_id)
+    results = []
+    for team in teams:
+        for iteration in iterations:
+            stories = repos.stories.find(team_id=team.id, iteration_id=iteration.id)
+            completed = team_velocity(stories)
+            plan_list = repos.capacity_plans.find(
+                pi_id=pi_id, team_id=team.id, iteration_id=iteration.id
+            )
+            plan = plan_list[0] if plan_list else None
+            results.append(
+                VelocityEntry(
+                    team_id=team.id,
+                    iteration_id=iteration.id,
+                    pi_id=pi_id,
+                    completed_points=completed,
+                    available_capacity=plan.available_capacity if plan else None,
+                )
+            )
+    return results
 
 
 @router.get("/{plan_id}", response_model=CapacityPlan)

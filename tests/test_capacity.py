@@ -1,6 +1,7 @@
 import pytest
 
-from safe.logic.capacity import available_capacity, capacity_warning, load_percentage
+from safe.logic.capacity import available_capacity, capacity_warning, load_percentage, team_velocity
+from safe.models.backlog import Story, StoryStatus
 
 
 def test_available_capacity_basic():
@@ -43,3 +44,41 @@ def test_invalid_overhead():
 def test_load_percentage_zero_capacity():
     with pytest.raises(ValueError):
         load_percentage(10.0, 0.0)
+
+
+def _story(points: int, status: StoryStatus) -> Story:
+    return Story(
+        name="s",
+        feature_id="f",
+        team_id="t",
+        points=points,
+        status=status,
+    )
+
+
+def test_team_velocity_empty():
+    assert team_velocity([]) == 0
+
+
+def test_team_velocity_counts_done():
+    stories = [_story(5, StoryStatus.DONE), _story(3, StoryStatus.NOT_STARTED)]
+    assert team_velocity(stories) == 5
+
+
+def test_team_velocity_counts_accepted():
+    stories = [_story(4, StoryStatus.ACCEPTED), _story(2, StoryStatus.IN_PROGRESS)]
+    assert team_velocity(stories) == 4
+
+
+def test_team_velocity_sums_done_and_accepted():
+    stories = [
+        _story(5, StoryStatus.DONE),
+        _story(3, StoryStatus.ACCEPTED),
+        _story(10, StoryStatus.NOT_STARTED),
+    ]
+    assert team_velocity(stories) == 8
+
+
+def test_team_velocity_excludes_in_progress():
+    stories = [_story(7, StoryStatus.IN_PROGRESS)]
+    assert team_velocity(stories) == 0
