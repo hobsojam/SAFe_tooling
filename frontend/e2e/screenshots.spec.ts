@@ -6,7 +6,7 @@ import { goToPage, resetDb, selectPI, waitForAppReady } from './helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const SCREENSHOTS_DIR = path.resolve(__dirname, '../../../docs/screenshots');
+const SCREENSHOTS_DIR = path.resolve(__dirname, '../../docs/screenshots');
 
 test.beforeAll(() => {
   fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
