@@ -234,6 +234,14 @@ class CapacityPlanSeed(BaseModel):
     pi_id: str
 
 
+class VelocityEntry(BaseModel):
+    team_id: str
+    iteration_id: str
+    pi_id: str
+    completed_points: int
+    available_capacity: float | None = None
+
+
 # --- Compute ---
 
 

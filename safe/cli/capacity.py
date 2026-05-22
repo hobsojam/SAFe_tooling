@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.table import Table
 
 import safe.cli.state as state
-from safe.logic.capacity import available_capacity, capacity_warning, load_percentage
+from safe.logic.capacity import available_capacity, capacity_warning, load_percentage, team_velocity
 from safe.models.capacity_plan import CapacityPlan
 from safe.store.db import get_db
 from safe.store.repos import get_repos
@@ -143,6 +143,52 @@ def capacity_show(
             load_str,
             status,
         )
+    console.print(table)
+
+
+@capacity_app.command("velocity")
+def capacity_velocity(
+    pi_id: str = typer.Option(..., "--pi-id", help="PI id"),
+    team_id: str | None = typer.Option(None, "--team-id", help="Filter by team"),
+):
+    """Show completed story points per team per iteration (derived from done/accepted stories)."""
+    repos = _repos()
+    if repos.pis.get(pi_id) is None:
+        console.print(f"[red]Error: PI '{pi_id}' not found[/red]")
+        raise typer.Exit(1)
+    if team_id is not None and repos.teams.get(team_id) is None:
+        console.print(f"[red]Error: Team '{team_id}' not found[/red]")
+        raise typer.Exit(1)
+    teams = [repos.teams.get(team_id)] if team_id is not None else repos.teams.get_all()
+    iterations = repos.iterations.find(pi_id=pi_id)
+    if not iterations:
+        console.print("No iterations found for this PI.")
+        return
+
+    table = Table("Team", "Iteration", "Done Pts", "Capacity", "Velocity %")
+    for team in teams:
+        if team is None:
+            continue
+        for iteration in iterations:
+            stories = repos.stories.find(team_id=team.id, iteration_id=iteration.id)
+            done_pts = team_velocity(stories)
+            plan_list = repos.capacity_plans.find(
+                pi_id=pi_id, team_id=team.id, iteration_id=iteration.id
+            )
+            plan = plan_list[0] if plan_list else None
+            cap_str = str(plan.available_capacity) if plan else "-"
+            if plan and plan.available_capacity > 0:
+                vel_pct = round((done_pts / plan.available_capacity) * 100, 1)
+                vel_str = f"{vel_pct}%"
+            else:
+                vel_str = "-"
+            table.add_row(
+                team.name,
+                f"I{iteration.number}",
+                str(done_pts),
+                cap_str,
+                vel_str,
+            )
     console.print(table)
 
 

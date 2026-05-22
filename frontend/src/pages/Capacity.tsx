@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api';
-import type { CapacityPlan, CapacityPlanCreate } from '../types';
+import type { CapacityPlan, CapacityPlanCreate, VelocityEntry } from '../types';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import { Spinner } from '../components/Spinner';
@@ -102,6 +102,12 @@ export function Capacity() {
     queryFn: api.listStories,
   });
 
+  const { data: velocityEntries = [] } = useQuery<VelocityEntry[]>({
+    queryKey: ['velocity', piId],
+    queryFn: () => api.listVelocity(piId!),
+    enabled: !!piId,
+  });
+
   const upsertMut = useMutation({
     mutationFn: (body: CapacityPlanCreate) => api.upsertCapacityPlan(body),
     onSuccess: () => {
@@ -127,6 +133,13 @@ export function Capacity() {
     if (s.iteration_id && iterIds.has(s.iteration_id)) {
       const key = `${s.team_id}:${s.iteration_id}`;
       storyPts[key] = (storyPts[key] ?? 0) + s.points;
+    }
+  }
+
+  const donePts: Record<string, number> = {};
+  for (const v of velocityEntries) {
+    if (iterIds.has(v.iteration_id) && v.completed_points > 0) {
+      donePts[`${v.team_id}:${v.iteration_id}`] = v.completed_points;
     }
   }
 
@@ -244,6 +257,7 @@ export function Capacity() {
                   {sortedTeams.map((team) => {
                     const plan = planMap[`${team.id}:${iter.id}`];
                     const committed = storyPts[`${team.id}:${iter.id}`] ?? 0;
+                    const done = donePts[`${team.id}:${iter.id}`] ?? 0;
                     const variant = plan ? getCapacityVariant(plan.available_capacity, committed) : 'unset';
                     const vs = variantStyles[variant];
                     const loadPct =
@@ -271,6 +285,11 @@ export function Capacity() {
                             <div className={`mt-0.5 text-xs ${vs.secondary}`}>
                               {committed} pts committed
                               {loadPct !== null && ` · ${loadPct}% load`}
+                            </div>
+                          )}
+                          {done > 0 && (
+                            <div className="mt-0.5 text-xs text-teal-700">
+                              {done} pts done
                             </div>
                           )}
                         </button>
