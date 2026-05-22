@@ -40,8 +40,6 @@ export function Modal({ open, title, onClose, children }: Props) {
         <div className="flex h-full items-center justify-center">
           <div
             className="relative mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
               <h2 id="modal-title" className="text-base font-semibold text-slate-800">{title}</h2>
