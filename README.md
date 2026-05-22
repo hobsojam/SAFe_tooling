@@ -20,6 +20,22 @@ A local PI Planning platform for Scaled Agile Framework (SAFe) teams. Manage you
 | **Program Board** | Visual teams × iterations board with feature placement and dependency overlay |
 | **Predictability** | Calculate ART PI predictability from planned vs. actual business value |
 
+## Screenshots
+
+| Board | Backlog |
+|-------|---------|
+| ![Program Board](docs/screenshots/board.png) | ![Program Backlog](docs/screenshots/backlog.png) |
+
+| Capacity | PI Health |
+|----------|-----------|
+| ![Capacity Planning](docs/screenshots/capacity.png) | ![PI Health](docs/screenshots/pi-health.png) |
+
+![Risks](docs/screenshots/risks.png)
+
+> Screenshots are captured automatically from the fixture dataset on every merge to `main`.
+
+---
+
 ## Three interfaces
 
 | Interface | Best for | How to start |
