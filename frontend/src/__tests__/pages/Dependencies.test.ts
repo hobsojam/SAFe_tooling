@@ -10,6 +10,8 @@ const baseFeature: Feature = {
   team_id: null,
   iteration_id: null,
   status: 'backlog',
+  acceptance_criteria: '',
+  nfr: '',
   user_business_value: 5,
   time_criticality: 5,
   risk_reduction_opportunity_enablement: 5,
