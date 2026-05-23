@@ -1,13 +1,16 @@
 name: Test Quality Analysis
 
+# Runs nightly against main so mutation testing does not slow down PR feedback.
+# Results are visible in the Actions run summary (Step Summary) and fed into
+# SonarCloud as external issues so mutation survivors appear alongside coverage.
+# Trigger manually via workflow_dispatch when you need an on-demand report.
 on:
-  pull_request:
-    branches: [main]
+  schedule:
+    - cron: '0 2 * * *'  # 02:00 UTC nightly, runs against main
   workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   tqa:
@@ -16,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # SonarCloud requires full git history for blame/new-code detection
 
       # ── Python ────────────────────────────────────────────────────────────
       - uses: actions/setup-python@v5
@@ -57,40 +62,31 @@ jobs:
         continue-on-error: true
 
       # ── TQA ───────────────────────────────────────────────────────────────
+      # --format sonarcloud writes sonar-generic-issues.json (surviving mutants
+      # as SonarCloud external issues) and prints the markdown summary to stdout.
+      # Appending stdout to $GITHUB_STEP_SUMMARY makes the report visible on the
+      # Actions run page without needing a PR to comment on.
       - name: Analyse with TQA
         id: tqa
-        run: tqa analyze --config tqa.toml --format github > tqa-summary.md
+        run: tqa analyze --config tqa.toml --format sonarcloud >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
 
-      - name: Comment on PR
-        if: github.event_name == 'pull_request' && steps.tqa.outcome == 'success'
-        uses: actions/github-script@v7
+      # ── SonarCloud ────────────────────────────────────────────────────────
+      # sonar-project.properties expects coverage at coverage/ and coverage-frontend/
+      # (matching the artifact layout used by the regular ci.yml sonar job).
+      # Stage the files here so this job reuses the same properties file.
+      - name: Stage coverage files for SonarCloud
+        run: |
+          mkdir -p coverage coverage-frontend
+          cp coverage.xml coverage/
+          cp frontend/coverage/lcov.info coverage-frontend/
+
+      # Pass sonar.externalIssuesReportPaths inline rather than adding it to
+      # sonar-project.properties, so the regular CI sonar job (which does not
+      # produce sonar-generic-issues.json) is not affected.
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const summary = fs.readFileSync('tqa-summary.md', 'utf8');
-            const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-            const existing = comments.findLast(c =>
-              c.user.login === 'github-actions[bot]' &&
-              c.body.startsWith('# TQA Report Summary')
-            );
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body: summary,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: summary,
-              });
-            }
+          args: -Dsonar.externalIssuesReportPaths=sonar-generic-issues.json
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
