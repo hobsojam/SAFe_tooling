@@ -37,7 +37,7 @@ export function objectiveTypeBadgeClass(isStretch: boolean): string {
 }
 
 export function Objectives() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -50,13 +50,13 @@ export function Objectives() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: objectives = [], isLoading } = useQuery({
     queryKey: ['objectives', piId],
-    queryFn: () => api.listObjectives(piId!),
+    queryFn: () => api.listObjectives(piId),
     enabled: !!piId,
   });
 
@@ -144,7 +144,7 @@ export function Objectives() {
       createMut.mutate({
         description: form.description,
         team_id: form.team_id,
-        pi_id: piId!,
+        pi_id: piId,
         planned_business_value: form.planned_business_value,
         actual_business_value: actualBV,
         is_stretch: form.is_stretch,

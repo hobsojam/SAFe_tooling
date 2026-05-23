@@ -57,13 +57,13 @@ function TopologySelect({
 }
 
 export function TeamSetup() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
   const { data: pi, isLoading: loadingPi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 

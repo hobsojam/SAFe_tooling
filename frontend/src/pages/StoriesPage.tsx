@@ -32,7 +32,7 @@ const EMPTY_FORM: StoryFormState = {
 };
 
 export function StoriesPage() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -45,13 +45,13 @@ export function StoriesPage() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: features = [], isLoading: featuresLoading } = useQuery({
     queryKey: ['features', piId],
-    queryFn: () => api.listFeatures(piId!),
+    queryFn: () => api.listFeatures(piId),
     enabled: !!piId,
   });
 
@@ -62,7 +62,7 @@ export function StoriesPage() {
 
   const { data: iterations = [] } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 

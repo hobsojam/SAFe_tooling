@@ -73,7 +73,7 @@ export function Roadmap() {
       <h1 className="mb-1 text-xl font-semibold text-slate-800">PI Roadmap</h1>
       <p className="mb-5 text-sm text-slate-500">
         Feature timeline across {sortedPIs.length} Program Increment
-        {sortedPIs.length !== 1 ? 's' : ''}
+        {sortedPIs.length === 1 ? '' : 's'}
       </p>
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">

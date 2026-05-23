@@ -16,19 +16,19 @@ interface RowState {
 }
 
 export function RoamUnroamed() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: risks = [], isLoading } = useQuery({
     queryKey: ['risks', piId],
-    queryFn: () => api.listRisks(piId!),
+    queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 

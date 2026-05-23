@@ -84,6 +84,31 @@ class TestFeatureList:
         assert len(features) == 1
         assert features[0]["name"] == "Done"
 
+    def test_filter_by_pi_id(self, client):
+        art_id = _create_art(client)
+        pi_id = client.post(
+            "/pi",
+            json={
+                "name": "PI 1",
+                "art_id": art_id,
+                "start_date": "2026-01-05",
+                "end_date": "2026-03-27",
+            },
+        ).json()["id"]
+        _create_feature(client, name="In PI", pi_id=pi_id)
+        _create_feature(client, name="No PI")
+        features = client.get(f"/features?pi_id={pi_id}").json()
+        assert len(features) == 1
+        assert features[0]["name"] == "In PI"
+
+    def test_filter_by_team_id(self, client):
+        tid = _create_team(client)
+        _create_feature(client, name="Assigned", team_id=tid)
+        _create_feature(client, name="Unassigned")
+        features = client.get(f"/features?team_id={tid}").json()
+        assert len(features) == 1
+        assert features[0]["name"] == "Assigned"
+
     def test_invalid_sort_returns_422(self, client):
         assert client.get("/features?sort=bad_sort").status_code == 422
 

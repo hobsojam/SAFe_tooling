@@ -148,6 +148,50 @@ class TestPIDelete:
         client.post("/risks", json={"description": "R", "pi_id": pi_id, "team_id": team_id})
         assert client.delete(f"/pi/{pi_id}").status_code == 409
 
+    def test_delete_with_objective_returns_409(self, client):
+        art_id = _create_art(client)
+        pi_id = _create_pi(client, art_id)
+        team_id = client.post("/team", json={"name": "T", "member_count": 5}).json()["id"]
+        client.post(
+            "/objectives",
+            json={
+                "description": "O",
+                "pi_id": pi_id,
+                "team_id": team_id,
+                "planned_business_value": 5,
+            },
+        )
+        assert client.delete(f"/pi/{pi_id}").status_code == 409
+
+    def test_delete_with_dependency_returns_409(self, client):
+        art_id = _create_art(client)
+        pi_id = _create_pi(client, art_id)
+        f1 = client.post(
+            "/features",
+            json={
+                "name": "F1",
+                "user_business_value": 5,
+                "time_criticality": 5,
+                "risk_reduction_opportunity_enablement": 5,
+                "job_size": 5,
+            },
+        ).json()["id"]
+        f2 = client.post(
+            "/features",
+            json={
+                "name": "F2",
+                "user_business_value": 5,
+                "time_criticality": 5,
+                "risk_reduction_opportunity_enablement": 5,
+                "job_size": 5,
+            },
+        ).json()["id"]
+        client.post(
+            "/dependencies",
+            json={"description": "D", "pi_id": pi_id, "from_feature_id": f1, "to_feature_id": f2},
+        )
+        assert client.delete(f"/pi/{pi_id}").status_code == 409
+
     def test_unknown_returns_404(self, client):
         assert client.delete("/pi/no-such-id").status_code == 404
 

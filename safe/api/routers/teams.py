@@ -1,5 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
@@ -37,14 +39,19 @@ def _reassign_art(
 @router.get("", response_model=list[Team])
 def list_teams(
     repos: ReposDep,
-    art_id: str | None = Query(default=None),
+    art_id: Annotated[str | None, Query()] = None,
 ):
     if art_id is not None:
         return repos.teams.find(art_id=art_id)
     return repos.teams.get_all()
 
 
-@router.post("", response_model=Team, status_code=201)
+@router.post(
+    "",
+    response_model=Team,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_team(body: TeamCreate, repos: ReposDep):
     if body.art_id is not None and repos.arts.get(body.art_id) is None:
         raise HTTPException(status_code=404, detail=f"ART '{body.art_id}' not found")

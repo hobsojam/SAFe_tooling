@@ -1,5 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
@@ -20,10 +22,10 @@ def _get_or_404(repos: Repos, story_id: str) -> Story:
 @router.get("", response_model=list[Story])
 def list_stories(
     repos: ReposDep,
-    feature_id: str | None = Query(default=None),
-    team_id: str | None = Query(default=None),
-    iteration_id: str | None = Query(default=None),
-    status: StoryStatus | None = Query(default=None),
+    feature_id: Annotated[str | None, Query()] = None,
+    team_id: Annotated[str | None, Query()] = None,
+    iteration_id: Annotated[str | None, Query()] = None,
+    status: Annotated[StoryStatus | None, Query()] = None,
 ):
     filters = {
         k: v
@@ -38,7 +40,12 @@ def list_stories(
     return repos.stories.find(**filters) if filters else repos.stories.get_all()
 
 
-@router.post("", response_model=Story, status_code=201)
+@router.post(
+    "",
+    response_model=Story,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_story(body: StoryCreate, repos: ReposDep):
     if repos.features.get(body.feature_id) is None:
         raise HTTPException(status_code=404, detail=f"Feature '{body.feature_id}' not found")

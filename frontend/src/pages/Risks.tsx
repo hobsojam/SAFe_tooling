@@ -30,7 +30,7 @@ const EMPTY_FORM: RiskFormState = {
 };
 
 export function Risks() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -43,13 +43,13 @@ export function Risks() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: risks = [], isLoading } = useQuery({
     queryKey: ['risks', piId],
-    queryFn: () => api.listRisks(piId!),
+    queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 
@@ -122,7 +122,7 @@ export function Risks() {
     } else {
       createMut.mutate({
         ...form,
-        pi_id: piId!,
+        pi_id: piId,
         team_id: form.team_id || null,
         owner: form.owner || null,
       });
@@ -139,7 +139,7 @@ export function Risks() {
             Risk Register — {pi?.name}
           </h1>
           <p className="text-sm text-slate-500">
-            {risks.length} risk{risks.length !== 1 ? 's' : ''}
+            {risks.length} risk{risks.length === 1 ? '' : 's'}
             {unroamed > 0 && (
               <Link
                 to={`/pi/${piId}/risks/roam`}

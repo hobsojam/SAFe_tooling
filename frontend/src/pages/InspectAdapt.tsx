@@ -85,8 +85,8 @@ export function InspectAdapt() {
   const roamCounts = buildRoamCounts(risks);
 
   const sortedObjectives = [...objectives].sort((a, b) => {
-    if (a.is_stretch !== b.is_stretch) return a.is_stretch ? 1 : -1;
-    return b.planned_business_value - a.planned_business_value;
+    if (a.is_stretch === b.is_stretch) return b.planned_business_value - a.planned_business_value;
+    return a.is_stretch ? 1 : -1;
   });
 
   return (
@@ -163,11 +163,7 @@ export function InspectAdapt() {
                       {obj.planned_business_value}
                     </td>
                     <td className="px-4 py-3 tabular-nums text-slate-700">
-                      {obj.actual_business_value !== null ? (
-                        obj.actual_business_value
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
+                      {obj.actual_business_value ?? <span className="text-slate-400">—</span>}
                     </td>
                   </tr>
                 ))}

@@ -398,7 +398,7 @@ type NumKey = 'user_business_value' | 'time_criticality' | 'risk_reduction_oppor
 // ---------- Backlog page ----------
 
 export function Backlog() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -410,13 +410,13 @@ export function Backlog() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: features = [], isLoading } = useQuery({
     queryKey: ['features', piId],
-    queryFn: () => api.listFeatures(piId!),
+    queryFn: () => api.listFeatures(piId),
     enabled: !!piId,
   });
 
@@ -427,7 +427,7 @@ export function Backlog() {
 
   const { data: iterations = [] } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
@@ -506,7 +506,7 @@ export function Backlog() {
     if (editing) {
       updateMut.mutate({ id: editing.id, body: { ...form, team_id: form.team_id || null } });
     } else {
-      createMut.mutate({ ...form, pi_id: piId!, team_id: form.team_id || null });
+      createMut.mutate({ ...form, pi_id: piId, team_id: form.team_id || null });
     }
   }
 
@@ -691,7 +691,7 @@ export function Backlog() {
                         feature={f}
                         teams={teams}
                         nonIpIterations={nonIpIterations}
-                        piId={piId!}
+                        piId={piId}
                       />
                     )}
                   </Fragment>
