@@ -28,19 +28,23 @@ def create_art(body: ARTCreate, repos: ReposDep):
     return repos.arts.save(art)
 
 
-@router.get("/{art_id}", response_model=ART)
+@router.get("/{art_id}", response_model=ART, responses={404: {"description": "Not found"}})
 def get_art(art_id: str, repos: ReposDep):
     return _get_or_404(repos, art_id)
 
 
-@router.patch("/{art_id}", response_model=ART)
+@router.patch("/{art_id}", response_model=ART, responses={404: {"description": "Not found"}})
 def update_art(art_id: str, body: ARTUpdate, repos: ReposDep):
     art = _get_or_404(repos, art_id)
     updated = art.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.arts.save(updated)
 
 
-@router.delete("/{art_id}", status_code=204)
+@router.delete(
+    "/{art_id}",
+    status_code=204,
+    responses={404: {"description": "Not found"}, 409: {"description": "Conflict"}},
+)
 def delete_art(art_id: str, repos: ReposDep):
     _get_or_404(repos, art_id)
     if repos.teams.find(art_id=art_id):
