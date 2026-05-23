@@ -16,7 +16,7 @@ interface RowState {
 }
 
 export function RoamUnroamed() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 

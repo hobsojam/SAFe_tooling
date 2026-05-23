@@ -18,7 +18,7 @@ export function loadPctClass(pct: number): string {
 }
 
 export function PIHealth() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],

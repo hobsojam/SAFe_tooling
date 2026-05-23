@@ -40,7 +40,7 @@ export function featureLabel(feature: Feature, teamMap: Record<string, string>):
 }
 
 export function Dependencies() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 

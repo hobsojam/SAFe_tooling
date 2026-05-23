@@ -8,7 +8,7 @@ import { useToast } from '../components/Toaster';
 import type { IterationCreate, PIUpdate } from '../types';
 
 export function Setup() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const toast = useToast();

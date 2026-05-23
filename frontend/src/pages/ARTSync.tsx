@@ -30,7 +30,7 @@ const CELL_TEXT: Record<CellVariant, string> = {
 const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide';
 
 export function ARTSync() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],

@@ -65,7 +65,7 @@ function countWeekdays(startDate: string, endDate: string): number {
 }
 
 export function Capacity() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 

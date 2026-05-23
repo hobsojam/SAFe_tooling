@@ -398,7 +398,7 @@ type NumKey = 'user_business_value' | 'time_criticality' | 'risk_reduction_oppor
 // ---------- Backlog page ----------
 
 export function Backlog() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 

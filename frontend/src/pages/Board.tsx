@@ -210,7 +210,7 @@ function TeamBoardRow({ teamId, teamGrid, iterCols, rowBg, teamMap, atRiskFeatur
 }
 
 export function Board() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [activeFeature, setActiveFeature] = useState<Feature | null>(null);

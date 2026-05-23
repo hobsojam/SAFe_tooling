@@ -32,7 +32,7 @@ const EMPTY_FORM: StoryFormState = {
 };
 
 export function StoriesPage() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 

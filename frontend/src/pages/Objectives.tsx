@@ -37,7 +37,7 @@ export function objectiveTypeBadgeClass(isStretch: boolean): string {
 }
 
 export function Objectives() {
-  const { piId } = useParams<{ piId: string }>();
+  const { piId = '' } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
