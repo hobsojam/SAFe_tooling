@@ -103,3 +103,64 @@ test('shows empty state when PI has no risks', async ({ page }) => {
   await goToPage(page, 'Inspect & Adapt');
   await expect(page.getByText(/No risks recorded for this PI/)).toBeVisible();
 });
+
+// ── Problem-Solving Workshop section ─────────────────────────────────────────
+
+test('shows Problem-Solving Workshop section with + New Action button', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Problem-Solving Workshop' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '+ New Action' })).toBeVisible();
+});
+
+test('+ New Action button opens modal', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Action' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'New Improvement Action' })).toBeVisible();
+});
+
+test('action modal closes on Cancel', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Action' }).click();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('can create an improvement action', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Action' }).click();
+  await page.getByLabel('Problem Statement').fill('Slow deploys');
+  await page.getByLabel('Root Cause').fill('Manual steps in CI');
+  await page.getByRole('textbox', { name: 'Action' }).fill('Automate deployment pipeline');
+  await page.getByLabel('Owner').fill('Alice');
+  await page.getByRole('button', { name: 'Add Action' }).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(page.locator('table').getByText('Slow deploys').last()).toBeVisible();
+  await expect(page.locator('table').getByText('Automate deployment pipeline')).toBeVisible();
+  await expect(page.locator('table').getByText('Alice')).toBeVisible();
+  await expect(page.locator('table').getByText('Open')).toBeVisible();
+});
+
+test('can edit an improvement action', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Action' }).click();
+  await page.getByLabel('Problem Statement').fill('Original problem');
+  await page.getByRole('textbox', { name: 'Action' }).fill('Original action');
+  await page.getByRole('button', { name: 'Add Action' }).click();
+
+  await page.locator('table').getByRole('button', { name: 'Original problem' }).click();
+  await page.getByLabel('Problem Statement').fill('Updated problem');
+  await page.getByLabel('Status').selectOption('in_progress');
+  await page.getByRole('button', { name: 'Save Changes' }).click();
+
+  await expect(page.locator('table').getByText('Updated problem')).toBeVisible();
+  await expect(page.locator('table').getByText('In Progress')).toBeVisible();
+  await expect(page.locator('table').getByText('Original problem')).not.toBeVisible();
+});
+
+test('can delete an improvement action', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Action' }).click();
+  await page.getByLabel('Problem Statement').fill('To be deleted');
+  await page.getByRole('textbox', { name: 'Action' }).fill('Some action');
+  await page.getByRole('button', { name: 'Add Action' }).click();
+
+  const row = page.getByRole('row', { name: /To be deleted/ });
+  await row.getByRole('button', { name: 'Delete', exact: true }).click();
+  await page.getByRole('button', { name: 'Yes, delete' }).click();
+  await expect(page.locator('table').getByText('To be deleted')).not.toBeVisible();
+});

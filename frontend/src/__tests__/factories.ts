@@ -3,6 +3,7 @@ import type {
   CapacityPlan,
   Dependency,
   Feature,
+  ImprovementAction,
   Iteration,
   PI,
   PIObjective,
@@ -119,6 +120,17 @@ export const makeDependency = (overrides: Partial<Dependency> = {}): Dependency 
   resolution_notes: '',
   raised_date: '2026-01-01',
   needed_by_date: null,
+  ...overrides,
+});
+
+export const makeImprovementAction = (overrides: Partial<ImprovementAction> = {}): ImprovementAction => ({
+  id: uid('action'),
+  pi_id: 'pi-1',
+  problem_statement: 'Deploys take too long',
+  root_cause: '',
+  action: 'Automate deployment pipeline',
+  owner: '',
+  status: 'open',
   ...overrides,
 });
 

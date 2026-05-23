@@ -41,6 +41,8 @@ tags:
   description: Cross-feature Dependencies
 - name: capacity-plans
   description: Team Capacity Plans
+- name: ImprovementActions
+  description: I&A problem-solving workshop improvement actions
 - name: compute
   description: Stateless calculations (no persistence)
 paths:
@@ -1245,6 +1247,114 @@ paths:
       - capacity-plans
       summary: Delete a capacity plan
       operationId: delete_capacity_plan
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /improvement-actions:
+    get:
+      tags:
+      - ImprovementActions
+      summary: List improvement actions
+      operationId: list_improvement_actions
+      parameters:
+      - name: pi_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: List of improvement actions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImprovementAction'
+    post:
+      tags:
+      - ImprovementActions
+      summary: Create an improvement action
+      operationId: create_improvement_action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImprovementActionCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImprovementAction'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /improvement-actions/{action_id}:
+    get:
+      tags:
+      - ImprovementActions
+      summary: Get an improvement action by ID
+      operationId: get_improvement_action
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Improvement action
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImprovementAction'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+      - ImprovementActions
+      summary: Update an improvement action
+      operationId: update_improvement_action
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImprovementActionUpdate'
+      responses:
+        '200':
+          description: Updated improvement action
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImprovementAction'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - ImprovementActions
+      summary: Delete an improvement action
+      operationId: delete_improvement_action
+      parameters:
+      - name: action_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
       responses:
         '204':
           description: Deleted
@@ -2492,6 +2602,76 @@ components:
         resolution_notes:
           type: string
           nullable: true
+    ImprovementActionStatus:
+      type: string
+      enum:
+      - open
+      - in_progress
+      - done
+    ImprovementAction:
+      type: object
+      required:
+      - id
+      - pi_id
+      - problem_statement
+      - action
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        pi_id:
+          type: string
+          format: uuid
+        problem_statement:
+          type: string
+        root_cause:
+          type: string
+          default: ''
+        action:
+          type: string
+        owner:
+          type: string
+          default: ''
+        status:
+          $ref: '#/components/schemas/ImprovementActionStatus'
+    ImprovementActionCreate:
+      type: object
+      required:
+      - pi_id
+      - problem_statement
+      - action
+      properties:
+        pi_id:
+          type: string
+          format: uuid
+        problem_statement:
+          type: string
+        root_cause:
+          type: string
+          default: ''
+        action:
+          type: string
+        owner:
+          type: string
+          default: ''
+        status:
+          $ref: '#/components/schemas/ImprovementActionStatus'
+    ImprovementActionUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        problem_statement:
+          type: string
+        root_cause:
+          type: string
+        action:
+          type: string
+        owner:
+          type: string
+        status:
+          $ref: '#/components/schemas/ImprovementActionStatus'
     FeatureAssign:
       type: object
       required:

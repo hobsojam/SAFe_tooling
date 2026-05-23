@@ -4,6 +4,8 @@ import type {
   DependencyUpdate,
   FeatureCreate,
   FeatureUpdate,
+  ImprovementActionCreate,
+  ImprovementActionUpdate,
   PICreate,
   RiskCreate,
   RiskUpdate,
@@ -99,6 +101,12 @@ describe('GET methods', () => {
     await api.listDependencies('pi1');
     expect(mockFetch).toHaveBeenCalledWith('/api/dependencies?pi_id=pi1');
   });
+
+  it('listImprovementActions calls GET /api/improvement-actions?pi_id=...', async () => {
+    resolveOk([]);
+    await api.listImprovementActions('pi1');
+    expect(mockFetch).toHaveBeenCalledWith('/api/improvement-actions?pi_id=pi1');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -157,6 +165,20 @@ describe('POST methods', () => {
     await api.createDependency(body);
     expect(mockFetch).toHaveBeenCalledWith('/api/dependencies', postOpts(body));
   });
+
+  it('createImprovementAction calls POST /api/improvement-actions with body', async () => {
+    resolveOk({});
+    const body: ImprovementActionCreate = {
+      pi_id: 'pi1',
+      problem_statement: 'Deploys take too long',
+      root_cause: 'Manual release checks',
+      action: 'Automate deployment pipeline',
+      owner: 'Platform',
+      status: 'open',
+    };
+    await api.createImprovementAction(body);
+    expect(mockFetch).toHaveBeenCalledWith('/api/improvement-actions', postOpts(body));
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -192,6 +214,13 @@ describe('PATCH methods', () => {
     await api.updateDependency('d1', body);
     expect(mockFetch).toHaveBeenCalledWith('/api/dependencies/d1', patchOpts(body));
   });
+
+  it('updateImprovementAction calls PATCH /api/improvement-actions/:id', async () => {
+    resolveOk({});
+    const body: ImprovementActionUpdate = { status: 'done', owner: 'RTE' };
+    await api.updateImprovementAction('ia1', body);
+    expect(mockFetch).toHaveBeenCalledWith('/api/improvement-actions/ia1', patchOpts(body));
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -223,6 +252,12 @@ describe('DELETE methods', () => {
     mockFetch.mockResolvedValue({ ok: true });
     await api.deleteDependency('d1');
     expect(mockFetch).toHaveBeenCalledWith('/api/dependencies/d1', deleteOpts);
+  });
+
+  it('deleteImprovementAction calls DELETE /api/improvement-actions/:id', async () => {
+    mockFetch.mockResolvedValue({ ok: true });
+    await api.deleteImprovementAction('ia1');
+    expect(mockFetch).toHaveBeenCalledWith('/api/improvement-actions/ia1', deleteOpts);
   });
 });
 

@@ -10,6 +10,9 @@ import type {
   Feature,
   FeatureCreate,
   FeatureUpdate,
+  ImprovementAction,
+  ImprovementActionCreate,
+  ImprovementActionUpdate,
   Iteration,
   IterationCreate,
   PI,
@@ -136,4 +139,12 @@ export const api = {
   createDependency: (body: DependencyCreate) => post<Dependency>('/dependencies', body),
   updateDependency: (id: string, body: DependencyUpdate) => patch<Dependency>(`/dependencies/${id}`, body),
   deleteDependency: (id: string) => del(`/dependencies/${id}`),
+
+  listImprovementActions: (piId: string) =>
+    get<ImprovementAction[]>(`/improvement-actions?pi_id=${piId}`),
+  createImprovementAction: (body: ImprovementActionCreate) =>
+    post<ImprovementAction>('/improvement-actions', body),
+  updateImprovementAction: (id: string, body: ImprovementActionUpdate) =>
+    patch<ImprovementAction>(`/improvement-actions/${id}`, body),
+  deleteImprovementAction: (id: string) => del(`/improvement-actions/${id}`),
 };
