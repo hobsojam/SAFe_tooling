@@ -48,7 +48,7 @@ def create_story(body: StoryCreate, repos: ReposDep):
     return repos.stories.save(story)
 
 
-@router.get("/{story_id}", response_model=Story)
+@router.get("/{story_id}", response_model=Story, responses={404: {"description": "Not found"}})
 def get_story(story_id: str, repos: ReposDep):
     return _get_or_404(repos, story_id)
 
@@ -79,7 +79,7 @@ def update_story(story_id: str, body: StoryUpdate, repos: ReposDep):
     return repos.stories.save(updated)
 
 
-@router.delete("/{story_id}", status_code=204)
+@router.delete("/{story_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_story(story_id: str, repos: ReposDep):
     _get_or_404(repos, story_id)
     repos.stories.delete(story_id)

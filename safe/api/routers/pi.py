@@ -35,19 +35,23 @@ def create_pi(body: PICreate, repos: ReposDep):
     return repos.pis.save(pi)
 
 
-@router.get("/{pi_id}", response_model=PI)
+@router.get("/{pi_id}", response_model=PI, responses={404: {"description": "Not found"}})
 def get_pi(pi_id: str, repos: ReposDep):
     return _get_or_404(repos, pi_id)
 
 
-@router.patch("/{pi_id}", response_model=PI)
+@router.patch("/{pi_id}", response_model=PI, responses={404: {"description": "Not found"}})
 def update_pi(pi_id: str, body: PIUpdate, repos: ReposDep):
     pi = _get_or_404(repos, pi_id)
     updated = pi.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.pis.save(updated)
 
 
-@router.delete("/{pi_id}", status_code=204)
+@router.delete(
+    "/{pi_id}",
+    status_code=204,
+    responses={404: {"description": "Not found"}, 409: {"description": "Conflict"}},
+)
 def delete_pi(pi_id: str, repos: ReposDep):
     _get_or_404(repos, pi_id)
     if repos.features.find(pi_id=pi_id):
@@ -63,7 +67,11 @@ def delete_pi(pi_id: str, repos: ReposDep):
     repos.pis.delete(pi_id)
 
 
-@router.post("/{pi_id}/activate", response_model=PI)
+@router.post(
+    "/{pi_id}/activate",
+    response_model=PI,
+    responses={404: {"description": "Not found"}, 409: {"description": "Invalid state transition"}},
+)
 def activate_pi(pi_id: str, repos: ReposDep):
     pi = _get_or_404(repos, pi_id)
     if pi.status != PIStatus.PLANNING:
@@ -81,7 +89,11 @@ def activate_pi(pi_id: str, repos: ReposDep):
     return repos.pis.save(updated)
 
 
-@router.post("/{pi_id}/close", response_model=PI)
+@router.post(
+    "/{pi_id}/close",
+    response_model=PI,
+    responses={404: {"description": "Not found"}, 409: {"description": "Invalid state transition"}},
+)
 def close_pi(pi_id: str, repos: ReposDep):
     pi = _get_or_404(repos, pi_id)
     if pi.status != PIStatus.ACTIVE:
