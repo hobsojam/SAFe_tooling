@@ -149,6 +149,37 @@ describe('Objectives page', () => {
     expect(screen.getByText('Server error')).toBeInTheDocument();
   });
 
+  it('shows Score button when PI is active', () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.getAllByRole('button', { name: 'Score' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('hides Score button when PI is planning', () => {
+    const planningPI = makePI({ id: 'pi-1', name: 'PI 2026.1', status: 'planning' });
+    setupQueryMocks({ pi: planningPI, objectives: [committedObjective], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.queryByRole('button', { name: 'Score' })).not.toBeInTheDocument();
+  });
+
+  it('shows Score button when PI is closed', () => {
+    const closedPI = makePI({ id: 'pi-1', name: 'PI 2026.1', status: 'closed' });
+    setupQueryMocks({ pi: closedPI, objectives: [committedObjective], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.getAllByRole('button', { name: 'Score' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('opens Score modal with objective description when Score clicked', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    const dialog = screen.getByRole('dialog', { hidden: false });
+    expect(screen.getByRole('heading', { name: 'Score Objective' })).toBeInTheDocument();
+    expect(dialog.textContent).toContain('Deliver auth service');
+    expect(screen.getByRole('button', { name: 'Save Score' })).toBeInTheDocument();
+  });
+
   it('shows actual business value when committed objectives are scored', () => {
     const scoredObj = makePIObjective({
       id: 'obj-scored',
