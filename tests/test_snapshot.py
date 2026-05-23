@@ -343,7 +343,8 @@ def test_cli_import_missing_file(tmp_path):
         ["--db-path", db_path, "pi", "import", str(tmp_path / "no-such.json")],
     )
     assert result.exit_code == 1
-    assert "not found" in result.output.lower()
+    # Normalise whitespace before checking — Rich may word-wrap long paths across lines
+    assert "not found" in " ".join(result.output.lower().split())
 
 
 def test_cli_import_invalid_json(tmp_path):
