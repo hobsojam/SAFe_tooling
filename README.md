@@ -23,18 +23,6 @@ A local PI Planning platform for Scaled Agile Framework (SAFe) teams. Manage you
 | **Predictability** | Calculate ART PI predictability from planned vs. actual business value |
 | **PI Roadmap** | Cross-PI feature timeline — view all features across every PI in a team × PI matrix |
 
-## Screenshots
-
-| Board | Backlog |
-|-------|---------|
-| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
-
-| Capacity | PI Health |
-|----------|-----------|
-| ![Capacity Planning](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/capacity.png) | ![PI Health](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/pi-health.png) |
-
-![Risks](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/risks.png)
-
 > Screenshots are captured automatically from the fixture dataset on every merge to `main`.
 
 ---
@@ -160,13 +148,6 @@ The React SPA provides views across all key PI artifacts for a selected PI.
 
 Built with Vite, React 18, TypeScript, Tailwind CSS v4, TanStack Query, and React Router.
 
-| Board | Backlog |
-|-------|---------|
-| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
-
-| PI Roadmap |
-|-----------|
-| ![PI Roadmap](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/roadmap.png) |
 
 ---
 
@@ -239,6 +220,8 @@ safe pi iteration list --pi-id <pi-id>
 safe pi iteration delete <id>
 ```
 
+![PI Roadmap](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/roadmap.png) 
+
 ### Program Backlog
 
 ```bash
@@ -251,6 +234,8 @@ safe feature list --pi-id <pi-id>
 safe feature rank              # WSJF-ranked view
 safe backlog show              # ranked view with story counts
 safe feature delete <id>
+
+![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png)
 
 # Stories
 safe story add --name "Login flow" --feature-id <fid> --team-id <tid> --points 3 \
@@ -332,6 +317,8 @@ safe board show --pi-id <pi-id>
 safe board export --pi-id <pi-id> --output board.xlsx
 ```
 
+ ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png)
+ 
 ---
 
 ## Tests
