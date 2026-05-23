@@ -36,10 +36,15 @@ const baseDependency = makeDependency({
 });
 
 function setupMocks({
-  deps = [] as ReturnType<typeof makeDependency>[],
+  deps = [],
   features = [featureFrom, featureTo],
   teams = mockTeams,
   isPending = false,
+}: {
+  deps?: ReturnType<typeof makeDependency>[];
+  features?: ReturnType<typeof makeFeature>[];
+  teams?: ReturnType<typeof makeTeam>[];
+  isPending?: boolean;
 } = {}) {
   setupQueryMocks({ pi: mockPI, dependencies: deps, features, teams }, { isPending });
 }

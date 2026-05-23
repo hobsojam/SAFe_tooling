@@ -28,12 +28,19 @@ const baseFeature = makeFeature({ id: 'feat-1', pi_id: 'pi-1' });
 const baseStory = makeStory({ id: 'story-1', feature_id: 'feat-1', team_id: 'team-1' });
 
 function setupPageMocks({
-  features = [] as ReturnType<typeof makeFeature>[],
+  features = [],
   teams = mockTeams,
   iterations = [mockIteration],
-  allStories = [] as ReturnType<typeof makeStory>[],
-  featureStories = [] as ReturnType<typeof makeStory>[],
+  allStories = [],
+  featureStories = [],
   isPending = false,
+}: {
+  features?: ReturnType<typeof makeFeature>[];
+  teams?: ReturnType<typeof makeTeam>[];
+  iterations?: ReturnType<typeof makeIteration>[];
+  allStories?: ReturnType<typeof makeStory>[];
+  featureStories?: ReturnType<typeof makeStory>[];
+  isPending?: boolean;
 } = {}) {
   // 'stories' is called twice: ['stories'] for counts and ['stories', featureId] for StoryPanel.
   // Use the resolver overload to differentiate by queryKey length.

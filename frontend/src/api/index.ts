@@ -53,7 +53,7 @@ async function extractErrorMessage(res: Response): Promise<string> {
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) throw new Error(await extractErrorMessage(res));
-  return res.json() as Promise<T>;
+  return res.json();
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
@@ -63,7 +63,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(await extractErrorMessage(res));
-  return res.json() as Promise<T>;
+  return res.json();
 }
 
 async function patch<T>(path: string, body: unknown): Promise<T> {
@@ -73,7 +73,7 @@ async function patch<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(await extractErrorMessage(res));
-  return res.json() as Promise<T>;
+  return res.json();
 }
 
 async function del(path: string): Promise<void> {
