@@ -20,22 +20,6 @@ A local PI Planning platform for Scaled Agile Framework (SAFe) teams. Manage you
 | **Program Board** | Visual teams × iterations board with feature placement and dependency overlay |
 | **Predictability** | Calculate ART PI predictability from planned vs. actual business value |
 
-## Screenshots
-
-| Board | Backlog |
-|-------|---------|
-| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
-
-| Capacity | PI Health |
-|----------|-----------|
-| ![Capacity Planning](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/capacity.png) | ![PI Health](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/pi-health.png) |
-
-![Risks](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/risks.png)
-
-> **How it works:** on every merge to `main`, CI takes Playwright screenshots of the live app against the fixture dataset and force-pushes them as a single orphan commit to the [`screenshots`](https://github.com/hobsojam/SAFe_tooling/tree/screenshots) branch. The branch is auto-managed and should **never** be merged — any PR opened from it will be closed automatically.
-
----
-
 ## Three interfaces
 
 | Interface | Best for | How to start |
@@ -155,6 +139,10 @@ The React SPA provides views across all key PI artifacts for a selected PI.
 
 Built with Vite, React 18, TypeScript, Tailwind CSS v4, TanStack Query, and React Router.
 
+| Board | Backlog |
+|-------|---------|
+| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
+
 ---
 
 ## REST API
@@ -262,6 +250,8 @@ safe capacity export --pi-id <pi-id> --output capacity.csv
 safe capacity calc --team-size 7 --days 10 --pto 3 --overhead 0.2
 ```
 
+![Capacity Planning](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/capacity.png)
+
 ### PI Objectives
 
 ```bash
@@ -278,6 +268,8 @@ safe objective delete <id>
 safe pi predictability --planned 10 --planned 8 --actual 9 --actual 7
 ```
 
+![PI Health](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/pi-health.png)
+
 ### Risk Register
 
 ```bash
@@ -291,6 +283,8 @@ safe risk roam <id> --status mitigated --notes "Added circuit breaker"
 safe risk roam <id> --status resolved
 safe risk delete <id>
 ```
+
+![Risks](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/risks.png)
 
 ### Dependencies
 
@@ -428,3 +422,5 @@ Data is stored at `~/.safe_tooling/db.json`. The CLI and API share this file.
 ## Development notes
 
 See `CLAUDE.md` for SAFe domain vocabulary, entity relationships, technical conventions, and the phased build plan.
+
+> **How README screenshots work:** on every merge to `main`, CI takes Playwright screenshots of the live app against the fixture dataset and force-pushes them as a single orphan commit to the [`screenshots`](https://github.com/hobsojam/SAFe_tooling/tree/screenshots) branch. The branch is auto-managed and should **never** be merged — any PR opened from it will be closed automatically.
