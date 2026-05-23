@@ -16,6 +16,7 @@ const NAV = [
   { to: 'capacity', label: 'Capacity' },
   { to: 'risks', label: 'Risks' },
   { to: 'dependencies', label: 'Dependencies' },
+  { to: 'art-sync', label: 'ART Sync' },
   { to: 'inspect-adapt', label: 'Inspect & Adapt' },
   { to: 'stories', label: 'Stories' },
   { to: 'setup', label: 'PI Setup' },
