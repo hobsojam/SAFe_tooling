@@ -100,6 +100,18 @@ def test_get_unknown_returns_404(client):
     assert client.get("/objectives/no-such-id").status_code == 404
 
 
+def test_list_filter_by_team_id(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    team1 = _create_team(client)
+    team2 = client.post("/team", json={"name": "Beta", "member_count": 4}).json()["id"]
+    _create_objective(client, team1, pi_id)
+    _create_objective(client, team2, pi_id)
+    objs = client.get(f"/objectives?team_id={team1}").json()
+    assert len(objs) == 1
+    assert objs[0]["team_id"] == team1
+
+
 def test_patch_actual_bv(client):
     art_id = _create_art(client)
     pi_id = _create_pi(client, art_id)
@@ -110,6 +122,11 @@ def test_patch_actual_bv(client):
     assert r.json()["actual_business_value"] == 7
 
 
+def test_patch_unknown_returns_404(client):
+    r = client.patch("/objectives/no-such-id", json={"actual_business_value": 5})
+    assert r.status_code == 404
+
+
 def test_delete_returns_204(client):
     art_id = _create_art(client)
     pi_id = _create_pi(client, art_id)
@@ -117,3 +134,7 @@ def test_delete_returns_204(client):
     oid = _create_objective(client, team_id, pi_id).json()["id"]
     assert client.delete(f"/objectives/{oid}").status_code == 204
     assert client.get(f"/objectives/{oid}").status_code == 404
+
+
+def test_delete_unknown_returns_404(client):
+    assert client.delete("/objectives/no-such-id").status_code == 404
