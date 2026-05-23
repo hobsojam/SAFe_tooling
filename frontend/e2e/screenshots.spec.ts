@@ -66,3 +66,10 @@ test('stories', async ({ page }) => {
   await goToPage(page, 'Stories');
   await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'stories.png') });
 });
+
+test('roadmap', async ({ page }) => {
+  await page.getByRole('link', { name: 'Roadmap' }).click();
+  await page.waitForURL(/\/roadmap/);
+  await waitForAppReady(page);
+  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'roadmap.png') });
+});

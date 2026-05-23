@@ -97,6 +97,11 @@ describe('Layout', () => {
     expect(screen.getByText('Setup')).toBeInTheDocument();
   });
 
+  it('renders the Roadmap global nav link', () => {
+    render(<Layout />);
+    expect(screen.getByRole('link', { name: 'Roadmap' })).toBeInTheDocument();
+  });
+
   it('renders core PI workflow links as top-level primary links', () => {
     render(<Layout />);
     expect(screen.getByRole('link', { name: 'PI Health' })).toBeInTheDocument();

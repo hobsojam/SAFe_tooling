@@ -14,6 +14,7 @@ import { StoriesPage } from './pages/StoriesPage';
 import { ARTSetup } from './pages/ARTSetup';
 import { InspectAdapt } from './pages/InspectAdapt';
 import { Predictability } from './pages/Predictability';
+import { Roadmap } from './pages/Roadmap';
 import { Setup } from './pages/Setup';
 import { TeamSetup } from './pages/TeamSetup';
 
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="pi/:piId/setup" element={<Setup />} />
           <Route path="pi/:piId/team-setup" element={<TeamSetup />} />
           <Route path="art-setup" element={<ARTSetup />} />
+          <Route path="roadmap" element={<Roadmap />} />
         </Route>
       </Routes>
     </Router>
