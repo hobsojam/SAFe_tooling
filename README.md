@@ -20,22 +20,6 @@ A local PI Planning platform for Scaled Agile Framework (SAFe) teams. Manage you
 | **Program Board** | Visual teams × iterations board with feature placement and dependency overlay |
 | **Predictability** | Calculate ART PI predictability from planned vs. actual business value |
 
-## Screenshots
-
-| Board | Backlog |
-|-------|---------|
-| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
-
-| Capacity | PI Health |
-|----------|-----------|
-| ![Capacity Planning](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/capacity.png) | ![PI Health](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/pi-health.png) |
-
-![Risks](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/risks.png)
-
-> **How it works:** on every merge to `main`, CI takes Playwright screenshots of the live app against the fixture dataset and force-pushes them as a single orphan commit to the [`screenshots`](https://github.com/hobsojam/SAFe_tooling/tree/screenshots) branch. The branch is auto-managed and should **never** be merged — any PR opened from it will be closed automatically.
-
----
-
 ## Three interfaces
 
 | Interface | Best for | How to start |
@@ -149,11 +133,16 @@ The React SPA provides views across all key PI artifacts for a selected PI.
 | **Capacity** | `/pi/:id/capacity` | Capacity grid — set team size, PTO, and overhead per iteration; cells colour-coded by load % (amber / blue / red) |
 | **Risks** | `/pi/:id/risks` | ROAM risk register with unroamed count callout |
 | **Dependencies** | `/pi/:id/dependencies` | Cross-team dependency tracker with unresolved count |
+| **Inspect & Adapt** | `/pi/:id/inspect-adapt` | End-of-PI ceremony view — predictability summary, ROAM breakdown, and full objectives table |
 | **PI Setup** | `/pi/:id/setup` | Edit PI details, manage lifecycle (activate/close), add/delete iterations, delete PI |
 | **Team Setup** | `/pi/:id/team-setup` | Create, rename, and delete ART teams; set Team Topologies type; reassign a team to a different ART |
 | **ART Setup** | `/art-setup` | Create, rename, and delete Agile Release Trains (always accessible) |
 
 Built with Vite, React 18, TypeScript, Tailwind CSS v4, TanStack Query, and React Router.
+
+| Board | Backlog |
+|-------|---------|
+| ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
 
 ---
 
@@ -262,6 +251,8 @@ safe capacity export --pi-id <pi-id> --output capacity.csv
 safe capacity calc --team-size 7 --days 10 --pto 3 --overhead 0.2
 ```
 
+![Capacity Planning](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/capacity.png)
+
 ### PI Objectives
 
 ```bash
@@ -278,6 +269,8 @@ safe objective delete <id>
 safe pi predictability --planned 10 --planned 8 --actual 9 --actual 7
 ```
 
+![PI Health](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/pi-health.png)
+
 ### Risk Register
 
 ```bash
@@ -291,6 +284,8 @@ safe risk roam <id> --status mitigated --notes "Added circuit breaker"
 safe risk roam <id> --status resolved
 safe risk delete <id>
 ```
+
+![Risks](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/risks.png)
 
 ### Dependencies
 
@@ -419,12 +414,12 @@ Data is stored at `~/.safe_tooling/db.json`. The CLI and API share this file.
 
 | Area | Description |
 |------|-------------|
-| **Inspect & Adapt page** | Add an I&A ceremony page covering the PI System Demo, quantitative measurement (predictability, quality metrics), and a structured problem-solving workshop view |
-| **Modal accessibility** | Rewrite the `Modal` component to use the native `<dialog>` element for proper focus trapping, Escape-key dismissal, and screen-reader support across all devices |
-| **API response documentation** | Add `responses={...}` annotations to FastAPI route decorators so the generated OpenAPI UI shows 404/409 status codes alongside each endpoint |
+| **API response documentation** | Add `responses={...}` annotations to FastAPI route decorators so the generated OpenAPI UI shows 404/409 status codes alongside each endpoint — tracked in [#212](https://github.com/hobsojam/SAFe_tooling/issues/212) |
 
 ---
 
 ## Development notes
 
 See `CLAUDE.md` for SAFe domain vocabulary, entity relationships, technical conventions, and the phased build plan.
+
+> **How README screenshots work:** on every merge to `main`, CI takes Playwright screenshots of the live app against the fixture dataset and force-pushes them as a single orphan commit to the [`screenshots`](https://github.com/hobsojam/SAFe_tooling/tree/screenshots) branch. The branch is auto-managed and should **never** be merged — any PR opened from it will be closed automatically.
