@@ -10,6 +10,16 @@ import { useToast } from './Toaster';
 type NavItem = { to: string; label: string; primary?: boolean };
 type NavGroup = { heading: string; items: NavItem[] };
 
+function navLinkClass({ isActive, primary }: { isActive: boolean; primary?: boolean }) {
+  return `block rounded px-3 py-2 text-sm font-medium transition-colors ${
+    isActive
+      ? 'bg-slate-700 text-white'
+      : primary
+        ? 'text-slate-200 hover:bg-slate-800 hover:text-white'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+  }`;
+}
+
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: '',
@@ -184,15 +194,7 @@ export function Layout() {
                       key={to}
                       to={`/pi/${piId}/${to}`}
                       onClick={closeSidebar}
-                      className={({ isActive }) =>
-                        `block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                          isActive
-                            ? 'bg-slate-700 text-white'
-                            : primary
-                              ? 'text-slate-200 hover:bg-slate-800 hover:text-white'
-                              : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-                        }`
-                      }
+                      className={({ isActive }) => navLinkClass({ isActive, primary })}
                     >
                       {label}
                     </NavLink>
@@ -208,13 +210,7 @@ export function Layout() {
           <NavLink
             to="/art-setup"
             onClick={closeSidebar}
-            className={({ isActive }) =>
-              `block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-slate-700 text-white'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-              }`
-            }
+            className={({ isActive }) => navLinkClass({ isActive })}
           >
             ART Setup
           </NavLink>
