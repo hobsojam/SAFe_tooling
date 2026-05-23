@@ -69,5 +69,5 @@ test('New PI button is visible in the sidebar', async ({ page }) => {
 
 test('disclaimer is visible in the sidebar', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText(/Not an official Scaled Agile product/).first()).toBeVisible();
+  await expect(page.getByText(/Unofficial SAFe® tooling/).first()).toBeVisible();
 });

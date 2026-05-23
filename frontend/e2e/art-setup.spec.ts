@@ -3,8 +3,9 @@ import { resetDb, selectPI } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await resetDb();
-  // Navigate via sidebar — ART Setup is always visible, no PI required
+  // Navigate via sidebar — ART Setup is available from the compact setup section
   await page.goto('/');
+  await page.getByText('Setup', { exact: true }).click();
   await page.getByRole('link', { name: 'ART Setup' }).click();
   await page.waitForURL(/\/art-setup/);
 });
@@ -23,13 +24,14 @@ test('shows team count for the fixture ART', async ({ page }) => {
   await expect(row.getByRole('cell', { name: '4' })).toBeVisible();
 });
 
-test('ART Setup link is visible without a PI selected', async ({ page }) => {
+test('ART Setup is reachable without a PI selected', async ({ page }) => {
   // Already on the page without selecting a PI in beforeEach
   await expect(page.getByRole('heading', { name: 'ART Setup' })).toBeVisible();
 });
 
-test('ART Setup link is visible when a PI is selected', async ({ page }) => {
+test('ART Setup is reachable when a PI is selected', async ({ page }) => {
   await selectPI(page);
+  await page.getByText('Setup', { exact: true }).click();
   await page.getByRole('link', { name: 'ART Setup' }).click();
   await page.waitForURL(/\/art-setup/);
   await expect(page.getByRole('heading', { name: 'ART Setup' })).toBeVisible();

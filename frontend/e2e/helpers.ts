@@ -31,7 +31,21 @@ const PAGE_SLUGS: Partial<Record<string, string>> = {
   'Team Setup': 'team-setup',
 };
 
-export async function goToPage(page: Page, label: 'PI Health' | 'Board' | 'Backlog' | 'Objectives' | 'Predictability' | 'Capacity' | 'Risks' | 'Dependencies' | 'PI Setup' | 'Team Setup') {
+const PAGE_SECTIONS: Partial<Record<string, string>> = {
+  Stories: 'Planning',
+  Objectives: 'Planning',
+  Capacity: 'Planning',
+  Predictability: 'Ceremonies',
+  'PI Setup': 'Setup',
+  'Team Setup': 'Setup',
+};
+
+export async function goToPage(page: Page, label: 'PI Health' | 'Board' | 'Backlog' | 'Stories' | 'Objectives' | 'Predictability' | 'Capacity' | 'Risks' | 'Dependencies' | 'PI Setup' | 'Team Setup') {
+  const section = PAGE_SECTIONS[label];
+  const link = page.getByRole('link', { name: label });
+  if (section && !(await link.isVisible())) {
+    await page.getByText(section, { exact: true }).click();
+  }
   await page.getByRole('link', { name: label }).click();
   const slug = PAGE_SLUGS[label] ?? label.toLowerCase();
   await page.waitForURL(new RegExp(`/${slug}`));

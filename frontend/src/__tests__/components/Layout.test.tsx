@@ -83,33 +83,53 @@ describe('Layout', () => {
 
   it('renders nav links for the active PI', () => {
     render(<Layout />);
+    expect(screen.getByRole('link', { name: 'PI Health' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Board' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Backlog' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Risks' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Dependencies' })).toBeInTheDocument();
   });
 
-  it('renders section group headings', () => {
+  it('renders compact section headings for secondary navigation', () => {
     render(<Layout />);
     expect(screen.getByText('Planning')).toBeInTheDocument();
     expect(screen.getByText('Ceremonies')).toBeInTheDocument();
     expect(screen.getByText('Setup')).toBeInTheDocument();
   });
 
-  it('renders PI Health and Board as top-level primary links before the Planning group', () => {
+  it('renders core PI workflow links as top-level primary links', () => {
     render(<Layout />);
     expect(screen.getByRole('link', { name: 'PI Health' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Board' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Backlog' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Risks' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Dependencies' })).toBeInTheDocument();
   });
 
-  it('renders all ceremony links under the Ceremonies heading', () => {
+  it('renders planning links after expanding the Planning section', async () => {
+    const user = userEvent.setup();
     render(<Layout />);
+    await user.click(screen.getByText('Planning'));
+    expect(screen.getByRole('link', { name: 'Stories' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Objectives' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Capacity' })).toBeInTheDocument();
+  });
+
+  it('renders all ceremony links after expanding the Ceremonies section', async () => {
+    const user = userEvent.setup();
+    render(<Layout />);
+    await user.click(screen.getByText('Ceremonies'));
     expect(screen.getByRole('link', { name: 'ART Sync' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Predictability' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Inspect & Adapt' })).toBeInTheDocument();
   });
 
-  it('renders the ART Setup global nav link', () => {
+  it('renders setup links after expanding the Setup section', async () => {
+    const user = userEvent.setup();
     render(<Layout />);
+    await user.click(screen.getByText('Setup'));
+    expect(screen.getByRole('link', { name: 'PI Setup' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Team Setup' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'ART Setup' })).toBeInTheDocument();
   });
 

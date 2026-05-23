@@ -26,23 +26,27 @@ function navLinkClass({ isActive, primary }: { isActive: boolean; primary?: bool
   return `${NAV_LINK_BASE} ${isActive ? NAV_LINK_ACTIVE : inactive}`;
 }
 
+function navSectionClass(isActive: boolean) {
+  return `cursor-pointer rounded px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors marker:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+    isActive ? 'bg-slate-800 text-slate-200' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
+  }`;
+}
+
+const PRIMARY_NAV_ITEMS: NavItem[] = [
+  navItem('health', 'PI Health', true),
+  navItem('board', 'Board', true),
+  navItem('backlog', 'Backlog', true),
+  navItem('risks', 'Risks', true),
+  navItem('dependencies', 'Dependencies', true),
+];
+
 const NAV_GROUPS: NavGroup[] = [
-  {
-    heading: '',
-    items: [
-      navItem('health', 'PI Health', true),
-      navItem('board', 'Board', true),
-    ],
-  },
   {
     heading: 'Planning',
     items: [
-      navItem('backlog', 'Backlog'),
       navItem('stories', 'Stories'),
       navItem('objectives', 'Objectives'),
       navItem('capacity', 'Capacity'),
-      navItem('risks', 'Risks'),
-      navItem('dependencies', 'Dependencies'),
     ],
   },
   {
@@ -53,13 +57,11 @@ const NAV_GROUPS: NavGroup[] = [
       navItem('inspect-adapt', 'Inspect & Adapt'),
     ],
   },
-  {
-    heading: 'Setup',
-    items: [
-      navItem('setup', 'PI Setup'),
-      navItem('team-setup', 'Team Setup'),
-    ],
-  },
+];
+
+const PI_SETUP_ITEMS: NavItem[] = [
+  navItem('setup', 'PI Setup'),
+  navItem('team-setup', 'Team Setup'),
 ];
 
 const EMPTY_PI_FORM: PICreate = {
@@ -122,6 +124,9 @@ export function Layout() {
     setSidebarOpen(false);
   }
 
+  const setupIsActive = location.pathname === '/art-setup'
+    || PI_SETUP_ITEMS.some(({ to }) => location.pathname === `/pi/${piId}/${to}`);
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Mobile backdrop */}
@@ -148,12 +153,23 @@ export function Layout() {
 
         {/* PI selector */}
         <div className="px-3 pb-4">
-          <label
-            htmlFor="pi-select"
-            className="mb-1 block text-xs text-slate-400"
-          >
-            Program Increment
-          </label>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <label
+              htmlFor="pi-select"
+              className="block text-xs text-slate-400"
+            >
+              Program Increment
+            </label>
+            <button
+              type="button"
+              onClick={() => { openNewPI(); closeSidebar(); }}
+              className="flex h-6 w-6 items-center justify-center rounded bg-slate-700 text-sm font-semibold text-slate-300 transition-colors hover:bg-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-slate-400"
+              aria-label="+ New PI"
+              title="New PI"
+            >
+              +
+            </button>
+          </div>
           <select
             id="pi-select"
             value={piId ?? ''}
@@ -187,54 +203,77 @@ export function Layout() {
         {/* Nav links */}
         {piId && (
           <nav className="flex-1 overflow-y-auto px-2 pb-2">
-            {NAV_GROUPS.map((group, gi) => (
-              <div key={group.heading || 'top'} className={gi > 0 ? 'mt-3' : ''}>
-                {group.heading && (
-                  <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    {group.heading}
-                  </p>
-                )}
-                <div className="space-y-0.5">
-                  {group.items.map(({ to, label, primary }) => (
-                    <NavLink
-                      key={to}
-                      to={`/pi/${piId}/${to}`}
-                      onClick={closeSidebar}
-                      className={({ isActive }) => navLinkClass({ isActive, primary })}
-                    >
-                      {label}
-                    </NavLink>
-                  ))}
-                </div>
-              </div>
-            ))}
+            <div className="space-y-0.5">
+              {PRIMARY_NAV_ITEMS.map(({ to, label, primary }) => (
+                <NavLink
+                  key={to}
+                  to={`/pi/${piId}/${to}`}
+                  onClick={closeSidebar}
+                  className={({ isActive }) => navLinkClass({ isActive, primary })}
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+
+            <div className="mt-3 space-y-1">
+              {NAV_GROUPS.map((group) => {
+                const groupIsActive = group.items.some(({ to }) => location.pathname === `/pi/${piId}/${to}`);
+                return (
+                  <details key={group.heading} open={groupIsActive}>
+                    <summary className={navSectionClass(groupIsActive)}>
+                      {group.heading}
+                    </summary>
+                    <div className="mt-1 space-y-0.5">
+                      {group.items.map(({ to, label, primary }) => (
+                        <NavLink
+                          key={to}
+                          to={`/pi/${piId}/${to}`}
+                          onClick={closeSidebar}
+                          className={({ isActive }) => navLinkClass({ isActive, primary })}
+                        >
+                          {label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  </details>
+                );
+              })}
+            </div>
           </nav>
         )}
 
-        {/* Global nav */}
+        {/* Global setup */}
         <div className="mt-auto border-t border-slate-700 px-2 pt-2">
-          <NavLink
-            to="/art-setup"
-            onClick={closeSidebar}
-            className={({ isActive }) => navLinkClass({ isActive })}
-          >
-            ART Setup
-          </NavLink>
-        </div>
-
-        {/* New PI button */}
-        <div className="px-3 py-2">
-          <button
-            onClick={() => { openNewPI(); closeSidebar(); }}
-            className="w-full rounded bg-slate-700 px-2 py-1.5 text-left text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors"
-          >
-            + New PI
-          </button>
+          <details open={setupIsActive}>
+            <summary className={navSectionClass(setupIsActive)}>
+              Setup
+            </summary>
+            <div className="mt-1 space-y-0.5">
+              {piId && PI_SETUP_ITEMS.map(({ to, label, primary }) => (
+                <NavLink
+                  key={to}
+                  to={`/pi/${piId}/${to}`}
+                  onClick={closeSidebar}
+                  className={({ isActive }) => navLinkClass({ isActive, primary })}
+                >
+                  {label}
+                </NavLink>
+              ))}
+              <NavLink
+                to="/art-setup"
+                onClick={closeSidebar}
+                className={({ isActive }) => navLinkClass({ isActive })}
+              >
+                ART Setup
+              </NavLink>
+            </div>
+          </details>
         </div>
 
         {/* Disclaimer */}
-        <p className="px-3 pb-4 text-xs leading-tight text-slate-500">
-          Not an official Scaled Agile product. SAFe® is a registered trademark of Scaled Agile, Inc.
+        <p className="px-3 py-3 text-xs leading-tight text-slate-500">
+          Unofficial SAFe® tooling.
         </p>
       </aside>
 
