@@ -1,3 +1,5 @@
+[![CI](https://github.com/hobsojam/SAFe_tooling/actions/workflows/ci.yml/badge.svg)](https://github.com/hobsojam/SAFe_tooling/actions/workflows/ci.yml)
+
 # SAFe Tooling
 
 > **Disclaimer:** This is an independent, open-source project and is not an official Scaled Agile product. It is not affiliated with, endorsed by, or sponsored by Scaled Agile, Inc. SAFe® and Scaled Agile Framework® are registered trademarks of Scaled Agile, Inc.
