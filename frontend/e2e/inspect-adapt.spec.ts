@@ -127,7 +127,7 @@ test('can create an improvement action', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Action' }).click();
   await page.getByLabel('Problem Statement').fill('Slow deploys');
   await page.getByLabel('Root Cause').fill('Manual steps in CI');
-  await page.getByLabel('Action').fill('Automate deployment pipeline');
+  await page.getByRole('textbox', { name: 'Action' }).fill('Automate deployment pipeline');
   await page.getByLabel('Owner').fill('Alice');
   await page.getByRole('button', { name: 'Add Action' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
@@ -140,7 +140,7 @@ test('can create an improvement action', async ({ page }) => {
 test('can edit an improvement action', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Action' }).click();
   await page.getByLabel('Problem Statement').fill('Original problem');
-  await page.getByLabel('Action').fill('Original action');
+  await page.getByRole('textbox', { name: 'Action' }).fill('Original action');
   await page.getByRole('button', { name: 'Add Action' }).click();
 
   await page.locator('table').getByRole('button', { name: 'Original problem' }).click();
@@ -156,7 +156,7 @@ test('can edit an improvement action', async ({ page }) => {
 test('can delete an improvement action', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Action' }).click();
   await page.getByLabel('Problem Statement').fill('To be deleted');
-  await page.getByLabel('Action').fill('Some action');
+  await page.getByRole('textbox', { name: 'Action' }).fill('Some action');
   await page.getByRole('button', { name: 'Add Action' }).click();
 
   const row = page.getByRole('row', { name: /To be deleted/ });
