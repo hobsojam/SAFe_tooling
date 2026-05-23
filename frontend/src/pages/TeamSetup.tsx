@@ -63,7 +63,7 @@ export function TeamSetup() {
 
   const { data: pi, isLoading: loadingPi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 

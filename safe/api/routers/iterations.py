@@ -1,5 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
@@ -17,10 +19,14 @@ def _get_or_404(repos: Repos, iteration_id: str) -> Iteration:
     return iteration
 
 
-@router.get("", response_model=list[Iteration])
+@router.get(
+    "",
+    response_model=list[Iteration],
+    responses={422: {"description": "pi_id query parameter is required"}},
+)
 def list_iterations(
     repos: ReposDep,
-    pi_id: str = Query(..., description="Filter by PI ID (required)"),
+    pi_id: Annotated[str, Query(description="Filter by PI ID (required)")],
 ):
     return repos.iterations.find(pi_id=pi_id)
 

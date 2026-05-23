@@ -34,13 +34,13 @@ export function ARTSync() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [], isLoading: loadingIter } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 

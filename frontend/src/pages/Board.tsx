@@ -221,19 +221,19 @@ export function Board() {
 
   const { data: pi, isLoading: loadingPi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
   const { data: features = [], isLoading: loadingFeatures } = useQuery({
     queryKey: ['features', piId],
-    queryFn: () => api.listFeatures(piId!),
+    queryFn: () => api.listFeatures(piId),
     enabled: !!piId,
   });
 
@@ -244,7 +244,7 @@ export function Board() {
 
   const { data: deps = [] } = useQuery({
     queryKey: ['dependencies', piId],
-    queryFn: () => api.listDependencies(piId!),
+    queryFn: () => api.listDependencies(piId),
     enabled: !!piId,
   });
 

@@ -1,5 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
@@ -20,10 +22,10 @@ def _get_or_404(repos: Repos, feature_id: str) -> Feature:
 @router.get("", response_model=list[Feature])
 def list_features(
     repos: ReposDep,
-    pi_id: str | None = Query(default=None),
-    team_id: str | None = Query(default=None),
-    status: FeatureStatus | None = Query(default=None),
-    sort: str | None = Query(default=None, pattern="^(wsjf_desc|name_asc)$"),
+    pi_id: Annotated[str | None, Query()] = None,
+    team_id: Annotated[str | None, Query()] = None,
+    status: Annotated[FeatureStatus | None, Query()] = None,
+    sort: Annotated[str | None, Query(pattern="^(wsjf_desc|name_asc)$")] = None,
 ):
     filters = {
         k: v

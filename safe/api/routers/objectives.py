@@ -1,5 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
@@ -20,9 +22,9 @@ def _get_or_404(repos: Repos, objective_id: str) -> PIObjective:
 @router.get("", response_model=list[PIObjective])
 def list_objectives(
     repos: ReposDep,
-    pi_id: str | None = Query(default=None),
-    team_id: str | None = Query(default=None),
-    is_stretch: bool | None = Query(default=None),
+    pi_id: Annotated[str | None, Query()] = None,
+    team_id: Annotated[str | None, Query()] = None,
+    is_stretch: Annotated[bool | None, Query()] = None,
 ):
     filters = {
         k: v

@@ -53,19 +53,19 @@ export function Dependencies() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: deps = [], isLoading } = useQuery({
     queryKey: ['dependencies', piId],
-    queryFn: () => api.listDependencies(piId!),
+    queryFn: () => api.listDependencies(piId),
     enabled: !!piId,
   });
 
   const { data: features = [] } = useQuery({
     queryKey: ['features', piId],
-    queryFn: () => api.listFeatures(piId!),
+    queryFn: () => api.listFeatures(piId),
     enabled: !!piId,
   });
 
@@ -156,7 +156,7 @@ export function Dependencies() {
     } else {
       createMut.mutate({
         description: form.description,
-        pi_id: piId!,
+        pi_id: piId,
         from_feature_id: form.from_feature_id,
         to_feature_id: form.to_feature_id,
         owner: form.owner || null,
@@ -185,7 +185,7 @@ export function Dependencies() {
             Dependencies — {pi?.name}
           </h1>
           <p className="text-sm text-slate-500">
-            {deps.length} dependenc{deps.length !== 1 ? 'ies' : 'y'}
+            {deps.length} dependenc{deps.length === 1 ? 'y' : 'ies'}
             {unresolved > 0 && (
               <span className="ml-2 font-medium text-red-600">{unresolved} unresolved</span>
             )}

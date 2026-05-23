@@ -1,6 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
 from datetime import date, timedelta
+from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -33,9 +34,9 @@ def _get_or_404(repos: Repos, plan_id: str) -> CapacityPlan:
 @router.get("", response_model=list[CapacityPlan])
 def list_capacity_plans(
     repos: ReposDep,
-    pi_id: str | None = Query(default=None),
-    team_id: str | None = Query(default=None),
-    iteration_id: str | None = Query(default=None),
+    pi_id: Annotated[str | None, Query()] = None,
+    team_id: Annotated[str | None, Query()] = None,
+    iteration_id: Annotated[str | None, Query()] = None,
 ):
     filters = {
         k: v
@@ -103,8 +104,8 @@ def create_or_update_capacity_plan(body: CapacityPlanCreate, repos: ReposDep):
 )
 def get_velocity(
     repos: ReposDep,
-    pi_id: str = Query(..., description="PI id"),
-    team_id: str | None = Query(default=None, description="Filter by team"),
+    pi_id: Annotated[str, Query(description="PI id")],
+    team_id: Annotated[str | None, Query(description="Filter by team")] = None,
 ):
     if repos.pis.get(pi_id) is None:
         raise HTTPException(status_code=404, detail=f"PI '{pi_id}' not found")

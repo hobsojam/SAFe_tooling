@@ -1,5 +1,7 @@
 """HTTP error responses (404, 409, 422) for these routes are documented in docs/openapi.yaml."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
@@ -20,14 +22,14 @@ def _get_or_404(repos: Repos, pi_id: str) -> PI:
 @router.get("", response_model=list[PI])
 def list_pis(
     repos: ReposDep,
-    art_id: str | None = Query(default=None),
-    status: PIStatus | None = Query(default=None),
+    art_id: Annotated[str | None, Query()] = None,
+    status: Annotated[PIStatus | None, Query()] = None,
 ):
     filters = {k: v for k, v in {"art_id": art_id, "status": status}.items() if v is not None}
     return repos.pis.find(**filters) if filters else repos.pis.get_all()
 
 
-@router.post("", response_model=PI, status_code=201)
+@router.post("", response_model=PI, status_code=201, responses={404: {"description": "Not found"}})
 def create_pi(body: PICreate, repos: ReposDep):
     if repos.arts.get(body.art_id) is None:
         raise HTTPException(status_code=404, detail=f"ART '{body.art_id}' not found")

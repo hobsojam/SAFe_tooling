@@ -15,13 +15,13 @@ export function Setup() {
 
   const { data: pi, isLoading } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
@@ -42,7 +42,7 @@ export function Setup() {
   const [lifecycleError, setLifecycleError] = useState('');
 
   const updatePIMut = useMutation({
-    mutationFn: (body: PIUpdate) => api.updatePI(piId!, body),
+    mutationFn: (body: PIUpdate) => api.updatePI(piId, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pi', piId] });
       qc.invalidateQueries({ queryKey: ['pis'] });
@@ -54,7 +54,7 @@ export function Setup() {
   });
 
   const activateMut = useMutation({
-    mutationFn: () => api.activatePI(piId!),
+    mutationFn: () => api.activatePI(piId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pi', piId] });
       qc.invalidateQueries({ queryKey: ['pis'] });
@@ -65,7 +65,7 @@ export function Setup() {
   });
 
   const closeMut = useMutation({
-    mutationFn: () => api.closePI(piId!),
+    mutationFn: () => api.closePI(piId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pi', piId] });
       qc.invalidateQueries({ queryKey: ['pis'] });
@@ -99,7 +99,7 @@ export function Setup() {
   });
 
   const deletePIMut = useMutation({
-    mutationFn: () => api.deletePI(piId!),
+    mutationFn: () => api.deletePI(piId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pis'] });
       navigate('/pi');
@@ -136,7 +136,7 @@ export function Setup() {
   function submitIter(e: React.FormEvent) {
     e.preventDefault();
     if (!iterForm.start_date || !iterForm.end_date) { setIterError('Start and end dates are required.'); return; }
-    createIterMut.mutate({ ...iterForm, pi_id: piId! });
+    createIterMut.mutate({ ...iterForm, pi_id: piId });
   }
 
   return (
@@ -396,20 +396,7 @@ export function Setup() {
           <h2 className="text-sm font-semibold text-red-700">Danger Zone</h2>
         </div>
         <div className="px-5 py-4">
-          {!deleteConfirm ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-700">Delete this PI</p>
-                <p className="text-xs text-slate-400">Permanently removes the PI and its iterations. Features, risks, and dependencies must be deleted first.</p>
-              </div>
-              <button
-                onClick={() => setDeleteConfirm(true)}
-                className="ml-4 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-              >
-                Delete PI
-              </button>
-            </div>
-          ) : (
+          {deleteConfirm ? (
             <div className="space-y-3">
               {lifecycleError && <p className="text-sm text-red-600">{lifecycleError}</p>}
               <p className="text-sm font-medium text-slate-700">
@@ -430,6 +417,19 @@ export function Setup() {
                   {deletePIMut.isPending ? 'Deleting…' : 'Yes, delete'}
                 </button>
               </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-700">Delete this PI</p>
+                <p className="text-xs text-slate-400">Permanently removes the PI and its iterations. Features, risks, and dependencies must be deleted first.</p>
+              </div>
+              <button
+                onClick={() => setDeleteConfirm(true)}
+                className="ml-4 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              >
+                Delete PI
+              </button>
             </div>
           )}
         </div>

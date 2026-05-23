@@ -15,13 +15,13 @@ export function usePIObjectives(): UsePIObjectivesResult {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: objectives = [], isLoading } = useQuery({
     queryKey: ['objectives', piId],
-    queryFn: () => api.listObjectives(piId!),
+    queryFn: () => api.listObjectives(piId),
     enabled: !!piId,
   });
 

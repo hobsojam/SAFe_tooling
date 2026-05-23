@@ -76,13 +76,13 @@ export function Capacity() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
@@ -93,7 +93,7 @@ export function Capacity() {
 
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['capacity-plans', piId],
-    queryFn: () => api.listCapacityPlans(piId!),
+    queryFn: () => api.listCapacityPlans(piId),
     enabled: !!piId,
   });
 
@@ -104,7 +104,7 @@ export function Capacity() {
 
   const { data: velocityEntries = [] } = useQuery<VelocityEntry[]>({
     queryKey: ['velocity', piId],
-    queryFn: () => api.listVelocity(piId!),
+    queryFn: () => api.listVelocity(piId),
     enabled: !!piId,
   });
 
@@ -180,7 +180,7 @@ export function Capacity() {
     upsertMut.mutate({
       team_id: selectedCell.teamId,
       iteration_id: selectedCell.iterationId,
-      pi_id: piId!,
+      pi_id: piId,
       team_size: form.team_size,
       iteration_days: form.iteration_days,
       pto_days: form.pto_days,

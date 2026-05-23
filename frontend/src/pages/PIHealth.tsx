@@ -22,7 +22,7 @@ export function PIHealth() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
@@ -34,13 +34,13 @@ export function PIHealth() {
 
   const { data: objectives = [], isLoading: loadingObj } = useQuery({
     queryKey: ['objectives', piId],
-    queryFn: () => api.listObjectives(piId!),
+    queryFn: () => api.listObjectives(piId),
     enabled: !!piId,
   });
 
   const { data: capacityPlans = [] } = useQuery({
     queryKey: ['capacity-plans', piId],
-    queryFn: () => api.listCapacityPlans(piId!),
+    queryFn: () => api.listCapacityPlans(piId),
     enabled: !!piId,
   });
 
@@ -51,19 +51,19 @@ export function PIHealth() {
 
   const { data: risks = [], isLoading: loadingRisks } = useQuery({
     queryKey: ['risks', piId],
-    queryFn: () => api.listRisks(piId!),
+    queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 
   const { data: dependencies = [], isLoading: loadingDeps } = useQuery({
     queryKey: ['dependencies', piId],
-    queryFn: () => api.listDependencies(piId!),
+    queryFn: () => api.listDependencies(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
     queryKey: ['iterations', piId],
-    queryFn: () => api.listIterations(piId!),
+    queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 

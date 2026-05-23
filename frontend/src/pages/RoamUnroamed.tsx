@@ -22,13 +22,13 @@ export function RoamUnroamed() {
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
-    queryFn: () => api.getPI(piId!),
+    queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: risks = [], isLoading } = useQuery({
     queryKey: ['risks', piId],
-    queryFn: () => api.listRisks(piId!),
+    queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 
