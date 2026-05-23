@@ -46,19 +46,27 @@ def create_feature(body: FeatureCreate, repos: ReposDep):
     return repos.features.save(feature)
 
 
-@router.get("/{feature_id}", response_model=Feature)
+@router.get("/{feature_id}", response_model=Feature, responses={404: {"description": "Not found"}})
 def get_feature(feature_id: str, repos: ReposDep):
     return _get_or_404(repos, feature_id)
 
 
-@router.patch("/{feature_id}", response_model=Feature)
+@router.patch(
+    "/{feature_id}",
+    response_model=Feature,
+    responses={404: {"description": "Not found"}},
+)
 def update_feature(feature_id: str, body: FeatureUpdate, repos: ReposDep):
     feature = _get_or_404(repos, feature_id)
     updated = feature.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.features.save(updated)
 
 
-@router.post("/{feature_id}/assign", response_model=Feature)
+@router.post(
+    "/{feature_id}/assign",
+    response_model=Feature,
+    responses={404: {"description": "Not found"}},
+)
 def assign_feature(feature_id: str, body: FeatureAssign, repos: ReposDep):
     feature = _get_or_404(repos, feature_id)
     if repos.teams.get(body.team_id) is None:
@@ -67,7 +75,7 @@ def assign_feature(feature_id: str, body: FeatureAssign, repos: ReposDep):
     return repos.features.save(updated)
 
 
-@router.delete("/{feature_id}", status_code=204)
+@router.delete("/{feature_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_feature(feature_id: str, repos: ReposDep):
     _get_or_404(repos, feature_id)
     for story in repos.stories.find(feature_id=feature_id):

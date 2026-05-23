@@ -7,19 +7,61 @@ import { Modal } from './Modal';
 import { PIStatusBadge } from './Badge';
 import { useToast } from './Toaster';
 
-const NAV = [
-  { to: 'health', label: 'PI Health' },
-  { to: 'board', label: 'Board' },
-  { to: 'backlog', label: 'Backlog' },
-  { to: 'objectives', label: 'Objectives' },
-  { to: 'predictability', label: 'Predictability' },
-  { to: 'capacity', label: 'Capacity' },
-  { to: 'risks', label: 'Risks' },
-  { to: 'dependencies', label: 'Dependencies' },
-  { to: 'inspect-adapt', label: 'Inspect & Adapt' },
-  { to: 'stories', label: 'Stories' },
-  { to: 'setup', label: 'PI Setup' },
-  { to: 'team-setup', label: 'Team Setup' },
+type NavItem = { to: string; label: string; primary?: boolean };
+type NavGroup = { heading: string; items: NavItem[] };
+
+const navItem = (to: string, label: string, primary = false): NavItem => ({
+  to,
+  label,
+  primary,
+});
+
+const NAV_LINK_BASE = 'block rounded px-3 py-2 text-sm font-medium transition-colors';
+const NAV_LINK_ACTIVE = 'bg-slate-700 text-white';
+const NAV_LINK_PRIMARY = 'text-slate-200 hover:bg-slate-800 hover:text-white';
+const NAV_LINK_DEFAULT = 'text-slate-400 hover:bg-slate-800 hover:text-slate-100';
+
+function navLinkClass({ isActive, primary }: { isActive: boolean; primary?: boolean }) {
+  const inactive = primary ? NAV_LINK_PRIMARY : NAV_LINK_DEFAULT;
+  return `${NAV_LINK_BASE} ${isActive ? NAV_LINK_ACTIVE : inactive}`;
+}
+
+function navSectionClass(isActive: boolean) {
+  return `cursor-pointer rounded px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors marker:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+    isActive ? 'bg-slate-800 text-slate-200' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
+  }`;
+}
+
+const PRIMARY_NAV_ITEMS: NavItem[] = [
+  navItem('health', 'PI Health', true),
+  navItem('board', 'Board', true),
+  navItem('backlog', 'Backlog', true),
+  navItem('risks', 'Risks', true),
+  navItem('dependencies', 'Dependencies', true),
+];
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    heading: 'Planning',
+    items: [
+      navItem('stories', 'Stories'),
+      navItem('objectives', 'Objectives'),
+      navItem('capacity', 'Capacity'),
+    ],
+  },
+  {
+    heading: 'Ceremonies',
+    items: [
+      navItem('art-sync', 'ART Sync'),
+      navItem('predictability', 'Predictability'),
+      navItem('inspect-adapt', 'Inspect & Adapt'),
+    ],
+  },
+];
+
+const PI_SETUP_ITEMS: NavItem[] = [
+  navItem('setup', 'PI Setup'),
+  navItem('team-setup', 'Team Setup'),
 ];
 
 const EMPTY_PI_FORM: PICreate = {
@@ -82,6 +124,9 @@ export function Layout() {
     setSidebarOpen(false);
   }
 
+  const setupIsActive = location.pathname === '/art-setup'
+    || PI_SETUP_ITEMS.some(({ to }) => location.pathname === `/pi/${piId}/${to}`);
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Mobile backdrop */}
@@ -108,12 +153,23 @@ export function Layout() {
 
         {/* PI selector */}
         <div className="px-3 pb-4">
-          <label
-            htmlFor="pi-select"
-            className="mb-1 block text-xs text-slate-400"
-          >
-            Program Increment
-          </label>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <label
+              htmlFor="pi-select"
+              className="block text-xs text-slate-400"
+            >
+              Program Increment
+            </label>
+            <button
+              type="button"
+              onClick={() => { openNewPI(); closeSidebar(); }}
+              className="flex h-6 w-6 items-center justify-center rounded bg-slate-700 text-sm font-semibold text-slate-300 transition-colors hover:bg-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-slate-400"
+              aria-label="+ New PI"
+              title="New PI"
+            >
+              +
+            </button>
+          </div>
           <select
             id="pi-select"
             value={piId ?? ''}
@@ -146,56 +202,89 @@ export function Layout() {
 
         {/* Nav links */}
         {piId && (
-          <nav className="flex-1 space-y-0.5 px-2">
-            {NAV.map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={`/pi/${piId}/${to}`}
-                onClick={closeSidebar}
-                className={({ isActive }) =>
-                  `block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-slate-700 text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
+          <nav className="flex-1 overflow-y-auto px-2 pb-2">
+            <div className="space-y-0.5">
+              {PRIMARY_NAV_ITEMS.map(({ to, label, primary }) => (
+                <NavLink
+                  key={to}
+                  to={`/pi/${piId}/${to}`}
+                  onClick={closeSidebar}
+                  className={({ isActive }) => navLinkClass({ isActive, primary })}
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+
+            <div className="mt-3 space-y-1">
+              {NAV_GROUPS.map((group) => {
+                const groupIsActive = group.items.some(({ to }) => location.pathname === `/pi/${piId}/${to}`);
+                return (
+                  <details key={group.heading} open={groupIsActive}>
+                    <summary className={navSectionClass(groupIsActive)}>
+                      {group.heading}
+                    </summary>
+                    <div className="mt-1 space-y-0.5">
+                      {group.items.map(({ to, label, primary }) => (
+                        <NavLink
+                          key={to}
+                          to={`/pi/${piId}/${to}`}
+                          onClick={closeSidebar}
+                          className={({ isActive }) => navLinkClass({ isActive, primary })}
+                        >
+                          {label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  </details>
+                );
+              })}
+            </div>
           </nav>
         )}
 
-        {/* Global nav */}
-        <div className="mt-auto border-t border-slate-700 px-2 pt-2">
+        {/* Global views */}
+        <div className="border-t border-slate-700 px-2 pt-2 pb-1">
           <NavLink
-            to="/art-setup"
+            to="/roadmap"
             onClick={closeSidebar}
-            className={({ isActive }) =>
-              `block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-slate-700 text-white'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-              }`
-            }
+            className={({ isActive }) => navLinkClass({ isActive })}
           >
-            ART Setup
+            Roadmap
           </NavLink>
         </div>
 
-        {/* New PI button */}
-        <div className="px-3 py-2">
-          <button
-            onClick={() => { openNewPI(); closeSidebar(); }}
-            className="w-full rounded bg-slate-700 px-2 py-1.5 text-left text-sm text-slate-300 hover:bg-slate-600 hover:text-white transition-colors"
-          >
-            + New PI
-          </button>
+        {/* Global setup */}
+        <div className="mt-auto border-t border-slate-700 px-2 pt-2">
+          <details open={setupIsActive}>
+            <summary className={navSectionClass(setupIsActive)}>
+              Setup
+            </summary>
+            <div className="mt-1 space-y-0.5">
+              {piId && PI_SETUP_ITEMS.map(({ to, label, primary }) => (
+                <NavLink
+                  key={to}
+                  to={`/pi/${piId}/${to}`}
+                  onClick={closeSidebar}
+                  className={({ isActive }) => navLinkClass({ isActive, primary })}
+                >
+                  {label}
+                </NavLink>
+              ))}
+              <NavLink
+                to="/art-setup"
+                onClick={closeSidebar}
+                className={({ isActive }) => navLinkClass({ isActive })}
+              >
+                ART Setup
+              </NavLink>
+            </div>
+          </details>
         </div>
 
         {/* Disclaimer */}
-        <p className="px-3 pb-4 text-xs leading-tight text-slate-500">
-          Not an official Scaled Agile product. SAFe® is a registered trademark of Scaled Agile, Inc.
+        <p className="px-3 py-3 text-xs leading-tight text-slate-500">
+          Unofficial SAFe® tooling.
         </p>
       </aside>
 

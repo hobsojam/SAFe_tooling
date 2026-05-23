@@ -66,8 +66,11 @@ const makePlan = (teamId: string, iterId: string, availableCapacity: number) => 
 });
 
 function setupQueries({
-  plans = [] as ReturnType<typeof makePlan>[],
-  stories = [] as { id: string; team_id: string; iteration_id: string; points: number }[],
+  plans = [],
+  stories = [],
+}: {
+  plans?: ReturnType<typeof makePlan>[];
+  stories?: { id: string; team_id: string; iteration_id: string; points: number }[];
 } = {}) {
   (useQueryClient as ReturnType<typeof vi.fn>).mockReturnValue({ invalidateQueries: vi.fn() });
   (useMutation as ReturnType<typeof vi.fn>).mockReturnValue({ mutate: vi.fn(), isPending: false });

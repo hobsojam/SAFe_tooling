@@ -61,7 +61,7 @@ def create_team(body: TeamCreate, repos: ReposDep):
     return team
 
 
-@router.get("/{team_id}", response_model=Team)
+@router.get("/{team_id}", response_model=Team, responses={404: {"description": "Not found"}})
 def get_team(team_id: str, repos: ReposDep):
     return _get_or_404(repos, team_id)
 
@@ -82,7 +82,11 @@ def update_team(team_id: str, body: TeamUpdate, repos: ReposDep):
     return repos.teams.save(updated)
 
 
-@router.delete("/{team_id}", status_code=204)
+@router.delete(
+    "/{team_id}",
+    status_code=204,
+    responses={404: {"description": "Not found"}, 409: {"description": "Conflict"}},
+)
 def delete_team(team_id: str, repos: ReposDep):
     team = _get_or_404(repos, team_id)
     if repos.features.find(team_id=team_id):

@@ -35,11 +35,17 @@ const mockIteration = makeIteration({
 const baseStory = makeStory({ id: 'story-1', name: 'Login flow', feature_id: 'feat-1', team_id: 'team-1', iteration_id: null });
 
 function setupMocks({
-  stories = [] as ReturnType<typeof makeStory>[],
+  stories = [],
   features = [mockFeature],
   iterations = [mockIteration],
   teams = mockTeams,
   isPending = false,
+}: {
+  stories?: ReturnType<typeof makeStory>[];
+  features?: ReturnType<typeof makeFeature>[];
+  iterations?: ReturnType<typeof makeIteration>[];
+  teams?: ReturnType<typeof makeTeam>[];
+  isPending?: boolean;
 } = {}) {
   setupQueryMocks({ pi: mockPI, features, stories, iterations, teams }, { isPending });
 }

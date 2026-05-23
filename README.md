@@ -1,3 +1,5 @@
+[![CI](https://github.com/hobsojam/SAFe_tooling/actions/workflows/ci.yml/badge.svg)](https://github.com/hobsojam/SAFe_tooling/actions/workflows/ci.yml)
+
 # SAFe Tooling
 
 > **Disclaimer:** This is an independent, open-source project and is not an official Scaled Agile product. It is not affiliated with, endorsed by, or sponsored by Scaled Agile, Inc. SAFe® and Scaled Agile Framework® are registered trademarks of Scaled Agile, Inc.
@@ -19,6 +21,7 @@ A local PI Planning platform for Scaled Agile Framework (SAFe) teams. Manage you
 | **Dependencies** | Map cross-team dependencies and track their resolution |
 | **Program Board** | Visual teams × iterations board with feature placement and dependency overlay |
 | **Predictability** | Calculate ART PI predictability from planned vs. actual business value |
+| **PI Roadmap** | Cross-PI feature timeline — view all features across every PI in a team × PI matrix |
 
 ## Three interfaces
 
@@ -137,12 +140,17 @@ The React SPA provides views across all key PI artifacts for a selected PI.
 | **PI Setup** | `/pi/:id/setup` | Edit PI details, manage lifecycle (activate/close), add/delete iterations, delete PI |
 | **Team Setup** | `/pi/:id/team-setup` | Create, rename, and delete ART teams; set Team Topologies type; reassign a team to a different ART |
 | **ART Setup** | `/art-setup` | Create, rename, and delete Agile Release Trains (always accessible) |
+| **PI Roadmap** | `/roadmap` | Cross-PI feature matrix — teams as rows, PIs as columns, feature cards with status and WSJF score (always accessible) |
 
 Built with Vite, React 18, TypeScript, Tailwind CSS v4, TanStack Query, and React Router.
 
 | Board | Backlog |
 |-------|---------|
 | ![Program Board](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/board.png) | ![Program Backlog](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/backlog.png) |
+
+| PI Roadmap |
+|-----------|
+| ![PI Roadmap](https://raw.githubusercontent.com/hobsojam/SAFe_tooling/screenshots/docs/screenshots/roadmap.png) |
 
 ---
 
@@ -373,7 +381,7 @@ frontend/           React SPA (Vite + TypeScript + Tailwind)
   src/
     api/            Typed fetch client
     components/     Layout, Badge, Spinner, EmptyState
-    pages/          Board, Backlog, Objectives, Predictability, Capacity, Risks, Dependencies, Setup, TeamSetup, ARTSetup
+    pages/          Board, Backlog, Objectives, Predictability, Capacity, Risks, Dependencies, Roadmap, Setup, TeamSetup, ARTSetup
   e2e/              Playwright end-to-end tests (154 tests)
   Dockerfile        Multi-stage build → nginx
   nginx.conf        SPA routing + /api/ proxy to FastAPI

@@ -1,0 +1,156 @@
+name: Experimental ZAP Baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "URL to scan after the local app starts"
+        required: true
+        default: "http://127.0.0.1:3000"
+      spider_minutes:
+        description: "Minutes for the ZAP spider to crawl"
+        required: true
+        default: "2"
+
+permissions:
+  contents: read
+
+jobs:
+  zap-baseline:
+    name: Headless ZAP baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start local app
+        run: docker compose up -d --build
+
+      - name: Wait for app
+        run: |
+          set -euo pipefail
+
+          for url in "http://127.0.0.1:8000/docs" "${{ inputs.target_url }}"; do
+            echo "Waiting for ${url}"
+            for attempt in {1..60}; do
+              if curl --fail --silent --show-error "${url}" >/dev/null; then
+                echo "Ready: ${url}"
+                break
+              fi
+              if [ "${attempt}" -eq 60 ]; then
+                echo "Timed out waiting for ${url}"
+                docker compose ps
+                docker compose logs --no-color
+                exit 1
+              fi
+              sleep 2
+            done
+          done
+
+      - name: Run ZAP baseline
+        env:
+          TARGET_URL: ${{ inputs.target_url }}
+          SPIDER_MINUTES: ${{ inputs.spider_minutes }}
+        run: |
+          set +e
+
+          mkdir -p zap-reports
+          echo "Running ZAP baseline against ${TARGET_URL}"
+
+          docker run --rm --network host \
+            -v "${PWD}/zap-reports:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+              -t "${TARGET_URL}" \
+              -m "${SPIDER_MINUTES}" \
+              -a \
+              -J zap-report.json \
+              -w zap-report.md \
+              -r zap-report.html
+
+          zap_exit_code=$?
+          echo "ZAP exit code: ${zap_exit_code}"
+          echo "ZAP_EXIT_CODE=${zap_exit_code}" >> "${GITHUB_ENV}"
+
+          # Experimental workflow: always continue so the report is available for triage.
+          exit 0
+
+      - name: Print ZAP summary
+        if: always()
+        run: |
+          set -euo pipefail
+
+          echo "ZAP exit code: ${ZAP_EXIT_CODE:-not-run}"
+          echo
+
+          if [ -s zap-reports/zap-report.md ]; then
+            echo "## ZAP Baseline Report" >> "${GITHUB_STEP_SUMMARY}"
+            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            cat zap-reports/zap-report.md >> "${GITHUB_STEP_SUMMARY}"
+
+            echo "----- ZAP Markdown Report -----"
+            cat zap-reports/zap-report.md
+            echo "----- End ZAP Markdown Report -----"
+          else
+            echo "No Markdown ZAP report was produced."
+          fi
+
+          if [ -s zap-reports/zap-report.json ]; then
+            echo
+            echo "----- ZAP Alert Summary -----"
+            python - <<'PY'
+          import json
+          from collections import Counter
+          from pathlib import Path
+
+          report = json.loads(Path("zap-reports/zap-report.json").read_text(encoding="utf-8"))
+          alerts = []
+          for site in report.get("site", []):
+              alerts.extend(site.get("alerts", []))
+
+          if not alerts:
+              print("No alerts found.")
+              raise SystemExit
+
+          by_risk = Counter(alert.get("riskdesc", "Unknown") for alert in alerts)
+          print("Alerts by risk:")
+          for risk, count in by_risk.most_common():
+              print(f"- {risk}: {count}")
+
+          print("\nDetailed alerts:")
+          for alert in alerts:
+              instances = alert.get("instances", [])
+              print(
+                  f"- [{alert.get('riskdesc', 'Unknown')}] "
+                  f"{alert.get('name', 'Unnamed alert')} "
+                  f"(plugin {alert.get('pluginid', 'unknown')}, "
+                  f"{len(instances)} instance(s))"
+              )
+              for instance in instances[:5]:
+                  uri = instance.get("uri", "")
+                  method = instance.get("method", "")
+                  print(f"  - {method} {uri}".rstrip())
+              if len(instances) > 5:
+                  print(f"  - ... {len(instances) - 5} more instance(s)")
+          PY
+            echo "----- End ZAP Alert Summary -----"
+          else
+            echo "No JSON ZAP report was produced."
+          fi
+
+      - name: Upload ZAP reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: zap-reports/
+          if-no-files-found: warn
+
+      - name: Show app logs
+        if: always()
+        run: docker compose logs --no-color
+
+      - name: Stop local app
+        if: always()
+        run: docker compose down --volumes

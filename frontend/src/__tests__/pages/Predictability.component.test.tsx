@@ -45,9 +45,13 @@ const stretchObjective = makePIObjective({
 });
 
 function setupPageMocks({
-  objectives = [] as ReturnType<typeof makePIObjective>[],
+  objectives = [],
   teams = [mockTeam],
   isLoading = false,
+}: {
+  objectives?: ReturnType<typeof makePIObjective>[];
+  teams?: ReturnType<typeof makeTeam>[];
+  isLoading?: boolean;
 } = {}) {
   setupQueryMocks(
     ({ queryKey }) => {
