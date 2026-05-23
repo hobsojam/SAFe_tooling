@@ -35,10 +35,15 @@ const mockIteration = makeIteration({
 });
 
 function setupPageMocks({
-  pi = mockPI as ReturnType<typeof makePI> | undefined,
-  iterations = [] as ReturnType<typeof makeIteration>[],
+  pi = mockPI,
+  iterations = [],
   isPending = false,
   isLoading = false,
+}: {
+  pi?: ReturnType<typeof makePI>;
+  iterations?: ReturnType<typeof makeIteration>[];
+  isPending?: boolean;
+  isLoading?: boolean;
 } = {}) {
   setupQueryMocks(
     ({ queryKey }) => {
