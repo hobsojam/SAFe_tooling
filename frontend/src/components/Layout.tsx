@@ -10,6 +10,12 @@ import { useToast } from './Toaster';
 type NavItem = { to: string; label: string; primary?: boolean };
 type NavGroup = { heading: string; items: NavItem[] };
 
+const navItem = (to: string, label: string, primary = false): NavItem => ({
+  to,
+  label,
+  primary,
+});
+
 const NAV_LINK_BASE = 'block rounded px-3 py-2 text-sm font-medium transition-colors';
 const NAV_LINK_ACTIVE = 'bg-slate-700 text-white';
 const NAV_LINK_PRIMARY = 'text-slate-200 hover:bg-slate-800 hover:text-white';
@@ -24,34 +30,34 @@ const NAV_GROUPS: NavGroup[] = [
   {
     heading: '',
     items: [
-      { to: 'health', label: 'PI Health', primary: true },
-      { to: 'board', label: 'Board', primary: true },
+      navItem('health', 'PI Health', true),
+      navItem('board', 'Board', true),
     ],
   },
   {
     heading: 'Planning',
     items: [
-      { to: 'backlog', label: 'Backlog' },
-      { to: 'stories', label: 'Stories' },
-      { to: 'objectives', label: 'Objectives' },
-      { to: 'capacity', label: 'Capacity' },
-      { to: 'risks', label: 'Risks' },
-      { to: 'dependencies', label: 'Dependencies' },
+      navItem('backlog', 'Backlog'),
+      navItem('stories', 'Stories'),
+      navItem('objectives', 'Objectives'),
+      navItem('capacity', 'Capacity'),
+      navItem('risks', 'Risks'),
+      navItem('dependencies', 'Dependencies'),
     ],
   },
   {
     heading: 'Ceremonies',
     items: [
-      { to: 'art-sync', label: 'ART Sync' },
-      { to: 'predictability', label: 'Predictability' },
-      { to: 'inspect-adapt', label: 'Inspect & Adapt' },
+      navItem('art-sync', 'ART Sync'),
+      navItem('predictability', 'Predictability'),
+      navItem('inspect-adapt', 'Inspect & Adapt'),
     ],
   },
   {
     heading: 'Setup',
     items: [
-      { to: 'setup', label: 'PI Setup' },
-      { to: 'team-setup', label: 'Team Setup' },
+      navItem('setup', 'PI Setup'),
+      navItem('team-setup', 'Team Setup'),
     ],
   },
 ];
