@@ -10,14 +10,14 @@ import { useToast } from './Toaster';
 type NavItem = { to: string; label: string; primary?: boolean };
 type NavGroup = { heading: string; items: NavItem[] };
 
+const NAV_LINK_BASE = 'block rounded px-3 py-2 text-sm font-medium transition-colors';
+const NAV_LINK_ACTIVE = 'bg-slate-700 text-white';
+const NAV_LINK_PRIMARY = 'text-slate-200 hover:bg-slate-800 hover:text-white';
+const NAV_LINK_DEFAULT = 'text-slate-400 hover:bg-slate-800 hover:text-slate-100';
+
 function navLinkClass({ isActive, primary }: { isActive: boolean; primary?: boolean }) {
-  return `block rounded px-3 py-2 text-sm font-medium transition-colors ${
-    isActive
-      ? 'bg-slate-700 text-white'
-      : primary
-        ? 'text-slate-200 hover:bg-slate-800 hover:text-white'
-        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-  }`;
+  const inactive = primary ? NAV_LINK_PRIMARY : NAV_LINK_DEFAULT;
+  return `${NAV_LINK_BASE} ${isActive ? NAV_LINK_ACTIVE : inactive}`;
 }
 
 const NAV_GROUPS: NavGroup[] = [
