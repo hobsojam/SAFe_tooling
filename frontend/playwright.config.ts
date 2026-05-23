@@ -9,9 +9,29 @@ const fixtureDb = path.resolve(__dirname, '..', 'tests', 'e2e_fixture.db.json');
 const TEST_API_PORT = 8001;
 const TEST_UI_PORT = 5180;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TWO SEPARATE PLAYWRIGHT PROJECTS — keep them separate, always.
+//
+//   "e2e"         → behavioural tests (frontend/e2e/**/*.spec.ts, NOT screenshots)
+//                   Run in CI on every PR:  npx playwright test --project=e2e
+//
+//   "screenshots" → documentation screenshots only (frontend/e2e/screenshots.spec.ts)
+//                   Run in CI on merge to main only:
+//                   npx playwright test --project=screenshots
+//
+// WHY SEPARATE:
+//   - E2e tests have assertions and must fail loudly when behaviour breaks.
+//   - Screenshot captures have no assertions; they must not pollute test results
+//     or block PRs, and they need to be resilient (a slow render ≠ a test failure).
+//   - Keeping them in one named-project config is simpler and safer than a second
+//     config file that extends this one via mergeConfig — mergeConfig concatenates
+//     arrays rather than replacing them, so testIgnore overrides are unreliable.
+//
+// DO NOT collapse these two projects back into one, or use mergeConfig again.
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: ['**/screenshots.spec.ts'],
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
@@ -24,7 +44,22 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      // Behavioural e2e tests — every spec EXCEPT screenshots.spec.ts.
+      // These run on every PR and must never include screenshot captures.
+      name: 'e2e',
+      testIgnore: ['**/screenshots.spec.ts'],
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      // Documentation screenshot captures — screenshots.spec.ts only.
+      // No assertions; runs on merge to main to refresh docs/screenshots/.
+      // Add a new test here whenever a new page is added to the app.
+      name: 'screenshots',
+      testMatch: ['**/screenshots.spec.ts'],
+      use: { ...devices['Desktop Chrome'] },
+      retries: 0, // a bad screenshot is silent; don't waste time retrying
+    },
   ],
   webServer: [
     {

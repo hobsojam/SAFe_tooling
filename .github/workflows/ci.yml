@@ -208,7 +208,9 @@ jobs:
 
       - name: Take screenshots
         working-directory: frontend
-        run: npx playwright test --config playwright.screenshots.config.ts
+        # Runs only the "screenshots" project — see playwright.config.ts for why
+        # this is kept separate from the "e2e" project.
+        run: npx playwright test --project=screenshots
 
       - name: Publish screenshots to dedicated branch
         run: |
@@ -255,4 +257,6 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: frontend
-        run: npx playwright test
+        # Runs only the "e2e" project — screenshots.spec.ts is excluded.
+        # See playwright.config.ts for the project separation rationale.
+        run: npx playwright test --project=e2e
