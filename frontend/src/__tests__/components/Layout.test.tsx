@@ -88,6 +88,26 @@ describe('Layout', () => {
     expect(screen.getByRole('link', { name: 'Risks' })).toBeInTheDocument();
   });
 
+  it('renders section group headings', () => {
+    render(<Layout />);
+    expect(screen.getByText('Planning')).toBeInTheDocument();
+    expect(screen.getByText('Ceremonies')).toBeInTheDocument();
+    expect(screen.getByText('Setup')).toBeInTheDocument();
+  });
+
+  it('renders PI Health and Board as top-level primary links before the Planning group', () => {
+    render(<Layout />);
+    expect(screen.getByRole('link', { name: 'PI Health' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Board' })).toBeInTheDocument();
+  });
+
+  it('renders all ceremony links under the Ceremonies heading', () => {
+    render(<Layout />);
+    expect(screen.getByRole('link', { name: 'ART Sync' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Predictability' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Inspect & Adapt' })).toBeInTheDocument();
+  });
+
   it('renders the ART Setup global nav link', () => {
     render(<Layout />);
     expect(screen.getByRole('link', { name: 'ART Setup' })).toBeInTheDocument();

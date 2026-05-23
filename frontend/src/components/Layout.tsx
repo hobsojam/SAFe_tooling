@@ -7,20 +7,43 @@ import { Modal } from './Modal';
 import { PIStatusBadge } from './Badge';
 import { useToast } from './Toaster';
 
-const NAV = [
-  { to: 'health', label: 'PI Health' },
-  { to: 'board', label: 'Board' },
-  { to: 'backlog', label: 'Backlog' },
-  { to: 'objectives', label: 'Objectives' },
-  { to: 'predictability', label: 'Predictability' },
-  { to: 'capacity', label: 'Capacity' },
-  { to: 'risks', label: 'Risks' },
-  { to: 'dependencies', label: 'Dependencies' },
-  { to: 'art-sync', label: 'ART Sync' },
-  { to: 'inspect-adapt', label: 'Inspect & Adapt' },
-  { to: 'stories', label: 'Stories' },
-  { to: 'setup', label: 'PI Setup' },
-  { to: 'team-setup', label: 'Team Setup' },
+type NavItem = { to: string; label: string; primary?: boolean };
+type NavGroup = { heading: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    heading: '',
+    items: [
+      { to: 'health', label: 'PI Health', primary: true },
+      { to: 'board', label: 'Board', primary: true },
+    ],
+  },
+  {
+    heading: 'Planning',
+    items: [
+      { to: 'backlog', label: 'Backlog' },
+      { to: 'stories', label: 'Stories' },
+      { to: 'objectives', label: 'Objectives' },
+      { to: 'capacity', label: 'Capacity' },
+      { to: 'risks', label: 'Risks' },
+      { to: 'dependencies', label: 'Dependencies' },
+    ],
+  },
+  {
+    heading: 'Ceremonies',
+    items: [
+      { to: 'art-sync', label: 'ART Sync' },
+      { to: 'predictability', label: 'Predictability' },
+      { to: 'inspect-adapt', label: 'Inspect & Adapt' },
+    ],
+  },
+  {
+    heading: 'Setup',
+    items: [
+      { to: 'setup', label: 'PI Setup' },
+      { to: 'team-setup', label: 'Team Setup' },
+    ],
+  },
 ];
 
 const EMPTY_PI_FORM: PICreate = {
@@ -147,22 +170,35 @@ export function Layout() {
 
         {/* Nav links */}
         {piId && (
-          <nav className="flex-1 space-y-0.5 px-2">
-            {NAV.map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={`/pi/${piId}/${to}`}
-                onClick={closeSidebar}
-                className={({ isActive }) =>
-                  `block rounded px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-slate-700 text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
+          <nav className="flex-1 overflow-y-auto px-2 pb-2">
+            {NAV_GROUPS.map((group, gi) => (
+              <div key={group.heading || 'top'} className={gi > 0 ? 'mt-3' : ''}>
+                {group.heading && (
+                  <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {group.heading}
+                  </p>
+                )}
+                <div className="space-y-0.5">
+                  {group.items.map(({ to, label, primary }) => (
+                    <NavLink
+                      key={to}
+                      to={`/pi/${piId}/${to}`}
+                      onClick={closeSidebar}
+                      className={({ isActive }) =>
+                        `block rounded px-3 py-2 text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-slate-700 text-white'
+                            : primary
+                              ? 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                              : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                        }`
+                      }
+                    >
+                      {label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         )}
