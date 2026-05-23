@@ -1,16 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
-import { resetDb, selectPI, waitForAppReady } from './helpers';
-
-async function goToARTSync(page: Page) {
-  await page.getByRole('link', { name: 'ART Sync' }).click();
-  await page.waitForURL(/\/art-sync/);
-  await waitForAppReady(page);
-}
+import { expect, test } from '@playwright/test';
+import { goToPage, resetDb, selectPI, waitForAppReady } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await resetDb();
   await selectPI(page);
-  await goToARTSync(page);
+  await goToPage(page, 'ART Sync');
 });
 
 // ── heading ────────────────────────────────────────────────────────────────────
@@ -33,7 +27,7 @@ test('does not render a column for the IP iteration', async ({ page }) => {
 
 test('renders a row for each team', async ({ page }) => {
   for (const team of ['Alpha', 'Beta', 'Delta', 'Gamma']) {
-    await expect(page.getByRole('cell', { name: team })).toBeVisible();
+    await expect(page.getByRole('cell', { name: team, exact: true })).toBeVisible();
   }
 });
 
@@ -65,7 +59,7 @@ test('still renders grid for PI with no stories (all cells show dash)', async ({
   await page.getByRole('combobox').selectOption({ label: 'PI 2026.2' });
   await page.waitForURL(/\/pi\/.+\/board/);
   await waitForAppReady(page);
-  await goToARTSync(page);
+  await goToPage(page, 'ART Sync');
   // Grid should appear but all cells are empty
   await expect(page.getByRole('columnheader', { name: 'Iteration 1' })).toBeVisible();
   await expect(page.getByText('—').first()).toBeVisible();

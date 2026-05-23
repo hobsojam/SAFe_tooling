@@ -1,16 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
-import { resetDb, selectPI, waitForAppReady } from './helpers';
-
-async function goToStories(page: Page) {
-  await page.getByRole('link', { name: 'Stories' }).click();
-  await page.waitForURL(/\/stories/);
-  await waitForAppReady(page);
-}
+import { expect, test } from '@playwright/test';
+import { goToPage, resetDb, selectPI } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await resetDb();
   await selectPI(page);
-  await goToStories(page);
+  await goToPage(page, 'Stories');
 });
 
 // ── add story ─────────────────────────────────────────────────────────────────
