@@ -133,10 +133,10 @@ describe('Roadmap page', () => {
   });
 
   it('renders feature status badge', () => {
-    const feature = makeFeature({ pi_id: 'pi-1', team_id: 'team-1', status: 'in_progress' });
+    const feature = makeFeature({ pi_id: 'pi-1', team_id: 'team-1', status: 'implementing' });
     setupRoadmapMocks({ features: [feature] });
     render(<Roadmap />);
-    expect(screen.getByTestId('status-badge')).toHaveTextContent('in_progress');
+    expect(screen.getByTestId('status-badge')).toHaveTextContent('implementing');
   });
 
   it('renders WSJF score on feature card', () => {
