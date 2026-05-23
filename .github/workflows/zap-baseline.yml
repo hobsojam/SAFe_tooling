@@ -56,6 +56,7 @@ jobs:
           set +e
 
           mkdir -p zap-reports
+          chmod 777 zap-reports
           echo "Running ZAP baseline against ${TARGET_URL}"
 
           docker run --rm --network host \

@@ -90,7 +90,7 @@ jobs:
         if: matrix.python-version == '3.12' && github.event_name == 'pull_request'
         uses: MishaKav/pytest-coverage-comment@v1
         with:
-          pytest-coverage-path: ./coverage.xml
+          pytest-xml-coverage-path: ./coverage.xml
           title: Python test coverage
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
