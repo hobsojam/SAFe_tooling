@@ -14,6 +14,18 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
+const apiMocks = vi.hoisted(() => ({
+  updatePI: vi.fn(),
+  activatePI: vi.fn(),
+  closePI: vi.fn(),
+  createIteration: vi.fn(),
+  deleteIteration: vi.fn(),
+  deletePI: vi.fn(),
+}));
+
+vi.mock('../../api', () => ({ api: apiMocks }));
+
+import { useMutation } from '@tanstack/react-query';
 import { Setup } from '../../pages/Setup';
 import { makeIteration, makePI } from '../factories';
 import { setupQueryMocks } from '../setupMocks';
@@ -45,7 +57,7 @@ function setupPageMocks({
   isPending?: boolean;
   isLoading?: boolean;
 } = {}) {
-  setupQueryMocks(
+  return setupQueryMocks(
     ({ queryKey }) => {
       const key = queryKey[0] as string;
       if (key === 'pi') return pi;
@@ -147,6 +159,51 @@ describe('Setup page', () => {
     await user.click(screen.getByRole('button', { name: '+ Add' }));
     await user.click(screen.getByRole('button', { name: 'Add Iteration' }));
     expect(screen.getByText('Start and end dates are required.')).toBeInTheDocument();
+  });
+
+  it('submits a new iteration with the current PI id', async () => {
+    const { mutate } = setupPageMocks();
+    const user = userEvent.setup();
+    render(<Setup />);
+    await user.click(screen.getByRole('button', { name: '+ Add' }));
+    await user.type(screen.getByLabelText('Name (optional)'), 'Iteration 2');
+    await user.clear(screen.getByLabelText('Number'));
+    await user.type(screen.getByLabelText('Number'), '2');
+    await user.type(screen.getByLabelText('Start Date'), '2026-01-19');
+    await user.type(screen.getByLabelText('End Date'), '2026-01-30');
+    await user.click(screen.getByRole('button', { name: 'Add Iteration' }));
+    expect(mutate).toHaveBeenCalledWith({
+      pi_id: 'pi-1',
+      name: 'Iteration 2',
+      number: 2,
+      start_date: '2026-01-19',
+      end_date: '2026-01-30',
+      is_ip: false,
+    });
+  });
+
+  it('binds PI lifecycle mutations to the current PI id', async () => {
+    setupPageMocks();
+    const mutationFns: Array<(value?: unknown) => unknown> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.mutationFn) mutationFns.push(opts.mutationFn);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    apiMocks.updatePI.mockResolvedValue(mockPI);
+    apiMocks.activatePI.mockResolvedValue(mockPI);
+    apiMocks.closePI.mockResolvedValue(mockPI);
+    apiMocks.deletePI.mockResolvedValue(undefined);
+
+    render(<Setup />);
+    await mutationFns[0]?.({ name: 'Updated PI' });
+    await mutationFns[1]?.();
+    await mutationFns[2]?.();
+    await mutationFns[5]?.();
+
+    expect(apiMocks.updatePI).toHaveBeenCalledWith('pi-1', { name: 'Updated PI' });
+    expect(apiMocks.activatePI).toHaveBeenCalledWith('pi-1');
+    expect(apiMocks.closePI).toHaveBeenCalledWith('pi-1');
+    expect(apiMocks.deletePI).toHaveBeenCalledWith('pi-1');
   });
 
   it('Activate button is enabled for a planning PI', () => {
