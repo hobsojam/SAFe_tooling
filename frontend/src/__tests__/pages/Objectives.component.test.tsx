@@ -149,6 +149,192 @@ describe('Objectives page', () => {
     expect(screen.getByText('Server error')).toBeInTheDocument();
   });
 
+  it('shows Score button when PI is active', () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.getAllByRole('button', { name: 'Score' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('hides Score button when PI is planning', () => {
+    const planningPI = makePI({ id: 'pi-1', name: 'PI 2026.1', status: 'planning' });
+    setupQueryMocks({ pi: planningPI, objectives: [committedObjective], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.queryByRole('button', { name: 'Score' })).not.toBeInTheDocument();
+  });
+
+  it('shows Score button when PI is closed', () => {
+    const closedPI = makePI({ id: 'pi-1', name: 'PI 2026.1', status: 'closed' });
+    setupQueryMocks({ pi: closedPI, objectives: [committedObjective], teams: mockTeams });
+    render(<Objectives />);
+    expect(screen.getAllByRole('button', { name: 'Score' }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('opens Score modal with objective description when Score clicked', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    const dialog = screen.getByRole('dialog', { hidden: false });
+    expect(screen.getByRole('heading', { name: 'Score Objective' })).toBeInTheDocument();
+    expect(dialog.textContent).toContain('Deliver auth service');
+    expect(screen.getByRole('button', { name: 'Save Score' })).toBeInTheDocument();
+  });
+
+  it('opens Score modal from the desktop row action', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    const scoreButtons = screen.getAllByRole('button', { name: 'Score' });
+    await user.click(scoreButtons[scoreButtons.length - 1]);
+    expect(screen.getByRole('heading', { name: 'Score Objective' })).toBeInTheDocument();
+  });
+
+  it('binds the score mutation to updateObjective', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const mutationFns: Array<(value: unknown) => unknown> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.mutationFn) mutationFns.push(opts.mutationFn);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify(committedObjective), { status: 200 }));
+
+    render(<Objectives />);
+    await mutationFns[3]?.({
+      id: 'obj-1',
+      body: { actual_business_value: 6 },
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/objectives/obj-1',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ actual_business_value: 6 }),
+      }),
+    );
+    fetchMock.mockRestore();
+  });
+
+  it('prefills Score modal when objective already has actual BV', async () => {
+    const scoredObjective = makePIObjective({
+      ...committedObjective,
+      id: 'obj-scored-prefill',
+      actual_business_value: 7,
+    });
+    setupQueryMocks({ pi: mockPI, objectives: [scoredObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    expect(screen.getByLabelText('Actual BV (0–10)')).toHaveValue(7);
+  });
+
+  it('submits score as a number from the Score modal', async () => {
+    const { mutate } = setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    await user.type(screen.getByLabelText('Actual BV (0–10)'), '6');
+    await user.click(screen.getByRole('button', { name: 'Save Score' }));
+    expect(mutate).toHaveBeenCalledWith({
+      id: 'obj-1',
+      body: { actual_business_value: 6 },
+    });
+  });
+
+  it('submits blank score as null from the Score modal', async () => {
+    const { mutate } = setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    await user.click(screen.getByRole('button', { name: 'Save Score' }));
+    expect(mutate).toHaveBeenCalledWith({
+      id: 'obj-1',
+      body: { actual_business_value: null },
+    });
+  });
+
+  it('shows score mutation error in the Score modal', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const onErrors: Array<(e: Error) => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onError) onErrors.push(opts.onError);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    act(() => { onErrors[3]?.(new Error('Score failed')); });
+    expect(screen.getByText('Score failed')).toBeInTheDocument();
+  });
+
+  it('closes Score modal when score mutation succeeds', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const onSuccesses: Array<() => void> = [];
+    vi.mocked(useMutation).mockImplementation((opts: any) => {
+      if (opts?.onSuccess) onSuccesses.push(opts.onSuccess);
+      return { mutate: vi.fn(), isPending: false } as any;
+    });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    act(() => { onSuccesses[3]?.(); });
+    expect(screen.queryByRole('heading', { name: 'Score Objective' })).not.toBeInTheDocument();
+  });
+
+  it('shows Saving label while score mutation is pending', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams }, { isPending: true });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    expect(screen.getByRole('button', { name: 'Saving…' })).toBeInTheDocument();
+  });
+
+  it('closes Score modal when Cancel is clicked', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('heading', { name: 'Score Objective' })).not.toBeInTheDocument();
+  });
+
+  it('closes Score modal from the modal close button', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Score' })[0]);
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('heading', { name: 'Score Objective' })).not.toBeInTheDocument();
+  });
+
+  it('closes edit modal and clears edit state when Cancel is clicked', async () => {
+    setupQueryMocks({ pi: mockPI, objectives: [committedObjective], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: '+ New Objective' }));
+    expect(screen.getByRole('button', { name: 'Add Objective' })).toBeInTheDocument();
+  });
+
+  it('submits new objectives with the current PI id', async () => {
+    const { mutate } = setupQueryMocks({ pi: mockPI, objectives: [], teams: mockTeams });
+    const user = userEvent.setup();
+    render(<Objectives />);
+    await user.click(screen.getByRole('button', { name: '+ New Objective' }));
+    await user.type(screen.getByLabelText('Description *'), 'New objective');
+    await user.click(screen.getByRole('button', { name: 'Add Objective' }));
+    expect(mutate).toHaveBeenCalledWith({
+      description: 'New objective',
+      team_id: 'team-1',
+      pi_id: 'pi-1',
+      planned_business_value: 5,
+      actual_business_value: null,
+      is_stretch: false,
+    });
+  });
+
   it('shows actual business value when committed objectives are scored', () => {
     const scoredObj = makePIObjective({
       id: 'obj-scored',

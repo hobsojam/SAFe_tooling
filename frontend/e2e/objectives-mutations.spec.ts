@@ -78,6 +78,34 @@ test('can score actual BV on an objective', async ({ page }) => {
   await expect(row.getByText('7')).toBeVisible();
 });
 
+test('Score button opens focused score modal', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Objective' }).click();
+  await page.getByLabel('Description').fill('Objective for scoring');
+  await page.getByLabel('Planned BV (1–10)').fill('9');
+  await page.getByRole('button', { name: 'Add Objective' }).click();
+
+  const row = page.getByRole('row', { name: /Objective for scoring/ });
+  await row.getByRole('button', { name: 'Score', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Score Objective' })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText('Objective for scoring')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save Score' })).toBeVisible();
+});
+
+test('can score actual BV via dedicated Score modal', async ({ page }) => {
+  await page.getByRole('button', { name: '+ New Objective' }).click();
+  await page.getByLabel('Description').fill('Objective via score modal');
+  await page.getByLabel('Planned BV (1–10)').fill('8');
+  await page.getByRole('button', { name: 'Add Objective' }).click();
+
+  const row = page.getByRole('row', { name: /Objective via score modal/ });
+  await row.getByRole('button', { name: 'Score', exact: true }).click();
+  await page.getByLabel('Actual BV (0–10)').fill('6');
+  await page.getByRole('button', { name: 'Save Score' }).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(row.getByText('6')).toBeVisible();
+});
+
 test('delete shows inline confirmation', async ({ page }) => {
   await page.getByRole('button', { name: '+ New Objective' }).click();
   await page.getByLabel('Description').fill('Objective to delete');

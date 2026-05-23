@@ -47,6 +47,9 @@ export function Objectives() {
   const [error, setError] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState('');
+  const [scoreObj, setScoreObj] = useState<PIObjective | null>(null);
+  const [scoreValue, setScoreValue] = useState<string>('');
+  const [scoreError, setScoreError] = useState('');
 
   const { data: pi } = useQuery({
     queryKey: ['pi', piId],
@@ -86,10 +89,34 @@ export function Objectives() {
     onError: (e: Error) => setDeleteError(e.message),
   });
 
+  const scoreMut = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: PIObjectiveUpdate }) =>
+      api.updateObjective(id, body),
+    onSuccess: () => { invalidate(); setScoreObj(null); toast('Objective scored'); },
+    onError: (e: Error) => setScoreError(e.message),
+  });
+
   const committed = objectives.filter((o) => !o.is_stretch);
   const stretch = objectives.filter((o) => o.is_stretch);
   const sorted = [...committed, ...stretch];
   const { page, totalPages, pageItems: pageSorted, goTo } = usePagination(sorted, 25, piId);
+
+  const canScore = pi?.status === 'active' || pi?.status === 'closed';
+
+  function openScore(o: PIObjective) {
+    setScoreObj(o);
+    setScoreValue(o.actual_business_value === null ? '' : String(o.actual_business_value));
+    setScoreError('');
+  }
+
+  function handleScoreSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!scoreObj) return;
+    scoreMut.mutate({
+      id: scoreObj.id,
+      body: { actual_business_value: scoreValue === '' ? null : Number(scoreValue) },
+    });
+  }
 
   if (isLoading) return <Spinner />;
 
@@ -229,6 +256,14 @@ export function Objectives() {
                     </strong></span>
                   </div>
                   <div className="flex gap-2">
+                    {canScore && (
+                      <button
+                        onClick={() => openScore(obj)}
+                        className="rounded-md bg-teal-50 px-4 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-100 transition-colors"
+                      >
+                        Score
+                      </button>
+                    )}
                     <button
                       onClick={() => openEdit(obj)}
                       className="rounded-md bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
@@ -324,6 +359,14 @@ export function Objectives() {
                           : obj.actual_business_value}
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap text-right">
+                        {canScore && (
+                          <button
+                            onClick={() => openScore(obj)}
+                            className="mr-3 text-xs text-teal-600 hover:text-teal-800 underline"
+                          >
+                            Score
+                          </button>
+                        )}
                         <button
                           onClick={() => openEdit(obj)}
                           className="mr-3 text-xs text-slate-500 hover:text-slate-800 underline"
@@ -370,6 +413,51 @@ export function Objectives() {
           <Pagination page={page} totalPages={totalPages} onPageChange={goTo} />
         </div>
       )}
+
+      <Modal
+        open={scoreObj !== null}
+        title="Score Objective"
+        onClose={() => setScoreObj(null)}
+      >
+        <form onSubmit={handleScoreSubmit} className="space-y-4">
+          {scoreError && <p className="text-sm text-red-600">{scoreError}</p>}
+          <div className="rounded-md bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
+            {scoreObj?.description}
+          </div>
+          <div>
+            <label htmlFor="score-actual-bv" className="mb-1 block text-sm font-medium text-slate-700">
+              Actual BV (0–10)
+            </label>
+            <input
+              id="score-actual-bv"
+              type="number"
+              min={0}
+              max={10}
+              value={scoreValue}
+              onChange={(e) => setScoreValue(e.target.value)}
+              placeholder="—"
+              autoFocus
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setScoreObj(null)}
+              className="rounded-md px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={scoreMut.isPending}
+              className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
+            >
+              {scoreMut.isPending ? 'Saving…' : 'Save Score'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       <Modal
         open={modalOpen}
