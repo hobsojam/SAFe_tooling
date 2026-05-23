@@ -106,6 +106,7 @@ export const api = {
   deleteIteration: (id: string) => del(`/iterations/${id}`),
 
   listFeatures: (piId: string) => get<Feature[]>(`/features?pi_id=${piId}`),
+  listAllFeatures: () => get<Feature[]>('/features'),
   createFeature: (body: FeatureCreate) => post<Feature>('/features', body),
   updateFeature: (id: string, body: FeatureUpdate) => patch<Feature>(`/features/${id}`, body),
   deleteFeature: (id: string) => del(`/features/${id}`),

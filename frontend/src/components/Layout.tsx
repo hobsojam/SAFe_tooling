@@ -243,6 +243,17 @@ export function Layout() {
           </nav>
         )}
 
+        {/* Global views */}
+        <div className="border-t border-slate-700 px-2 pt-2 pb-1">
+          <NavLink
+            to="/roadmap"
+            onClick={closeSidebar}
+            className={({ isActive }) => navLinkClass({ isActive })}
+          >
+            Roadmap
+          </NavLink>
+        </div>
+
         {/* Global setup */}
         <div className="mt-auto border-t border-slate-700 px-2 pt-2">
           <details open={setupIsActive}>
