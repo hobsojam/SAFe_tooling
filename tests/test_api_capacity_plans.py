@@ -84,6 +84,30 @@ def test_list_filter_by_pi(client):
     assert len(plans) == 1
 
 
+def test_list_filter_by_team_id(client):
+    pi_id, team_id, iter_id = _setup(client)
+    other_team_id = client.post("/team", json={"name": "Beta", "member_count": 4}).json()["id"]
+    _create_plan(client, pi_id, team_id, iter_id)
+    _create_plan(client, pi_id, other_team_id, iter_id)
+    plans = client.get(f"/capacity-plans?team_id={team_id}").json()
+    assert len(plans) == 1
+    assert plans[0]["team_id"] == team_id
+
+
+def test_list_filter_by_iteration_id(client):
+    pi_id, team_id, iter_id = _setup(client)
+    iter2_id = client.post(
+        "/iterations",
+        json={"pi_id": pi_id, "number": 2, "start_date": "2026-01-19", "end_date": "2026-01-30"},
+    ).json()["id"]
+    other_team_id = client.post("/team", json={"name": "Beta", "member_count": 4}).json()["id"]
+    _create_plan(client, pi_id, team_id, iter_id)
+    _create_plan(client, pi_id, other_team_id, iter2_id)
+    plans = client.get(f"/capacity-plans?iteration_id={iter_id}").json()
+    assert len(plans) == 1
+    assert plans[0]["iteration_id"] == iter_id
+
+
 def test_get_returns_plan(client):
     pi_id, team_id, iter_id = _setup(client)
     plan_id = _create_plan(client, pi_id, team_id, iter_id).json()["id"]
