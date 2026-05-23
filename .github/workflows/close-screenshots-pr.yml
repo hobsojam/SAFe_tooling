@@ -1,0 +1,22 @@
+name: Close screenshots branch PRs
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  close:
+    if: github.head_ref == 'screenshots'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Close PR and explain
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body \
+            "The \`screenshots\` branch is auto-managed by CI and should never be merged. It is force-pushed on every merge to \`main\` and contains only generated PNG files. Closing this PR automatically."
+          gh pr close "$PR_NUMBER" --repo "$REPO"

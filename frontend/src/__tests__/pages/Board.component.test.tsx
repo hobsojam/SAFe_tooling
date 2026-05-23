@@ -71,8 +71,14 @@ function setupBoardMocks({
   pi = mockPI,
   teams = [mockTeam],
   iterations = [mockIteration],
-  features = [mockFeature] as ReturnType<typeof makeFeature>[],
-  deps = [] as unknown[],
+  features = [mockFeature],
+  deps = [],
+}: {
+  pi?: ReturnType<typeof makePI>;
+  teams?: ReturnType<typeof makeTeam>[];
+  iterations?: ReturnType<typeof makeIteration>[];
+  features?: ReturnType<typeof makeFeature>[];
+  deps?: unknown[];
 } = {}) {
   return setupQueryMocks(({ queryKey }) => {
     const key = queryKey[0] as string;

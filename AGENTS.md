@@ -321,7 +321,7 @@ safe [--db-path PATH]
 - **Before switching branches**, always commit and push all finished work on the current branch. If there are uncommitted changes that are not ready to commit (broken, incomplete, or uncertain), do not switch branch silently — instead ask the user whether to stash, discard, or fix the changes before proceeding.
 - **Always include the co-author trailer** in every commit message:
   ```
-  Co-Authored-By: Claude Code <noreply@anthropic.com>
+  Co-Authored-By: Codex <noreply@anthropic.com>
   ```
 
 ## Documentation
@@ -330,7 +330,7 @@ safe [--db-path PATH]
   - Marking the feature as "Working" (not "Planned") in the What's implemented table.
   - Adding usage examples for every new command group.
   - Updating the Project Layout section if new files were added.
-- **Always update `CLAUDE.md` build phase status** to **Done** when a phase is complete.
+- **Always update `AGENTS.md` build phase status** to **Done** when a phase is complete.
 - Documentation updates must be committed on the same branch as the feature work, before the PR is created.
 
 ## Out of Scope

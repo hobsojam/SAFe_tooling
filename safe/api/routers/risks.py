@@ -49,26 +49,26 @@ def create_risk(body: RiskCreate, repos: ReposDep):
     return repos.risks.save(risk)
 
 
-@router.get("/{risk_id}", response_model=Risk)
+@router.get("/{risk_id}", response_model=Risk, responses={404: {"description": "Not found"}})
 def get_risk(risk_id: str, repos: ReposDep):
     return _get_or_404(repos, risk_id)
 
 
-@router.patch("/{risk_id}", response_model=Risk)
+@router.patch("/{risk_id}", response_model=Risk, responses={404: {"description": "Not found"}})
 def update_risk(risk_id: str, body: RiskUpdate, repos: ReposDep):
     risk = _get_or_404(repos, risk_id)
     updated = risk.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.risks.save(updated)
 
 
-@router.post("/{risk_id}/roam", response_model=Risk)
+@router.post("/{risk_id}/roam", response_model=Risk, responses={404: {"description": "Not found"}})
 def roam_risk(risk_id: str, body: RiskROAM, repos: ReposDep):
     risk = _get_or_404(repos, risk_id)
     updated = risk.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.risks.save(updated)
 
 
-@router.delete("/{risk_id}", status_code=204)
+@router.delete("/{risk_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_risk(risk_id: str, repos: ReposDep):
     _get_or_404(repos, risk_id)
     repos.risks.delete(risk_id)

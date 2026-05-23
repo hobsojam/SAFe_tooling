@@ -210,15 +210,15 @@ export function Capacity() {
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3 w-3 rounded-sm bg-amber-100 border border-amber-200" aria-hidden="true" />
-          Under-loaded (&lt;70%)
+          <span>Under-loaded (&lt;70%)</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3 w-3 rounded-sm bg-blue-100 border border-blue-200" aria-hidden="true" />
-          Suitably planned (70–100%)
+          <span>Suitably planned (70–100%)</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-200" aria-hidden="true" />
-          Over capacity (&gt;100%)
+          <span>Over capacity (&gt;100%)</span>
         </span>
       </div>
 

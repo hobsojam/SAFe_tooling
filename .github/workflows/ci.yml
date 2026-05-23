@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint & type-check
@@ -62,7 +65,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ${{ fromJSON(github.event_name == 'pull_request' && '["3.12"]' || '["3.11", "3.12", "3.13"]') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -208,17 +211,19 @@ jobs:
 
       - name: Take screenshots
         working-directory: frontend
-        run: npx playwright test --config playwright.screenshots.config.ts
+        # Runs only the "screenshots" project — see playwright.config.ts for why
+        # this is kept separate from the "e2e" project.
+        run: npx playwright test --project=screenshots
 
-      - name: Commit and push screenshots
+      - name: Publish screenshots to dedicated branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan screenshots-tmp
+          git rm -rf --cached .
           git add docs/screenshots/
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update screenshots [skip ci]"
-            git push
-          fi
+          git commit -m "chore: update screenshots"
+          git push origin HEAD:screenshots --force
 
   e2e:
     name: End-to-end tests
@@ -255,4 +260,6 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: frontend
-        run: npx playwright test
+        # Runs only the "e2e" project — screenshots.spec.ts is excluded.
+        # See playwright.config.ts for the project separation rationale.
+        run: npx playwright test --project=e2e
