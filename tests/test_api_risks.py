@@ -137,9 +137,17 @@ def test_patch_description(client):
     assert r.json()["description"] == "Updated risk"
 
 
+def test_patch_unknown_returns_404(client):
+    assert client.patch("/risks/no-such-id", json={"description": "X"}).status_code == 404
+
+
 def test_delete_returns_204(client):
     art_id = _create_art(client)
     pi_id = _create_pi(client, art_id)
     rid = _create_risk(client, pi_id).json()["id"]
     assert client.delete(f"/risks/{rid}").status_code == 204
     assert client.get(f"/risks/{rid}").status_code == 404
+
+
+def test_delete_unknown_returns_404(client):
+    assert client.delete("/risks/no-such-id").status_code == 404

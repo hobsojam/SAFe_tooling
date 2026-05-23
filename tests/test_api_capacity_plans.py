@@ -104,11 +104,19 @@ def test_patch_team_size(client):
     assert r.json()["team_size"] == 10
 
 
+def test_patch_unknown_returns_404(client):
+    assert client.patch("/capacity-plans/no-such-id", json={"team_size": 5}).status_code == 404
+
+
 def test_delete_returns_204(client):
     pi_id, team_id, iter_id = _setup(client)
     plan_id = _create_plan(client, pi_id, team_id, iter_id).json()["id"]
     assert client.delete(f"/capacity-plans/{plan_id}").status_code == 204
     assert client.get(f"/capacity-plans/{plan_id}").status_code == 404
+
+
+def test_delete_unknown_returns_404(client):
+    assert client.delete("/capacity-plans/no-such-id").status_code == 404
 
 
 def _setup_for_seed(client):

@@ -131,6 +131,20 @@ def test_get_unknown_returns_404(client):
     assert client.get("/dependencies/no-such-id").status_code == 404
 
 
+def test_patch_description(client):
+    art_id = _create_art(client)
+    pi_id = _create_pi(client, art_id)
+    f1, f2 = _create_features(client, pi_id)
+    did = _create_dep(client, pi_id, f1, f2).json()["id"]
+    r = client.patch(f"/dependencies/{did}", json={"description": "Updated dep"})
+    assert r.status_code == 200
+    assert r.json()["description"] == "Updated dep"
+
+
+def test_patch_unknown_returns_404(client):
+    assert client.patch("/dependencies/no-such-id", json={"description": "X"}).status_code == 404
+
+
 def test_delete_returns_204(client):
     art_id = _create_art(client)
     pi_id = _create_pi(client, art_id)
@@ -138,6 +152,10 @@ def test_delete_returns_204(client):
     did = _create_dep(client, pi_id, f1, f2).json()["id"]
     assert client.delete(f"/dependencies/{did}").status_code == 204
     assert client.get(f"/dependencies/{did}").status_code == 404
+
+
+def test_delete_unknown_returns_404(client):
+    assert client.delete("/dependencies/no-such-id").status_code == 404
 
 
 def test_list_filter_by_from_feature(client):
