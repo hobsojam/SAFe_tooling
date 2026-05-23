@@ -16,9 +16,13 @@ import { setupQueryMocks } from '../setupMocks';
 const mockART = makeART({ id: 'art-1', name: 'Platform ART', team_ids: ['team-1', 'team-2'] });
 
 function setupPageMocks({
-  arts = [] as ReturnType<typeof makeART>[],
+  arts = [],
   isPending = false,
   isLoading = false,
+}: {
+  arts?: ReturnType<typeof makeART>[];
+  isPending?: boolean;
+  isLoading?: boolean;
 } = {}) {
   setupQueryMocks({ arts }, { isPending, isLoading });
 }

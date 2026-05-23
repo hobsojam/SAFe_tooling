@@ -96,7 +96,11 @@ def create_or_update_capacity_plan(body: CapacityPlanCreate, repos: ReposDep):
     return repos.capacity_plans.save(plan)
 
 
-@router.get("/velocity", response_model=list[VelocityEntry])
+@router.get(
+    "/velocity",
+    response_model=list[VelocityEntry],
+    responses={404: {"description": "Not found"}},
+)
 def get_velocity(
     repos: ReposDep,
     pi_id: str = Query(..., description="PI id"),
@@ -133,19 +137,27 @@ def get_velocity(
     return results
 
 
-@router.get("/{plan_id}", response_model=CapacityPlan)
+@router.get(
+    "/{plan_id}",
+    response_model=CapacityPlan,
+    responses={404: {"description": "Not found"}},
+)
 def get_capacity_plan(plan_id: str, repos: ReposDep):
     return _get_or_404(repos, plan_id)
 
 
-@router.patch("/{plan_id}", response_model=CapacityPlan)
+@router.patch(
+    "/{plan_id}",
+    response_model=CapacityPlan,
+    responses={404: {"description": "Not found"}},
+)
 def update_capacity_plan(plan_id: str, body: CapacityPlanUpdate, repos: ReposDep):
     plan = _get_or_404(repos, plan_id)
     updated = plan.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.capacity_plans.save(updated)
 
 
-@router.delete("/{plan_id}", status_code=204)
+@router.delete("/{plan_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_capacity_plan(plan_id: str, repos: ReposDep):
     _get_or_404(repos, plan_id)
     repos.capacity_plans.delete(plan_id)

@@ -15,7 +15,7 @@ test('story expand toggle is shown for each feature', async ({ page }) => {
 test('expanding a feature shows story panel', async ({ page }) => {
   const featureRow = page.getByRole('row', { name: /Auth Service/ });
   await featureRow.getByRole('button', { name: /▶|▼|Stories/ }).click();
-  await expect(page.getByText('Stories').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: '+ Add Story' }).first()).toBeVisible();
 });
 
 test('can add a story to a feature', async ({ page }) => {

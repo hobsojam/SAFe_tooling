@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -8,6 +9,7 @@ import safe.cli.state as state
 from safe.exceptions import IllegalPITransitionError
 from safe.logic import pi as pi_logic
 from safe.logic.predictability import art_predictability, predictability_rating
+from safe.logic.snapshot import PISnapshot, export_pi, import_pi
 from safe.models.pi import PI, Iteration, PIStatus
 from safe.store.db import get_db
 from safe.store.repos import get_repos
@@ -148,6 +150,60 @@ def pi_predictability(
     score = art_predictability(list(zip(actual, planned, strict=False)))
     rating = predictability_rating(score)
     console.print(f"ART Predictability : [bold {rating}]{score}%[/bold {rating}]")
+
+
+@pi_app.command("export")
+def pi_export(
+    pi_id: str = typer.Argument(..., help=_PI_ID_PARAM),
+    output: Path | None = typer.Option(None, "--output", "-o", help="Output file path"),
+):
+    """Export a PI and all its scoped entities to a JSON snapshot file."""
+    repos = _repos()
+    try:
+        snapshot = export_pi(repos, pi_id)
+    except ValueError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1) from None
+    out_path = output or Path(f"{snapshot.pi.name.replace(' ', '_')}_snapshot.json")
+    out_path.write_text(snapshot.model_dump_json(indent=2))
+    console.print(f"Exported PI [bold]{snapshot.pi.name}[/bold] to [bold]{out_path}[/bold]")
+    console.print(
+        f"  {len(snapshot.iterations)} iteration(s), "
+        f"{len(snapshot.features)} feature(s), "
+        f"{len(snapshot.stories)} stor(y/ies), "
+        f"{len(snapshot.objectives)} objective(s), "
+        f"{len(snapshot.risks)} risk(s), "
+        f"{len(snapshot.dependencies)} dependenc(y/ies)"
+    )
+
+
+@pi_app.command("import")
+def pi_import(
+    file: Path = typer.Argument(..., help="Path to a PI snapshot JSON file"),
+):
+    """Import a PI snapshot, creating all entities with fresh IDs.
+
+    Teams and the ART are matched by name — existing records are reused,
+    new ones are created if not found.
+    """
+    repos = _repos()
+    if not file.exists():
+        console.print(f"[red]Error: file '{file}' not found[/red]")
+        raise typer.Exit(1)
+    try:
+        snapshot = PISnapshot.model_validate_json(file.read_text())
+    except Exception as e:
+        console.print(f"[red]Error: could not parse snapshot — {e}[/red]")
+        raise typer.Exit(1) from None
+    pi = import_pi(repos, snapshot)
+    console.print(f"Imported PI [bold]{pi.name}[/bold] (id: {pi.id})")
+    console.print(f"  ART: {snapshot.art.name}")
+    console.print(f"  {len(snapshot.iterations)} iteration(s) imported")
+    console.print(f"  {len(snapshot.features)} feature(s) imported")
+    console.print(f"  {len(snapshot.stories)} stor(y/ies) imported")
+    console.print(f"  {len(snapshot.objectives)} objective(s) imported")
+    console.print(f"  {len(snapshot.risks)} risk(s) imported")
+    console.print(f"  {len(snapshot.dependencies)} dependenc(y/ies) imported")
 
 
 @iteration_app.command("add")

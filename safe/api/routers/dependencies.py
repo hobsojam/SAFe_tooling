@@ -50,26 +50,38 @@ def create_dependency(body: DependencyCreate, repos: ReposDep):
     return repos.dependencies.save(dep)
 
 
-@router.get("/{dependency_id}", response_model=Dependency)
+@router.get(
+    "/{dependency_id}",
+    response_model=Dependency,
+    responses={404: {"description": "Not found"}},
+)
 def get_dependency(dependency_id: str, repos: ReposDep):
     return _get_or_404(repos, dependency_id)
 
 
-@router.patch("/{dependency_id}", response_model=Dependency)
+@router.patch(
+    "/{dependency_id}",
+    response_model=Dependency,
+    responses={404: {"description": "Not found"}},
+)
 def update_dependency(dependency_id: str, body: DependencyUpdate, repos: ReposDep):
     dep = _get_or_404(repos, dependency_id)
     updated = dep.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.dependencies.save(updated)
 
 
-@router.post("/{dependency_id}/roam", response_model=Dependency)
+@router.post(
+    "/{dependency_id}/roam",
+    response_model=Dependency,
+    responses={404: {"description": "Not found"}},
+)
 def roam_dependency(dependency_id: str, body: DependencyStatusUpdate, repos: ReposDep):
     dep = _get_or_404(repos, dependency_id)
     updated = dep.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.dependencies.save(updated)
 
 
-@router.delete("/{dependency_id}", status_code=204)
+@router.delete("/{dependency_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_dependency(dependency_id: str, repos: ReposDep):
     _get_or_404(repos, dependency_id)
     repos.dependencies.delete(dependency_id)

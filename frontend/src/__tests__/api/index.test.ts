@@ -76,6 +76,12 @@ describe('GET methods', () => {
     expect(mockFetch).toHaveBeenCalledWith('/api/features?pi_id=pi1');
   });
 
+  it('listAllFeatures calls GET /api/features with no filter', async () => {
+    resolveOk([]);
+    await api.listAllFeatures();
+    expect(mockFetch).toHaveBeenCalledWith('/api/features');
+  });
+
   it('listStoriesByFeature calls GET /api/stories?feature_id=...', async () => {
     resolveOk([]);
     await api.listStoriesByFeature('feat1');

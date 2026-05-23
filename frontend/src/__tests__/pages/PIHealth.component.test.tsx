@@ -39,14 +39,23 @@ const mockTeam = makeTeam({ id: 'team-1', name: 'Alpha', art_id: 'art-1' });
 const mockIteration = makeIteration({ id: 'iter-1', pi_id: 'pi-1', is_ip: false });
 
 function setup({
-  objectives = [] as ReturnType<typeof makePIObjective>[],
-  risks = [] as ReturnType<typeof makeRisk>[],
-  dependencies = [] as ReturnType<typeof makeDependency>[],
+  objectives = [],
+  risks = [],
+  dependencies = [],
   teams = [mockTeam],
-  capacityPlans = [] as ReturnType<typeof makeCapacityPlan>[],
-  stories = [] as ReturnType<typeof makeStory>[],
+  capacityPlans = [],
+  stories = [],
   iterations = [mockIteration],
   isLoading = false,
+}: {
+  objectives?: ReturnType<typeof makePIObjective>[];
+  risks?: ReturnType<typeof makeRisk>[];
+  dependencies?: ReturnType<typeof makeDependency>[];
+  teams?: ReturnType<typeof makeTeam>[];
+  capacityPlans?: ReturnType<typeof makeCapacityPlan>[];
+  stories?: ReturnType<typeof makeStory>[];
+  iterations?: ReturnType<typeof makeIteration>[];
+  isLoading?: boolean;
 } = {}) {
   setupQueryMocks(
     ({ queryKey }) => {

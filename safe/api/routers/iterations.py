@@ -25,7 +25,15 @@ def list_iterations(
     return repos.iterations.find(pi_id=pi_id)
 
 
-@router.post("", response_model=Iteration, status_code=201)
+@router.post(
+    "",
+    response_model=Iteration,
+    status_code=201,
+    responses={
+        404: {"description": "PI not found"},
+        422: {"description": "Iteration dates must fall within PI range"},
+    },
+)
 def create_iteration(body: IterationCreate, repos: ReposDep):
     pi = repos.pis.get(body.pi_id)
     if pi is None:
@@ -46,19 +54,27 @@ def create_iteration(body: IterationCreate, repos: ReposDep):
     return iteration
 
 
-@router.get("/{iteration_id}", response_model=Iteration)
+@router.get(
+    "/{iteration_id}",
+    response_model=Iteration,
+    responses={404: {"description": "Not found"}},
+)
 def get_iteration(iteration_id: str, repos: ReposDep):
     return _get_or_404(repos, iteration_id)
 
 
-@router.patch("/{iteration_id}", response_model=Iteration)
+@router.patch(
+    "/{iteration_id}",
+    response_model=Iteration,
+    responses={404: {"description": "Not found"}},
+)
 def update_iteration(iteration_id: str, body: IterationUpdate, repos: ReposDep):
     iteration = _get_or_404(repos, iteration_id)
     updated = iteration.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.iterations.save(updated)
 
 
-@router.delete("/{iteration_id}", status_code=204)
+@router.delete("/{iteration_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_iteration(iteration_id: str, repos: ReposDep):
     iteration = _get_or_404(repos, iteration_id)
     for plan in repos.capacity_plans.find(iteration_id=iteration_id):

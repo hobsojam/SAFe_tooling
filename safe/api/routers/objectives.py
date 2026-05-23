@@ -47,19 +47,27 @@ def create_objective(body: PIObjectiveCreate, repos: ReposDep):
     return repos.objectives.save(obj)
 
 
-@router.get("/{objective_id}", response_model=PIObjective)
+@router.get(
+    "/{objective_id}",
+    response_model=PIObjective,
+    responses={404: {"description": "Not found"}},
+)
 def get_objective(objective_id: str, repos: ReposDep):
     return _get_or_404(repos, objective_id)
 
 
-@router.patch("/{objective_id}", response_model=PIObjective)
+@router.patch(
+    "/{objective_id}",
+    response_model=PIObjective,
+    responses={404: {"description": "Not found"}},
+)
 def update_objective(objective_id: str, body: PIObjectiveUpdate, repos: ReposDep):
     obj = _get_or_404(repos, objective_id)
     updated = obj.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.objectives.save(updated)
 
 
-@router.delete("/{objective_id}", status_code=204)
+@router.delete("/{objective_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_objective(objective_id: str, repos: ReposDep):
     _get_or_404(repos, objective_id)
     repos.objectives.delete(objective_id)

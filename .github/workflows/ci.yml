@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint & type-check
@@ -62,7 +65,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ${{ fromJSON(github.event_name == 'pull_request' && '["3.12"]' || '["3.11", "3.12", "3.13"]') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -208,7 +211,9 @@ jobs:
 
       - name: Take screenshots
         working-directory: frontend
-        run: npx playwright test --config playwright.screenshots.config.ts
+        # Runs only the "screenshots" project — see playwright.config.ts for why
+        # this is kept separate from the "e2e" project.
+        run: npx playwright test --project=screenshots
 
       - name: Publish screenshots to dedicated branch
         run: |
@@ -255,4 +260,6 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: frontend
-        run: npx playwright test
+        # Runs only the "e2e" project — screenshots.spec.ts is excluded.
+        # See playwright.config.ts for the project separation rationale.
+        run: npx playwright test --project=e2e
