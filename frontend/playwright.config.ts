@@ -32,7 +32,6 @@ const TEST_UI_PORT = 5180;
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: ['**/screenshots.spec.ts'],
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,

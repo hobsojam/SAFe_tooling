@@ -217,6 +217,11 @@ jobs:
 
       - name: Publish screenshots to dedicated branch
         run: |
+          test -f docs/screenshots/board.png
+          test -f docs/screenshots/backlog.png
+          test -f docs/screenshots/capacity.png
+          test -f docs/screenshots/pi-health.png
+          test -f docs/screenshots/risks.png
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan screenshots-tmp
