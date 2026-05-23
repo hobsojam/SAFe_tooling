@@ -29,17 +29,18 @@ export function Modal({ open, title, onClose, children }: Props) {
       aria-labelledby="modal-title"
       className="m-0 h-dvh w-screen max-h-none max-w-none bg-transparent p-0 [&::backdrop]:bg-black/40"
       onCancel={onClose}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') e.stopPropagation();
-      }}
     >
       {open && (
-        <div className="flex h-full items-center justify-center">
+        <div className="relative flex h-full items-center justify-center">
+          <button
+            type="button"
+            aria-label="Close modal backdrop"
+            className="absolute inset-0 cursor-default"
+            tabIndex={-1}
+            onClick={onClose}
+          />
           <div
-            className="relative mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl"
+            className="relative z-10 mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
               <h2 id="modal-title" className="text-base font-semibold text-slate-800">{title}</h2>

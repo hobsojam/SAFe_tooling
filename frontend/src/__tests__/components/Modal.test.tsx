@@ -81,12 +81,12 @@ describe('Modal', () => {
 
   it('calls onClose when the backdrop is clicked', () => {
     const onClose = vi.fn();
-    const { container } = render(
+    render(
       <Modal open={true} title="Test" onClose={onClose}>
         content
       </Modal>,
     );
-    fireEvent.click(container.firstChild as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Close modal backdrop' }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -101,17 +101,16 @@ describe('Modal', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('does not propagate Escape keydown (handled by onCancel)', () => {
+  it('calls onClose when the native dialog cancel event fires', () => {
+    const onClose = vi.fn();
     render(
-      <Modal open={true} title="Test" onClose={() => {}}>
+      <Modal open={true} title="Test" onClose={onClose}>
         content
       </Modal>,
     );
     const dialog = screen.getByRole('dialog');
-    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
-    const stopPropagation = vi.spyOn(event, 'stopPropagation');
-    dialog.dispatchEvent(event);
-    expect(stopPropagation).toHaveBeenCalled();
+    fireEvent(dialog, new Event('cancel', { cancelable: true }));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('closes the dialog when transitioning from open to closed', () => {
