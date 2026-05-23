@@ -1,5 +1,5 @@
 [![CI](https://github.com/hobsojam/SAFe_tooling/actions/workflows/ci.yml/badge.svg)](https://github.com/hobsojam/SAFe_tooling/actions/workflows/ci.yml)
-
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=hobsojam_SAFe_tooling&metric=coverage)](https://sonarcloud.io/summary/new_code?id=hobsojam_SAFe_tooling)
 # SAFe Tooling
 
 > **Disclaimer:** This is an independent, open-source project and is not an official Scaled Agile product. It is not affiliated with, endorsed by, or sponsored by Scaled Agile, Inc. SAFe® and Scaled Agile Framework® are registered trademarks of Scaled Agile, Inc.
