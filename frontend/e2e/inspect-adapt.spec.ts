@@ -1,16 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
-import { resetDb, selectPI, waitForAppReady } from './helpers';
-
-async function goToInspectAdapt(page: Page) {
-  await page.getByRole('link', { name: 'Inspect & Adapt' }).click();
-  await page.waitForURL(/\/inspect-adapt/);
-  await waitForAppReady(page);
-}
+import { expect, test } from '@playwright/test';
+import { goToPage, resetDb, selectPI, waitForAppReady } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await resetDb();
   await selectPI(page);
-  await goToInspectAdapt(page);
+  await goToPage(page, 'Inspect & Adapt');
 });
 
 // ── heading ──────────────────────────────────────────────────────────────────
@@ -88,7 +82,7 @@ test('shows empty state when PI has no committed objectives', async ({ page }) =
   await page.getByRole('combobox').selectOption({ label: 'PI 2026.2' });
   await page.waitForURL(/\/pi\/.+\/board/);
   await waitForAppReady(page);
-  await goToInspectAdapt(page);
+  await goToPage(page, 'Inspect & Adapt');
   await expect(page.getByText(/No committed objectives/)).toBeVisible();
 });
 
@@ -97,7 +91,7 @@ test('shows empty state when PI has no objectives at all', async ({ page }) => {
   await page.getByRole('combobox').selectOption({ label: 'PI 2026.2' });
   await page.waitForURL(/\/pi\/.+\/board/);
   await waitForAppReady(page);
-  await goToInspectAdapt(page);
+  await goToPage(page, 'Inspect & Adapt');
   await expect(page.getByText(/No objectives for this PI/)).toBeVisible();
 });
 
@@ -106,6 +100,6 @@ test('shows empty state when PI has no risks', async ({ page }) => {
   await page.getByRole('combobox').selectOption({ label: 'PI 2026.2' });
   await page.waitForURL(/\/pi\/.+\/board/);
   await waitForAppReady(page);
-  await goToInspectAdapt(page);
+  await goToPage(page, 'Inspect & Adapt');
   await expect(page.getByText(/No risks recorded for this PI/)).toBeVisible();
 });

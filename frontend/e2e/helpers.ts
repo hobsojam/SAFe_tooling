@@ -27,6 +27,8 @@ export async function selectPI(page: Page, name = 'PI 2026.1') {
 
 const PAGE_SLUGS: Partial<Record<string, string>> = {
   'PI Health': 'health',
+  'ART Sync': 'art-sync',
+  'Inspect & Adapt': 'inspect-adapt',
   'PI Setup': 'setup',
   'Team Setup': 'team-setup',
 };
@@ -35,18 +37,20 @@ const PAGE_SECTIONS: Partial<Record<string, string>> = {
   Stories: 'Planning',
   Objectives: 'Planning',
   Capacity: 'Planning',
+  'ART Sync': 'Ceremonies',
   Predictability: 'Ceremonies',
+  'Inspect & Adapt': 'Ceremonies',
   'PI Setup': 'Setup',
   'Team Setup': 'Setup',
 };
 
-export async function goToPage(page: Page, label: 'PI Health' | 'Board' | 'Backlog' | 'Stories' | 'Objectives' | 'Predictability' | 'Capacity' | 'Risks' | 'Dependencies' | 'PI Setup' | 'Team Setup') {
+export async function goToPage(page: Page, label: 'PI Health' | 'Board' | 'Backlog' | 'Stories' | 'Objectives' | 'Predictability' | 'Capacity' | 'Risks' | 'Dependencies' | 'ART Sync' | 'Inspect & Adapt' | 'PI Setup' | 'Team Setup') {
   const section = PAGE_SECTIONS[label];
-  const link = page.getByRole('link', { name: label });
+  const link = page.getByRole('link', { name: label, exact: true });
   if (section && !(await link.isVisible())) {
     await page.getByText(section, { exact: true }).click();
   }
-  await page.getByRole('link', { name: label }).click();
+  await link.click();
   const slug = PAGE_SLUGS[label] ?? label.toLowerCase();
   await page.waitForURL(new RegExp(`/${slug}`));
   await waitForAppReady(page);
