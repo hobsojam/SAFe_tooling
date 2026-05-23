@@ -58,16 +58,12 @@ test('pi-health', async ({ page }) => {
 });
 
 test('inspect-adapt', async ({ page }) => {
-  await page.getByRole('link', { name: 'Inspect & Adapt' }).click();
-  await page.waitForURL(/\/inspect-adapt/);
-  await waitForAppReady(page);
+  await goToPage(page, 'Inspect & Adapt');
   await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'inspect-adapt.png') });
 });
 
 test('stories', async ({ page }) => {
-  await page.getByRole('link', { name: 'Stories' }).click();
-  await page.waitForURL(/\/stories/);
-  await waitForAppReady(page);
+  await goToPage(page, 'Stories');
   await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'stories.png') });
 });
 
