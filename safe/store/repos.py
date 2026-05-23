@@ -4,6 +4,7 @@ from safe.models.art import ART, Team
 from safe.models.backlog import Feature, Story
 from safe.models.capacity_plan import CapacityPlan
 from safe.models.dependency import Dependency
+from safe.models.improvement_action import ImprovementAction
 from safe.models.objectives import PIObjective
 from safe.models.pi import PI, Iteration
 from safe.models.risk import Risk
@@ -23,6 +24,7 @@ class Repos:
         self.risks = Repository(db, "risks", Risk)
         self.dependencies = Repository(db, "dependencies", Dependency)
         self.capacity_plans = Repository(db, "capacity_plans", CapacityPlan)
+        self.improvement_actions = Repository(db, "improvement_actions", ImprovementAction)
 
 
 def get_repos(db: TinyDB | None = None) -> Repos:

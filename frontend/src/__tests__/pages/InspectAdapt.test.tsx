@@ -1,11 +1,20 @@
 import { render, screen } from '@testing-library/react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { InspectAdapt } from '../../pages/InspectAdapt';
 import { makePI, makeTeam, makePIObjective, makeRisk } from '../factories';
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
+  useMutation: vi.fn(),
+  useQueryClient: vi.fn(),
+}));
+
+vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
+
+vi.mock('../../components/Modal', () => ({
+  Modal: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
+    open ? <div role="dialog">{children}</div> : null,
 }));
 
 vi.mock('react-router-dom', () => ({
@@ -51,6 +60,8 @@ function setupMocks(overrides: {
   risks?: typeof mockRisks;
   teams?: typeof mockTeams;
 } = {}) {
+  vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as any);
+  vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
   vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
     if (overrides.isLoading) {
       return { data: undefined, isLoading: true } as unknown as ReturnType<typeof useQuery>;
@@ -60,6 +71,7 @@ function setupMocks(overrides: {
     if (key === 'objectives') return { data: overrides.objectives ?? mockObjectives, isLoading: false } as unknown as ReturnType<typeof useQuery>;
     if (key === 'risks') return { data: overrides.risks ?? mockRisks, isLoading: false } as unknown as ReturnType<typeof useQuery>;
     if (key === 'teams') return { data: overrides.teams ?? mockTeams, isLoading: false } as unknown as ReturnType<typeof useQuery>;
+    if (key === 'improvement-actions') return { data: [], isLoading: false } as unknown as ReturnType<typeof useQuery>;
     return { data: undefined, isLoading: false } as unknown as ReturnType<typeof useQuery>;
   });
 }
@@ -82,11 +94,12 @@ describe('InspectAdapt', () => {
     expect(screen.getByText(/PI 2026\.1/)).toBeInTheDocument();
   });
 
-  it('shows all three section headings', () => {
+  it('shows all section headings', () => {
     render(<InspectAdapt />);
     expect(screen.getByText('ART Predictability')).toBeInTheDocument();
     expect(screen.getByText('PI Objectives')).toBeInTheDocument();
     expect(screen.getByText('Risk Disposition (ROAM)')).toBeInTheDocument();
+    expect(screen.getByText('Problem-Solving Workshop')).toBeInTheDocument();
   });
 
   it('renders predictability stat cards with correct values', () => {

@@ -1,4 +1,5 @@
 export type PIStatus = 'planning' | 'active' | 'closed';
+export type ImprovementActionStatus = 'open' | 'in_progress' | 'done';
 export type FeatureStatus = 'funnel' | 'analyzing' | 'backlog' | 'implementing' | 'done';
 export type ROAMStatus = 'unroamed' | 'owned' | 'accepted' | 'mitigated' | 'resolved';
 export type DependencyStatus = 'identified' | 'acknowledged' | 'in_progress' | 'resolved';
@@ -182,6 +183,33 @@ export interface Dependency {
   resolution_notes: string;
   raised_date: string;
   needed_by_date: string | null;
+}
+
+export interface ImprovementAction {
+  id: string;
+  pi_id: string;
+  problem_statement: string;
+  root_cause: string;
+  action: string;
+  owner: string;
+  status: ImprovementActionStatus;
+}
+
+export interface ImprovementActionCreate {
+  pi_id: string;
+  problem_statement: string;
+  root_cause?: string;
+  action: string;
+  owner?: string;
+  status?: ImprovementActionStatus;
+}
+
+export interface ImprovementActionUpdate {
+  problem_statement?: string;
+  root_cause?: string;
+  action?: string;
+  owner?: string;
+  status?: ImprovementActionStatus;
 }
 
 export interface PICreate {

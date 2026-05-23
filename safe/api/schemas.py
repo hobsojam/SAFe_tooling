@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from safe.models.art import TeamTopologyType
 from safe.models.backlog import FeatureStatus, StoryStatus
 from safe.models.dependency import DependencyStatus
+from safe.models.improvement_action import ImprovementActionStatus
 from safe.models.risk import ROAMStatus
 
 # --- ART ---
@@ -242,6 +243,26 @@ class VelocityEntry(BaseModel):
     pi_id: str
     completed_points: int
     available_capacity: float | None = None
+
+
+# --- ImprovementAction ---
+
+
+class ImprovementActionCreate(BaseModel):
+    pi_id: str
+    problem_statement: str
+    root_cause: str = ""
+    action: str
+    owner: str = ""
+    status: ImprovementActionStatus = ImprovementActionStatus.OPEN
+
+
+class ImprovementActionUpdate(BaseModel):
+    problem_statement: str | None = None
+    root_cause: str | None = None
+    action: str | None = None
+    owner: str | None = None
+    status: ImprovementActionStatus | None = None
 
 
 # --- Compute ---

@@ -11,6 +11,7 @@ from safe.api.routers import (
     compute,
     dependencies,
     features,
+    improvement_actions,
     iterations,
     objectives,
     pi,
@@ -43,6 +44,7 @@ app.include_router(objectives.router)
 app.include_router(risks.router)
 app.include_router(dependencies.router)
 app.include_router(capacity_plans.router)
+app.include_router(improvement_actions.router)
 app.include_router(compute.router)
 
 if os.environ.get("SAFE_DEV_ROUTES") == "1":
