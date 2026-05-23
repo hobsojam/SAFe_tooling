@@ -1,6 +1,7 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ToastProvider } from './components/Toaster';
+import { ARTSync } from './pages/ARTSync';
 import { Backlog } from './pages/Backlog';
 import { Board } from './pages/Board';
 import { Capacity } from './pages/Capacity';
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="pi/:piId/risks" element={<Risks />} />
           <Route path="pi/:piId/dependencies" element={<Dependencies />} />
           <Route path="pi/:piId/stories" element={<StoriesPage />} />
+          <Route path="pi/:piId/art-sync" element={<ARTSync />} />
           <Route path="pi/:piId/inspect-adapt" element={<InspectAdapt />} />
           <Route path="pi/:piId/setup" element={<Setup />} />
           <Route path="pi/:piId/team-setup" element={<TeamSetup />} />
