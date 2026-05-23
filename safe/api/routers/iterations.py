@@ -25,7 +25,15 @@ def list_iterations(
     return repos.iterations.find(pi_id=pi_id)
 
 
-@router.post("", response_model=Iteration, status_code=201)
+@router.post(
+    "",
+    response_model=Iteration,
+    status_code=201,
+    responses={
+        404: {"description": "PI not found"},
+        422: {"description": "Iteration dates must fall within PI range"},
+    },
+)
 def create_iteration(body: IterationCreate, repos: ReposDep):
     pi = repos.pis.get(body.pi_id)
     if pi is None:
