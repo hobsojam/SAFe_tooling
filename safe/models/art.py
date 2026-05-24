@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from pydantic import Field
 
-from safe.models.base import SAFeBaseModel
+from safe.models.base import SAFeBaseModel, ShortText
 
 
 class TeamTopologyType(StrEnum):
@@ -13,7 +13,7 @@ class TeamTopologyType(StrEnum):
 
 
 class Team(SAFeBaseModel):
-    name: str
+    name: ShortText
     member_count: int = Field(ge=1)
     art_id: str | None = None
     velocity_history: list[int] = Field(default_factory=list)
@@ -21,5 +21,5 @@ class Team(SAFeBaseModel):
 
 
 class ART(SAFeBaseModel):
-    name: str
+    name: ShortText
     team_ids: list[str] = Field(default_factory=list)

@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from pydantic import Field, computed_field, field_validator
 
-from safe.models.base import SAFeBaseModel
+from safe.models.base import LongText, SAFeBaseModel, ShortText
 
 
 class FeatureStatus(StrEnum):
@@ -14,14 +14,14 @@ class FeatureStatus(StrEnum):
 
 
 class Feature(SAFeBaseModel):
-    name: str
-    description: str = ""
+    name: ShortText
+    description: LongText = ""
     pi_id: str | None = None
     team_id: str | None = None
     iteration_id: str | None = None
     status: FeatureStatus = FeatureStatus.BACKLOG
-    acceptance_criteria: str = ""
-    nfr: str = ""
+    acceptance_criteria: LongText = ""
+    nfr: LongText = ""
     dependency_ids: list[str] = Field(default_factory=list)
     user_business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
@@ -51,14 +51,14 @@ class StoryStatus(StrEnum):
 
 
 class Story(SAFeBaseModel):
-    name: str
-    description: str = ""
+    name: ShortText
+    description: LongText = ""
     feature_id: str
     team_id: str
     iteration_id: str | None = None
     points: int = Field(ge=1)
     status: StoryStatus = StoryStatus.NOT_STARTED
-    acceptance_criteria: str = ""
+    acceptance_criteria: LongText = ""
 
     @field_validator("points", mode="before")
     @classmethod
