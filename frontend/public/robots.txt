@@ -1,0 +1,3 @@
+# Demo deployments are intentionally disposable and should not be indexed.
+User-agent: *
+Disallow: /

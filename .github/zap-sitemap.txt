@@ -1,0 +1,32 @@
+# Internal ZAP baseline targets for the local demo stack.
+# Keep this out of robots.txt; external crawlers should not index the demo.
+#
+# PI-specific frontend routes need a real seeded PI id. Add them here once demo
+# seeding uses stable ids, or have the ZAP workflow generate them from /api/pi.
+
+http://127.0.0.1:3000/
+http://127.0.0.1:3000/pi
+http://127.0.0.1:3000/art-setup
+http://127.0.0.1:3000/roadmap
+
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/openapi.json
+http://127.0.0.1:8000/art
+http://127.0.0.1:8000/team
+http://127.0.0.1:8000/pi
+http://127.0.0.1:8000/features
+http://127.0.0.1:8000/stories
+http://127.0.0.1:8000/objectives
+http://127.0.0.1:8000/risks
+http://127.0.0.1:8000/dependencies
+http://127.0.0.1:8000/capacity-plans
+
+http://127.0.0.1:3000/api/art
+http://127.0.0.1:3000/api/team
+http://127.0.0.1:3000/api/pi
+http://127.0.0.1:3000/api/features
+http://127.0.0.1:3000/api/stories
+http://127.0.0.1:3000/api/objectives
+http://127.0.0.1:3000/api/risks
+http://127.0.0.1:3000/api/dependencies
+http://127.0.0.1:3000/api/capacity-plans
