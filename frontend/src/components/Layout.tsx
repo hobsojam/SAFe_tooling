@@ -149,6 +149,7 @@ export function Layout() {
           <span className="text-sm font-semibold tracking-wide text-slate-300 uppercase">
             SAFe Tools
           </span>
+          <p className="mt-0.5 text-xs text-slate-500">v{__APP_VERSION__}</p>
         </div>
 
         {/* PI selector */}
