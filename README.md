@@ -125,6 +125,72 @@ podman compose up -d --build
 
 > On Windows with Podman, use `127.0.0.1` not `localhost` — WSL2's IPv6 forwarding causes a connection reset with `localhost`.
 
+### Option D — Render (public demo)
+
+SAFe Tooling can be self-hosted on [Render](https://render.com) as two separate Web Services (API and frontend). The free tier is sufficient for a demo: note that free Web Services sleep after ~15 minutes of inactivity (cold start ~30 s), and have no persistent disk, so data reseeds fresh on every restart.
+
+#### Architecture on Render
+
+```
+Browser → https://safe-frontend.onrender.com
+                │  /api/* requests
+                ▼
+          nginx (frontend service)
+                │  proxy_pass ${API_UPSTREAM_URL}
+                ▼
+          https://safe-api.onrender.com  (API service)
+                │
+          TinyDB at /data/db.json
+```
+
+Because each Render service gets its own public URL (not Docker Compose internal networking), the nginx proxy is configured via an `API_UPSTREAM_URL` environment variable set at container start. The local docker compose default (`http://api:8000`) is baked into the image as a fallback.
+
+#### Step 1 — Deploy the API service
+
+1. In Render, create a new **Web Service**.
+2. Connect your GitHub repo; set **Root Directory** to `/` (repo root).
+3. Set **Environment** to **Docker** — Render will build from the root `Dockerfile`.
+4. Set **Port** to `8000`.
+5. Set **Health Check Path** to `/health`.
+6. Add the following environment variables:
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `SAFE_DB_PATH` | `/data/db.json` | Path inside the container |
+| `SAFE_DEMO_SEED` | `1` | Seeds once when the database is empty |
+| `SAFE_DEMO_RESET_ON_START` | `1` | Wipes and reseeds on every restart — use on free tier (no persistent disk); omit if using a Render Disk |
+| `SAFE_DISABLE_API_DOCS` | `1` | Hides `/docs` and `/redoc` on the public demo (optional) |
+
+> **Persistent storage (paid):** Add a Render **Disk** mounted at `/data`. Then remove `SAFE_DEMO_RESET_ON_START` — `SAFE_DEMO_SEED=1` alone will seed once and preserve data across restarts.
+>
+> **Do not set `SAFE_DEV_ROUTES=1`** — that flag enables a database-reset endpoint that must not be exposed publicly.
+
+Note the API service's public URL (e.g. `https://safe-api.onrender.com`) — you need it for Step 2.
+
+#### Step 2 — Deploy the frontend service
+
+1. In Render, create a second **Web Service**.
+2. Connect the same repo; set **Root Directory** to `frontend/`.
+3. Set **Environment** to **Docker** — Render builds from `frontend/Dockerfile`.
+4. Set **Port** to `8080`.
+5. Set **Health Check Path** to `/`.
+6. Add the following environment variable:
+
+| Variable | Value |
+|----------|-------|
+| `API_UPSTREAM_URL` | `https://safe-api.onrender.com` (your API service URL from Step 1) |
+
+The nginx container reads `API_UPSTREAM_URL` at startup and configures the `/api/` proxy target automatically. No CORS changes are required — all browser requests go to the nginx frontend (same origin); the API only ever receives server-to-server proxy requests from nginx.
+
+#### What was changed to support this
+
+| File | Change |
+|------|--------|
+| `frontend/nginx.conf` | `proxy_pass` target changed from `http://api:8000/` to `${API_UPSTREAM_URL}/` |
+| `frontend/Dockerfile` | nginx.conf is now a template (`/etc/nginx/templates/`); the nginx Docker entrypoint substitutes `API_UPSTREAM_URL` at container start. Default value `http://api:8000` preserved for local docker compose. |
+| `docker-compose.yml` | `API_UPSTREAM_URL: http://api:8000` added to the frontend service so the local default is explicit |
+| `safe/api/deps.py` | `SAFE_DEMO_SEED` and `SAFE_DEMO_RESET_ON_START` startup seeding logic |
+
 ---
 
 ## Web frontend
