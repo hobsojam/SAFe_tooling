@@ -20,37 +20,48 @@ from safe.api.routers import (
     teams,
 )
 
-app = FastAPI(
-    title="SAFe Tooling API",
-    version="1.0.0",
-    description="HTTP API for SAFe PI Planning tooling",
-    lifespan=lifespan,
-)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def create_app() -> FastAPI:
+    docs_disabled = os.environ.get("SAFE_DISABLE_API_DOCS") == "1"
+    api_app = FastAPI(
+        title="SAFe Tooling API",
+        version="1.0.0",
+        description="HTTP API for SAFe PI Planning tooling",
+        lifespan=lifespan,
+        docs_url=None if docs_disabled else "/docs",
+        redoc_url=None if docs_disabled else "/redoc",
+        openapi_url=None if docs_disabled else "/openapi.json",
+    )
 
-app.include_router(arts.router)
-app.include_router(teams.router)
-app.include_router(pi.router)
-app.include_router(iterations.router)
-app.include_router(features.router)
-app.include_router(stories.router)
-app.include_router(objectives.router)
-app.include_router(risks.router)
-app.include_router(dependencies.router)
-app.include_router(capacity_plans.router)
-app.include_router(improvement_actions.router)
-app.include_router(compute.router)
+    api_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://localhost:3000"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-if os.environ.get("SAFE_DEV_ROUTES") == "1":
-    from safe.api.routers import dev
+    api_app.include_router(arts.router)
+    api_app.include_router(teams.router)
+    api_app.include_router(pi.router)
+    api_app.include_router(iterations.router)
+    api_app.include_router(features.router)
+    api_app.include_router(stories.router)
+    api_app.include_router(objectives.router)
+    api_app.include_router(risks.router)
+    api_app.include_router(dependencies.router)
+    api_app.include_router(capacity_plans.router)
+    api_app.include_router(improvement_actions.router)
+    api_app.include_router(compute.router)
 
-    app.include_router(dev.router)
+    if os.environ.get("SAFE_DEV_ROUTES") == "1":
+        from safe.api.routers import dev
+
+        api_app.include_router(dev.router)
+
+    return api_app
+
+
+app = create_app()
 
 
 def run() -> None:

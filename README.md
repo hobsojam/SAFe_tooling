@@ -158,6 +158,7 @@ Full CRUD for every domain entity, exposed via FastAPI.
 ```bash
 safe-api                             # starts on http://127.0.0.1:8000
 SAFE_DB_PATH=/path/to/db.json safe-api   # custom DB location
+SAFE_DISABLE_API_DOCS=1 safe-api         # disable /docs, /redoc, and /openapi.json
 ```
 
 Interactive docs: **http://127.0.0.1:8000/docs**
