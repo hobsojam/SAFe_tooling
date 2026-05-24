@@ -33,7 +33,26 @@ import type {
   VelocityEntry,
 } from '../types';
 
+import { logger } from '../logger';
+
 const BASE = '/api';
+
+async function logAndThrow(res: Response, method: string, path: string): Promise<never> {
+  const message = await extractErrorMessage(res);
+  if (res.status >= 500) {
+    logger.error(`${method} ${BASE}${path} → ${res.status}`, message);
+  } else {
+    logger.warn(`${method} ${BASE}${path} → ${res.status}`, message);
+  }
+  throw new Error(message);
+}
+
+function onNetworkError(method: string, path: string): (err: unknown) => never {
+  return (err: unknown): never => {
+    logger.error(`${method} ${BASE}${path} — network error`, err);
+    throw err;
+  };
+}
 
 async function extractErrorMessage(res: Response): Promise<string> {
   try {
@@ -54,8 +73,8 @@ async function extractErrorMessage(res: Response): Promise<string> {
 }
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(await extractErrorMessage(res));
+  const res = await fetch(`${BASE}${path}`).catch(onNetworkError('GET', path));
+  if (!res.ok) return logAndThrow(res, 'GET', path);
   return res.json();
 }
 
@@ -64,8 +83,8 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(await extractErrorMessage(res));
+  }).catch(onNetworkError('POST', path));
+  if (!res.ok) return logAndThrow(res, 'POST', path);
   return res.json();
 }
 
@@ -74,14 +93,16 @@ async function patch<T>(path: string, body: unknown): Promise<T> {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(await extractErrorMessage(res));
+  }).catch(onNetworkError('PATCH', path));
+  if (!res.ok) return logAndThrow(res, 'PATCH', path);
   return res.json();
 }
 
 async function del(path: string): Promise<void> {
-  const res = await fetch(`${BASE}${path}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(await extractErrorMessage(res));
+  const res = await fetch(`${BASE}${path}`, { method: 'DELETE' }).catch(
+    onNetworkError('DELETE', path),
+  );
+  if (!res.ok) return logAndThrow(res, 'DELETE', path);
 }
 
 export const api = {
