@@ -1,11 +1,24 @@
 # Internal ZAP baseline targets for the local demo stack.
 # Keep this out of robots.txt; external crawlers should not index the demo.
 #
-# PI-specific frontend routes need a real seeded PI id. Add them here once demo
-# seeding uses stable ids, or have the ZAP workflow generate them from /api/pi.
+# The ZAP hook expands {pi_id} using the active PI returned by /api/pi.
 
 http://127.0.0.1:3000/
 http://127.0.0.1:3000/pi
+http://127.0.0.1:3000/pi/{pi_id}/health
+http://127.0.0.1:3000/pi/{pi_id}/board
+http://127.0.0.1:3000/pi/{pi_id}/backlog
+http://127.0.0.1:3000/pi/{pi_id}/objectives
+http://127.0.0.1:3000/pi/{pi_id}/predictability
+http://127.0.0.1:3000/pi/{pi_id}/capacity
+http://127.0.0.1:3000/pi/{pi_id}/risks
+http://127.0.0.1:3000/pi/{pi_id}/risks/roam
+http://127.0.0.1:3000/pi/{pi_id}/dependencies
+http://127.0.0.1:3000/pi/{pi_id}/stories
+http://127.0.0.1:3000/pi/{pi_id}/art-sync
+http://127.0.0.1:3000/pi/{pi_id}/inspect-adapt
+http://127.0.0.1:3000/pi/{pi_id}/setup
+http://127.0.0.1:3000/pi/{pi_id}/team-setup
 http://127.0.0.1:3000/art-setup
 http://127.0.0.1:3000/roadmap
 
