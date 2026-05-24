@@ -9,6 +9,16 @@ These rules apply whenever you are working in this repository. Follow them witho
 - **Never delete or overwrite `~/.safe_tooling/db.json`** unless the user explicitly asks for a data reset and confirms they understand it is destructive.
 - If you suspect test data leaked into the real DB (e.g. via a bug like the `db or get_db()` falsy issue), report it to the user before clearing anything.
 
+## Input sanitisation — XSS / HTML injection
+
+- **All free-text `str` fields on domain models and API schemas must use `ShortText` or `LongText` from `safe.models.base`, never plain `str`.**
+  - `ShortText` — strips HTML tags + `max_length=200`. Use for single-line fields: `name`, `owner`.
+  - `LongText` — strips HTML tags + `max_length=2000`. Use for multi-line fields: `description`, `acceptance_criteria`, `notes`, `problem_statement`, `root_cause`, `action`.
+- The sanitiser strips `<tag>` delimiters via a `BeforeValidator`; text content between tags is kept as plain text (e.g. `<b>foo</b>` → `foo`).
+- ID/FK fields (`pi_id`, `team_id`, UUIDs) are **not** user-supplied free text — leave them as plain `str`.
+- When adding a new model or schema field, ask: is this a free-text string a user types? If yes, use `ShortText` or `LongText`. If it's an enum, ID, date, or number, leave it typed accordingly.
+- Add sanitisation tests to `tests/test_sanitisation.py` for any new free-text fields — at minimum one tag-strip assertion and one `max_length` boundary check.
+
 ## CLI input handling
 
 - **Never pass user-supplied strings to `subprocess`, `os.system`, or `eval`**. All CLI input must be handled through Typer option/argument parsing only.

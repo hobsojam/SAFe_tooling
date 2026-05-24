@@ -201,6 +201,7 @@ pyproject.toml
 **Models**
 - All models live in `safe/models/`; import via `safe.models` (the `__init__.py`), not individual files.
 - Every entity inherits `SAFeBaseModel` (`safe/models/base.py`), which provides the `id: str` field with a `uuid4` default.
+- **Free-text string fields must use `ShortText` (names/owners, max 200) or `LongText` (descriptions/notes, max 2000) from `safe.models.base`** — never plain `str`. These types strip HTML tags via a `BeforeValidator` to prevent XSS. ID/FK fields remain plain `str`. See `CLAUDE_SECURITY.md` for full rules.
 - Computed fields (`wsjf_score`, `cost_of_delay`, `available_capacity`, `is_committed`) use Pydantic `@computed_field`. They are **never stored** — `Repository.save()` derives exclusions at runtime via `model_computed_fields.keys()` and they are recomputed on `model_validate()`.
 - `date` fields serialise to ISO strings via `model_dump(mode="json")` and round-trip correctly through `model_validate`.
 
