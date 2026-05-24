@@ -112,7 +112,7 @@ export function Layout() {
     setPiModalOpen(true);
   }
 
-  function handlePISubmit(e: React.FormEvent) {
+  function handlePISubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!piForm.name.trim()) { setPiError('Name is required.'); return; }
     if (!piForm.art_id) { setPiError('ART is required.'); return; }

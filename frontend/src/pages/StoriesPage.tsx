@@ -128,7 +128,7 @@ export function StoriesPage() {
     setError('');
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.name.trim()) { setError('Name is required.'); return; }
     if (!form.feature_id) { setError('Feature is required.'); return; }

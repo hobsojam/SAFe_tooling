@@ -135,7 +135,7 @@ export function Dependencies() {
     setError('');
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.description.trim()) { setError('Description is required.'); return; }
     if (!form.from_feature_id || !form.to_feature_id) {

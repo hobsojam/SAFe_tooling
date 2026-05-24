@@ -111,7 +111,7 @@ export function Risks() {
     setError('');
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.description.trim()) { setError('Description is required.'); return; }
     if (editing) {
