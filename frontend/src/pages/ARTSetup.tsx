@@ -71,13 +71,13 @@ export function ARTSetup() {
     setDeleteId(null);
   }
 
-  function submitEdit(e: React.FormEvent) {
+  function submitEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!edit!.name.trim()) { setEditError('Name is required.'); return; }
     updateMut.mutate({ id: edit!.artId, body: { name: edit!.name } });
   }
 
-  function submitAdd(e: React.FormEvent) {
+  function submitAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!addName.trim()) { setAddError('Name is required.'); return; }
     createMut.mutate({ name: addName });

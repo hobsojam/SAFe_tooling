@@ -118,7 +118,7 @@ export function Setup() {
     setDetailsError('');
   }
 
-  function submitDetails(e: React.FormEvent) {
+  function submitDetails(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.name?.trim()) { setDetailsError('Name is required.'); return; }
     updatePIMut.mutate(detailsForm!);
@@ -133,7 +133,7 @@ export function Setup() {
     setShowIterForm(true);
   }
 
-  function submitIter(e: React.FormEvent) {
+  function submitIter(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!iterForm.start_date || !iterForm.end_date) { setIterError('Start and end dates are required.'); return; }
     createIterMut.mutate({ ...iterForm, pi_id: piId });

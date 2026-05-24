@@ -142,7 +142,7 @@ export function TeamSetup() {
     setDeleteId(null);
   }
 
-  function submitEdit(e: React.FormEvent) {
+  function submitEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!edit!.name.trim()) { setEditError('Name is required.'); return; }
     if (edit!.member_count < 1) { setEditError('Member count must be at least 1.'); return; }
@@ -157,7 +157,7 @@ export function TeamSetup() {
     });
   }
 
-  function submitAdd(e: React.FormEvent) {
+  function submitAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!addForm.name.trim()) { setAddError('Name is required.'); return; }
     if (addForm.member_count < 1) { setAddError('Member count must be at least 1.'); return; }

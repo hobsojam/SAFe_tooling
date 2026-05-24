@@ -123,7 +123,7 @@ function StoryPanel({
     setDeleteId(null);
   }
 
-  function submitEdit(e: React.FormEvent) {
+  function submitEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!editForm.name.trim()) { setEditError('Name is required.'); return; }
     updateMut.mutate({
@@ -132,7 +132,7 @@ function StoryPanel({
     });
   }
 
-  function submitAdd(e: React.FormEvent) {
+  function submitAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!addForm.name.trim()) { setAddError('Name is required.'); return; }
     if (!addForm.team_id) { setAddError('Team is required.'); return; }
@@ -500,7 +500,7 @@ export function Backlog() {
     setError('');
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.name.trim()) { setError('Feature name is required.'); return; }
     if (editing) {

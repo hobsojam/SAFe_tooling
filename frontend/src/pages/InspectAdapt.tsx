@@ -167,7 +167,7 @@ export function InspectAdapt() {
     setActionError('');
   }
 
-  function handleActionSubmit(e: React.FormEvent) {
+  function handleActionSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!actionForm.problem_statement.trim()) {
       setActionError('Problem statement is required.');

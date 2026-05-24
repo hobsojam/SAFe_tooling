@@ -109,7 +109,7 @@ export function Objectives() {
     setScoreError('');
   }
 
-  function handleScoreSubmit(e: React.FormEvent) {
+  function handleScoreSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!scoreObj) return;
     scoreMut.mutate({
@@ -150,7 +150,7 @@ export function Objectives() {
     setError('');
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.description.trim()) { setError('Description is required.'); return; }
     if (!form.team_id) { setError('Team is required.'); return; }

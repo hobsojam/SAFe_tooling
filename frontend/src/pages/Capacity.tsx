@@ -174,7 +174,7 @@ export function Capacity() {
     setError('');
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!selectedCell) return;
     upsertMut.mutate({
