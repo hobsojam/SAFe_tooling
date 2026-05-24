@@ -58,6 +58,10 @@ def create_app() -> FastAPI:
 
         api_app.include_router(dev.router)
 
+    @api_app.get("/health", include_in_schema=False)
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
     return api_app
 
 
