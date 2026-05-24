@@ -3,15 +3,10 @@ import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { BackendUnavailable } from './components/BackendUnavailable.tsx';
+import { isBackendUnavailable } from './utils/backendHealth.ts';
 import './index.css';
 
-function isBackendUnavailable(error: unknown): boolean {
-  if (error instanceof TypeError) return true; // network / CORS / fetch failed
-  if (error instanceof Error) return /^50[234]:/.test(error.message); // 502, 503, 504
-  return false;
-}
-
-function Root() {
+export function Root() {
   const [backendDown, setBackendDown] = useState(false);
 
   const [queryClient] = useState(
@@ -45,8 +40,11 @@ function Root() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Root />
-  </StrictMode>,
-);
+const container = document.getElementById('root');
+if (container) {
+  createRoot(container).render(
+    <StrictMode>
+      <Root />
+    </StrictMode>,
+  );
+}
