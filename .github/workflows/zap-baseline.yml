@@ -67,6 +67,7 @@ jobs:
             zap-baseline.py \
               -t "${TARGET_URL}" \
               -m "${SPIDER_MINUTES}" \
+              -j \
               -a \
               -J zap-report.json \
               -w zap-report.md \
