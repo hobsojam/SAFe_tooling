@@ -1,8 +1,9 @@
+import logging
 import os
 from importlib.metadata import version as pkg_version
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from safe.api.deps import lifespan
@@ -21,6 +22,14 @@ from safe.api.routers import (
     teams,
 )
 
+_log = logging.getLogger("safe.api")
+
+
+def _allowed_origins() -> list[str]:
+    raw = os.environ.get("SAFE_ALLOWED_ORIGINS", "")
+    extras = [o.strip() for o in raw.split(",") if o.strip()]
+    return ["http://localhost:5173", "http://localhost:3000", *extras]
+
 
 def create_app() -> FastAPI:
     docs_disabled = os.environ.get("SAFE_DISABLE_API_DOCS") == "1"
@@ -36,10 +45,19 @@ def create_app() -> FastAPI:
 
     api_app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173", "http://localhost:3000"],
+        allow_origins=_allowed_origins(),
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @api_app.middleware("http")
+    async def _log_4xx(request: Request, call_next):
+        response = await call_next(request)
+        if response.status_code >= 500:
+            _log.error("%s %s → %d", request.method, request.url.path, response.status_code)
+        elif response.status_code >= 400:
+            _log.warning("%s %s → %d", request.method, request.url.path, response.status_code)
+        return response
 
     api_app.include_router(arts.router)
     api_app.include_router(teams.router)
