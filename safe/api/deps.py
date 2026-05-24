@@ -66,6 +66,13 @@ async def lifespan(app):
             _write_dev_session(path)
 
         seed(Repos(_db))
+    elif os.environ.get("SAFE_DEMO_SEED") == "1":
+        from safe.dev_seed import seed
+
+        if os.environ.get("SAFE_DEMO_RESET_ON_START") == "1":
+            for table_name in _db.tables():
+                _db.table(table_name).truncate()
+        seed(Repos(_db))
     yield
     if _db is not None:
         _db.close()
