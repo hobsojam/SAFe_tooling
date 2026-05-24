@@ -262,6 +262,64 @@ describe('DELETE methods', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Error logging
+// ---------------------------------------------------------------------------
+
+describe('error logging', () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+  let errorSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+
+  it('logs console.warn on 4xx response', async () => {
+    resolveError(404, 'Not Found', { detail: 'not found' });
+    await expect(api.listPIs()).rejects.toThrow();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('→ 404'),
+      expect.any(String),
+    );
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('logs console.error on 5xx response', async () => {
+    resolveError(500, 'Internal Server Error');
+    await expect(api.listPIs()).rejects.toThrow();
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('→ 500'),
+      expect.any(String),
+    );
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('logs console.error on network error', async () => {
+    mockFetch.mockRejectedValue(new TypeError('fetch failed'));
+    await expect(api.listPIs()).rejects.toThrow();
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('network error'),
+      expect.any(TypeError),
+    );
+  });
+
+  it('log message includes method and path', async () => {
+    resolveError(422, 'Unprocessable Entity', { detail: 'bad input' });
+    const body: PICreate = { name: 'X', art_id: 'a', start_date: '2026-01-01', end_date: '2026-03-27' };
+    await expect(api.createPI(body)).rejects.toThrow();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('POST /api/pi'),
+      expect.any(String),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Error handling
 // ---------------------------------------------------------------------------
 
