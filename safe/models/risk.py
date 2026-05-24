@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from pydantic import Field
 
-from safe.models.base import SAFeBaseModel
+from safe.models.base import LongText, SAFeBaseModel, ShortText
 
 
 class ROAMStatus(StrEnum):
@@ -15,11 +15,11 @@ class ROAMStatus(StrEnum):
 
 
 class Risk(SAFeBaseModel):
-    description: str
+    description: LongText
     pi_id: str
     team_id: str | None = None
     feature_id: str | None = None
     roam_status: ROAMStatus = ROAMStatus.UNROAMED
-    owner: str | None = None
-    mitigation_notes: str = ""
+    owner: ShortText | None = None
+    mitigation_notes: LongText = ""
     raised_date: date = Field(default_factory=date.today)

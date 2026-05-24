@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from safe.models.base import SAFeBaseModel
+from safe.models.base import LongText, SAFeBaseModel, ShortText
 
 
 class ImprovementActionStatus(StrEnum):
@@ -11,8 +11,8 @@ class ImprovementActionStatus(StrEnum):
 
 class ImprovementAction(SAFeBaseModel):
     pi_id: str
-    problem_statement: str
-    root_cause: str = ""
-    action: str
-    owner: str = ""
+    problem_statement: LongText
+    root_cause: LongText = ""
+    action: LongText
+    owner: ShortText = ""
     status: ImprovementActionStatus = ImprovementActionStatus.OPEN

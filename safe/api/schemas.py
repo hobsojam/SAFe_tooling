@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 from safe.models.art import TeamTopologyType
 from safe.models.backlog import FeatureStatus, StoryStatus
+from safe.models.base import LongText, ShortText
 from safe.models.dependency import DependencyStatus
 from safe.models.improvement_action import ImprovementActionStatus
 from safe.models.risk import ROAMStatus
@@ -12,18 +13,18 @@ from safe.models.risk import ROAMStatus
 
 
 class ARTCreate(BaseModel):
-    name: str
+    name: ShortText
 
 
 class ARTUpdate(BaseModel):
-    name: str | None = None
+    name: ShortText | None = None
 
 
 # --- Team ---
 
 
 class TeamCreate(BaseModel):
-    name: str
+    name: ShortText
     member_count: int = Field(ge=1)
     art_id: str | None = None
     velocity_history: list[int] = []
@@ -31,7 +32,7 @@ class TeamCreate(BaseModel):
 
 
 class TeamUpdate(BaseModel):
-    name: str | None = None
+    name: ShortText | None = None
     member_count: int | None = Field(default=None, ge=1)
     art_id: str | None = None
     velocity_history: list[int] | None = None
@@ -42,14 +43,14 @@ class TeamUpdate(BaseModel):
 
 
 class PICreate(BaseModel):
-    name: str
+    name: ShortText
     art_id: str
     start_date: date
     end_date: date
 
 
 class PIUpdate(BaseModel):
-    name: str | None = None
+    name: ShortText | None = None
     start_date: date | None = None
     end_date: date | None = None
 
@@ -60,7 +61,7 @@ class PIUpdate(BaseModel):
 class IterationCreate(BaseModel):
     pi_id: str
     number: int = Field(ge=1)
-    name: str = ""
+    name: ShortText = ""
     start_date: date
     end_date: date
     is_ip: bool = False
@@ -68,7 +69,7 @@ class IterationCreate(BaseModel):
 
 class IterationUpdate(BaseModel):
     number: int | None = Field(default=None, ge=1)
-    name: str | None = None
+    name: ShortText | None = None
     start_date: date | None = None
     end_date: date | None = None
     is_ip: bool | None = None
@@ -78,14 +79,14 @@ class IterationUpdate(BaseModel):
 
 
 class FeatureCreate(BaseModel):
-    name: str
-    description: str = ""
+    name: ShortText
+    description: LongText = ""
     pi_id: str | None = None
     team_id: str | None = None
     iteration_id: str | None = None
     status: FeatureStatus = FeatureStatus.BACKLOG
-    acceptance_criteria: str = ""
-    nfr: str = ""
+    acceptance_criteria: LongText = ""
+    nfr: LongText = ""
     user_business_value: int = Field(ge=1, le=10)
     time_criticality: int = Field(ge=1, le=10)
     risk_reduction_opportunity_enablement: int = Field(ge=1, le=10)
@@ -93,14 +94,14 @@ class FeatureCreate(BaseModel):
 
 
 class FeatureUpdate(BaseModel):
-    name: str | None = None
-    description: str | None = None
+    name: ShortText | None = None
+    description: LongText | None = None
     pi_id: str | None = None
     team_id: str | None = None
     iteration_id: str | None = None
     status: FeatureStatus | None = None
-    acceptance_criteria: str | None = None
-    nfr: str | None = None
+    acceptance_criteria: LongText | None = None
+    nfr: LongText | None = None
     user_business_value: int | None = Field(default=None, ge=1, le=10)
     time_criticality: int | None = Field(default=None, ge=1, le=10)
     risk_reduction_opportunity_enablement: int | None = Field(default=None, ge=1, le=10)
@@ -115,32 +116,32 @@ class FeatureAssign(BaseModel):
 
 
 class StoryCreate(BaseModel):
-    name: str
-    description: str = ""
+    name: ShortText
+    description: LongText = ""
     feature_id: str
     team_id: str
     iteration_id: str | None = None
     points: int = Field(ge=1)
     status: StoryStatus = StoryStatus.NOT_STARTED
-    acceptance_criteria: str = ""
+    acceptance_criteria: LongText = ""
 
 
 class StoryUpdate(BaseModel):
-    name: str | None = None
-    description: str | None = None
+    name: ShortText | None = None
+    description: LongText | None = None
     feature_id: str | None = None
     team_id: str | None = None
     iteration_id: str | None = None
     points: int | None = Field(default=None, ge=1)
     status: StoryStatus | None = None
-    acceptance_criteria: str | None = None
+    acceptance_criteria: LongText | None = None
 
 
 # --- PIObjective ---
 
 
 class PIObjectiveCreate(BaseModel):
-    description: str
+    description: LongText
     team_id: str
     pi_id: str
     planned_business_value: int = Field(ge=1, le=10)
@@ -150,7 +151,7 @@ class PIObjectiveCreate(BaseModel):
 
 
 class PIObjectiveUpdate(BaseModel):
-    description: str | None = None
+    description: LongText | None = None
     planned_business_value: int | None = Field(default=None, ge=1, le=10)
     actual_business_value: int | None = None
     is_stretch: bool | None = None
@@ -161,56 +162,56 @@ class PIObjectiveUpdate(BaseModel):
 
 
 class RiskCreate(BaseModel):
-    description: str
+    description: LongText
     pi_id: str
     team_id: str | None = None
     feature_id: str | None = None
     roam_status: ROAMStatus = ROAMStatus.UNROAMED
-    owner: str | None = None
-    mitigation_notes: str = ""
+    owner: ShortText | None = None
+    mitigation_notes: LongText = ""
 
 
 class RiskUpdate(BaseModel):
-    description: str | None = None
+    description: LongText | None = None
     team_id: str | None = None
     feature_id: str | None = None
     roam_status: ROAMStatus | None = None
-    owner: str | None = None
-    mitigation_notes: str | None = None
+    owner: ShortText | None = None
+    mitigation_notes: LongText | None = None
 
 
 class RiskROAM(BaseModel):
     roam_status: ROAMStatus
-    owner: str | None = None
-    mitigation_notes: str | None = None
+    owner: ShortText | None = None
+    mitigation_notes: LongText | None = None
 
 
 # --- Dependency ---
 
 
 class DependencyCreate(BaseModel):
-    description: str
+    description: LongText
     pi_id: str
     from_feature_id: str
     to_feature_id: str
     status: DependencyStatus = DependencyStatus.IDENTIFIED
-    owner: str | None = None
-    resolution_notes: str = ""
+    owner: ShortText | None = None
+    resolution_notes: LongText = ""
     needed_by_date: date | None = None
 
 
 class DependencyUpdate(BaseModel):
-    description: str | None = None
+    description: LongText | None = None
     status: DependencyStatus | None = None
-    owner: str | None = None
-    resolution_notes: str | None = None
+    owner: ShortText | None = None
+    resolution_notes: LongText | None = None
     needed_by_date: date | None = None
 
 
 class DependencyStatusUpdate(BaseModel):
     status: DependencyStatus
-    owner: str | None = None
-    resolution_notes: str | None = None
+    owner: ShortText | None = None
+    resolution_notes: LongText | None = None
 
 
 # --- CapacityPlan ---
@@ -250,18 +251,18 @@ class VelocityEntry(BaseModel):
 
 class ImprovementActionCreate(BaseModel):
     pi_id: str
-    problem_statement: str
-    root_cause: str = ""
-    action: str
-    owner: str = ""
+    problem_statement: LongText
+    root_cause: LongText = ""
+    action: LongText
+    owner: ShortText = ""
     status: ImprovementActionStatus = ImprovementActionStatus.OPEN
 
 
 class ImprovementActionUpdate(BaseModel):
-    problem_statement: str | None = None
-    root_cause: str | None = None
-    action: str | None = None
-    owner: str | None = None
+    problem_statement: LongText | None = None
+    root_cause: LongText | None = None
+    action: LongText | None = None
+    owner: ShortText | None = None
     status: ImprovementActionStatus | None = None
 
 

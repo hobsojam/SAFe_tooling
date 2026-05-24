@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from pydantic import Field, model_validator
 
-from safe.models.base import SAFeBaseModel
+from safe.models.base import SAFeBaseModel, ShortText
 
 
 class PIStatus(StrEnum):
@@ -15,7 +15,7 @@ class PIStatus(StrEnum):
 class Iteration(SAFeBaseModel):
     pi_id: str
     number: int = Field(ge=1)
-    name: str = ""
+    name: ShortText = ""
     start_date: date
     end_date: date
     is_ip: bool = False
@@ -28,7 +28,7 @@ class Iteration(SAFeBaseModel):
 
 
 class PI(SAFeBaseModel):
-    name: str
+    name: ShortText
     art_id: str
     start_date: date
     end_date: date
