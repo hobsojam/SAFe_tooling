@@ -15,11 +15,14 @@ FROM nginxinc/nginx-unprivileged:alpine
 ENV API_UPSTREAM_URL=http://api:8000
 
 COPY --from=build /app/dist /usr/share/nginx/html
-# nginx docker entrypoint processes *.template files in /etc/nginx/templates/
-# and writes the rendered result to /etc/nginx/conf.d/ before nginx starts.
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -q --spider http://localhost:8080/ || exit 1
+
+# Strip any trailing slash from API_UPSTREAM_URL, substitute into the nginx
+# template, then start nginx. Using explicit envsubst avoids relying on the
+# base image's entrypoint template-processing scripts.
+CMD ["/bin/sh", "-c", "API_UPSTREAM_URL=\"${API_UPSTREAM_URL%/}\" && envsubst '${API_UPSTREAM_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
