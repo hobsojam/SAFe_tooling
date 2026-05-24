@@ -324,6 +324,7 @@ safe [--db-path PATH]
   ```
   Co-Authored-By: Claude Code <noreply@anthropic.com>
   ```
+- **Version bump — always ask before creating a PR.** When the user asks you to create a PR, assess whether the changes warrant a version bump (patch for bug fixes, minor for new features, major for breaking API or data changes). If they do, ask the user to confirm the bump and which level before proceeding. Update `pyproject.toml` and `frontend/package.json` in the same commit so they stay in sync.
 
 ## Documentation
 

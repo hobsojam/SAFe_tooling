@@ -1,4 +1,5 @@
 import os
+from importlib.metadata import version as pkg_version
 
 import uvicorn
 from fastapi import FastAPI
@@ -60,7 +61,7 @@ def create_app() -> FastAPI:
 
     @api_app.get("/health", include_in_schema=False)
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        return {"status": "ok", "version": pkg_version("safe-tooling")}
 
     return api_app
 
