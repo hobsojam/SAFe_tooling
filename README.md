@@ -421,14 +421,6 @@ Data is stored at `~/.safe_tooling/db.json`. The CLI and API share this file.
 
 ---
 
-## Planned improvements
-
-| Area | Description |
-|------|-------------|
-| **API response documentation** | Add `responses={...}` annotations to FastAPI route decorators so the generated OpenAPI UI shows 404/409 status codes alongside each endpoint — tracked in [#212](https://github.com/hobsojam/SAFe_tooling/issues/212) |
-
----
-
 ## Development notes
 
 See `CLAUDE.md` for SAFe domain vocabulary, entity relationships, technical conventions, and the phased build plan.
