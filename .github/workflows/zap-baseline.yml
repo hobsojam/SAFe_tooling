@@ -57,6 +57,8 @@ jobs:
 
           mkdir -p zap-reports
           chmod 777 zap-reports
+          cp .github/zap-sitemap.txt zap-reports/zap-sitemap.txt
+          cp .github/zap-sitemap-hook.py zap-reports/zap-sitemap-hook.py
           echo "Running ZAP baseline against ${TARGET_URL}"
 
           docker run --rm --network host \
@@ -68,7 +70,8 @@ jobs:
               -a \
               -J zap-report.json \
               -w zap-report.md \
-              -r zap-report.html
+              -r zap-report.html \
+              --hook=/zap/wrk/zap-sitemap-hook.py
 
           zap_exit_code=$?
           echo "ZAP exit code: ${zap_exit_code}"
