@@ -371,3 +371,64 @@ class TestDependencyDelete:
     def test_unknown_exits_1(self, db_path, patch_console):
         result = invoke(db_path, "dependency", "delete", "no-such-id")
         assert result.exit_code == 1
+
+
+class TestDependencyFeatureLabel:
+    """Cover _feature_label edge cases (lines 32, 34–36 in dependency.py)."""
+
+    def test_unknown_feature_id_returns_raw_id(self, db_path, patch_console):
+        """Line 32: feature is None → return raw feature_id string."""
+        from safe.cli.dependency import _feature_label
+
+        repos = repos_for(db_path)
+        result = _feature_label(repos, "ghost-feature-id")
+        assert result == "ghost-feature-id"
+
+    def test_feature_with_team_includes_team_name(self, db_path, patch_console):
+        """Lines 34–36: feature.team_id is set → label includes team name."""
+        from safe.cli.dependency import _feature_label
+        from safe.models.backlog import Feature
+
+        repos = repos_for(db_path)
+        from safe.models.art import Team
+
+        team = repos.teams.save(Team(name="Omega", member_count=5, art_id="art1"))
+        f = Feature(
+            name="Auth Service",
+            pi_id="pi1",
+            team_id=team.id,
+            user_business_value=5,
+            time_criticality=5,
+            risk_reduction_opportunity_enablement=5,
+            job_size=5,
+        )
+        repos.features.save(f)
+        result = _feature_label(repos, f.id)
+        assert "Auth Service" in result
+        assert "Omega" in result
+
+
+class TestDependencyShowResolutionNotes:
+    """Cover line 139: resolution_notes is printed when present."""
+
+    def test_shows_resolution_notes_when_set(self, db_path, patch_console):
+        """Line 139: resolution_notes block is entered when the field is non-empty."""
+        pi_id, auth_id, sso_id = _setup(db_path)
+        _add_dep(db_path, pi_id, auth_id, sso_id, description="Platform contract")
+        dep = repos_for(db_path).dependencies.get_all()[0]
+        # Update with resolution notes
+        invoke(
+            db_path,
+            "dependency",
+            "update-status",
+            dep.id,
+            "--status",
+            "resolved",
+            "--notes",
+            "Agreed via RFC-42",
+        )
+        patch_console.truncate(0)
+        patch_console.seek(0)
+        invoke(db_path, "dependency", "show", dep.id)
+        output = patch_console.getvalue()
+        assert "Agreed via RFC-42" in output

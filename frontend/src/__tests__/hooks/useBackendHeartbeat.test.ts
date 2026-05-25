@@ -1,19 +1,17 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useBackendHeartbeat } from '../../hooks/useBackendHeartbeat';
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
+async function importHook() {
+  vi.resetModules();
+  return import('../../hooks/useBackendHeartbeat');
+}
 
 describe('useBackendHeartbeat', () => {
   let fetchSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(null, { status: 200 }),
-    );
+    fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null));
   });
 
   afterEach(() => {
@@ -22,66 +20,58 @@ describe('useBackendHeartbeat', () => {
     vi.unstubAllEnvs();
   });
 
-  describe('when VITE_API_DIRECT_URL is not set (empty string)', () => {
-    // vi.stubEnv sets the value; an empty string is falsy and treated as "not set"
-    // by the hook (if (!directUrl) return).
-    beforeEach(() => {
-      vi.stubEnv('VITE_API_DIRECT_URL', '');
-    });
+  it('does not ping when VITE_API_DIRECT_URL is unset', async () => {
+    vi.stubEnv('VITE_API_DIRECT_URL', '');
+    const { useBackendHeartbeat } = await importHook();
 
-    it('does not call fetch on mount', () => {
-      renderHook(() => useBackendHeartbeat());
-      expect(fetchSpy).not.toHaveBeenCalled();
-    });
+    renderHook(() => useBackendHeartbeat());
+    vi.advanceTimersByTime(9 * 60 * 1000);
 
-    it('does not call fetch after the interval elapses', () => {
-      renderHook(() => useBackendHeartbeat());
-      vi.advanceTimersByTime(60_000);
-      expect(fetchSpy).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('pings the direct backend health endpoint immediately', async () => {
+    vi.stubEnv('VITE_API_DIRECT_URL', 'https://api.example.com/');
+    const { useBackendHeartbeat } = await importHook();
+
+    renderHook(() => useBackendHeartbeat());
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).toHaveBeenCalledWith('https://api.example.com/health', {
+      mode: 'no-cors',
     });
   });
 
-  describe('when VITE_API_DIRECT_URL is set', () => {
-    const DIRECT_URL = 'https://api.example.com';
+  it('repeats the ping every nine minutes while mounted', async () => {
+    vi.stubEnv('VITE_API_DIRECT_URL', 'https://api.example.com');
+    const { useBackendHeartbeat } = await importHook();
 
-    beforeEach(() => {
-      vi.stubEnv('VITE_API_DIRECT_URL', DIRECT_URL);
-    });
+    renderHook(() => useBackendHeartbeat());
+    vi.advanceTimersByTime(9 * 60 * 1000);
+    vi.advanceTimersByTime(9 * 60 * 1000);
 
-    it('calls fetch immediately on mount with the correct URL and no-cors mode', () => {
-      renderHook(() => useBackendHeartbeat());
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      expect(fetchSpy).toHaveBeenCalledWith(`${DIRECT_URL}/health`, { mode: 'no-cors' });
-    });
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+  });
 
-    it('calls fetch again after 30 seconds', () => {
-      renderHook(() => useBackendHeartbeat());
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      vi.advanceTimersByTime(30_000);
-      expect(fetchSpy).toHaveBeenCalledTimes(2);
-    });
+  it('clears the interval on unmount', async () => {
+    vi.stubEnv('VITE_API_DIRECT_URL', 'https://api.example.com');
+    const { useBackendHeartbeat } = await importHook();
 
-    it('calls fetch multiple times as the interval repeats', () => {
-      renderHook(() => useBackendHeartbeat());
-      vi.advanceTimersByTime(90_000); // 3 x 30s intervals
-      // 1 immediate + 3 interval fires
-      expect(fetchSpy).toHaveBeenCalledTimes(4);
-    });
+    const { unmount } = renderHook(() => useBackendHeartbeat());
+    unmount();
+    vi.advanceTimersByTime(9 * 60 * 1000);
 
-    it('calls clearInterval on unmount', () => {
-      const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
-      const { unmount } = renderHook(() => useBackendHeartbeat());
-      unmount();
-      expect(clearIntervalSpy).toHaveBeenCalled();
-    });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
 
-    it('does not call fetch after unmount even when the interval would fire', () => {
-      const { unmount } = renderHook(() => useBackendHeartbeat());
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-      unmount();
-      vi.advanceTimersByTime(30_000);
-      // Still only the initial call — interval was cleared on unmount
-      expect(fetchSpy).toHaveBeenCalledTimes(1);
-    });
+  it('ignores failed heartbeat requests', async () => {
+    fetchSpy.mockRejectedValueOnce(new Error('offline'));
+    vi.stubEnv('VITE_API_DIRECT_URL', 'https://api.example.com');
+    const { useBackendHeartbeat } = await importHook();
+
+    expect(() => renderHook(() => useBackendHeartbeat())).not.toThrow();
+    await Promise.resolve();
+
+    expect(fetchSpy).toHaveBeenCalled();
   });
 });

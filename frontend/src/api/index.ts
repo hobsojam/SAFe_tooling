@@ -4,6 +4,7 @@ import type {
   ARTUpdate,
   CapacityPlan,
   CapacityPlanCreate,
+  CapacityPlanSeedResult,
   Dependency,
   DependencyCreate,
   DependencyUpdate,
@@ -148,7 +149,7 @@ export const api = {
 
   listCapacityPlans: (piId: string) => get<CapacityPlan[]>(`/capacity-plans?pi_id=${piId}`),
   upsertCapacityPlan: (body: CapacityPlanCreate) => post<CapacityPlan>('/capacity-plans', body),
-  seedCapacityPlans: (piId: string) => post<CapacityPlan[]>('/capacity-plans/seed', { pi_id: piId }),
+  seedCapacityPlans: (piId: string) => post<CapacityPlanSeedResult>('/capacity-plans/seed', { pi_id: piId }),
   listVelocity: (piId: string) => get<VelocityEntry[]>(`/capacity-plans/velocity?pi_id=${piId}`),
 
   listRisks: (piId: string) => get<Risk[]>(`/risks?pi_id=${piId}`),

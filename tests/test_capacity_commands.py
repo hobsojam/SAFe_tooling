@@ -365,6 +365,60 @@ class TestCapacityVelocity:
         assert "50.0%" in patch_console.getvalue()
 
 
+class TestCapacityVelocityEdgeCases:
+    """Cover lines 179–181 (no iterations) and 186 (team is None) in capacity.py."""
+
+    def test_no_iterations_shows_message(self, db_path, patch_console):
+        """Lines 179–181: velocity exits cleanly when the PI has no iterations."""
+        # Create ART, PI, and team but no iterations
+        invoke(db_path, "art", "create", "--name", "ART")
+        art_id = repos_for(db_path).arts.get_all()[0].id
+        invoke(
+            db_path,
+            "pi",
+            "create",
+            "--name",
+            "Empty PI",
+            "--art-id",
+            art_id,
+            "--start",
+            "2026-01-05",
+            "--end",
+            "2026-03-27",
+        )
+        pi_id = repos_for(db_path).pis.get_all()[0].id
+        result = invoke(db_path, "capacity", "velocity", "--pi-id", pi_id)
+        assert result.exit_code == 0
+        assert "No iterations found" in patch_console.getvalue()
+
+    def test_team_none_is_skipped_gracefully(self, db_path, patch_console):
+        """Line 186: when teams list contains None (get returns None), iteration is skipped."""
+        # Use a team_id that doesn't exist in the DB so get() returns None
+        pi_id, _, iter_id = _setup(db_path)
+        # Monkey-patch teams.get to return None for any id to simulate a deleted team
+        import safe.cli.capacity as cap_module
+
+        original_repos_fn = cap_module._repos
+
+        def patched_repos():
+            repos = original_repos_fn()
+            # Wrap get_all to return a list that includes None
+            original_get_all = repos.teams.get_all
+            repos.teams.get_all = lambda: [None] + original_get_all()
+            return repos
+
+        import safe.cli.capacity as cap_module_inner
+
+        # Patch via monkeypatch not available in class method — use direct attribute
+        cap_module_inner._repos = patched_repos
+        try:
+            result = invoke(db_path, "capacity", "velocity", "--pi-id", pi_id)
+            # Should not crash; None team is silently skipped
+            assert result.exit_code == 0
+        finally:
+            cap_module_inner._repos = original_repos_fn
+
+
 class TestCapacityExport:
     def test_creates_csv(self, db_path, patch_console, tmp_path):
         pi_id, team_id, iter_id = _setup(db_path)

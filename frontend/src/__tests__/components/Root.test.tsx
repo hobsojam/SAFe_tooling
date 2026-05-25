@@ -34,7 +34,7 @@ describe('Root', () => {
     render(<Root />);
     await userEvent.click(screen.getByRole('button', { name: /fire backend error/i }));
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: /down for maintenance/i })).toBeInTheDocument(),
+      expect(screen.getByRole('heading', { name: /backend is starting up/i })).toBeInTheDocument(),
     );
     expect(screen.queryByText('app loaded')).not.toBeInTheDocument();
   });
@@ -45,14 +45,14 @@ describe('Root', () => {
     // re-fire with 502 message via a custom event approach — simulate directly
     await userEvent.click(qc);
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: /down for maintenance/i })).toBeInTheDocument(),
+      expect(screen.getByRole('heading', { name: /backend is starting up/i })).toBeInTheDocument(),
     );
   });
 
   it('does NOT swap to maintenance page for a 404 application error', async () => {
     render(<Root />);
     await userEvent.click(screen.getByRole('button', { name: /fire app error/i }));
-    expect(screen.queryByRole('heading', { name: /down for maintenance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /backend is starting up/i })).not.toBeInTheDocument();
     expect(screen.getByText('app loaded')).toBeInTheDocument();
   });
 
@@ -60,10 +60,10 @@ describe('Root', () => {
     render(<Root />);
     await userEvent.click(screen.getByRole('button', { name: /fire backend error/i }));
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: /down for maintenance/i })).toBeInTheDocument(),
+      expect(screen.getByRole('heading', { name: /backend is starting up/i })).toBeInTheDocument(),
     );
     await userEvent.click(screen.getByRole('button', { name: /retry/i }));
     await waitFor(() => expect(screen.getByText('app loaded')).toBeInTheDocument());
-    expect(screen.queryByRole('heading', { name: /down for maintenance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /backend is starting up/i })).not.toBeInTheDocument();
   });
 });

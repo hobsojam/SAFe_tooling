@@ -364,3 +364,34 @@ class TestBoardLogic:
         grid = build_board([f])
         assert None in grid["t1"]
         assert grid["t1"][None] == [f]
+
+
+class TestBoardFeatureLabel:
+    """Cover _feature_label edge cases (lines 44 and 49 in board.py)."""
+
+    def test_unknown_feature_id_returns_raw_id(self, db_path, patch_console):
+        """Line 44: feature is None → return the raw feature_id string."""
+        from safe.cli.board import _feature_label
+
+        repos = repos_for(db_path)
+        result = _feature_label(repos, "no-such-feature-id")
+        assert result == "no-such-feature-id"
+
+    def test_feature_without_team_returns_name_only(self, db_path, patch_console):
+        """Line 49: feature.team_id is falsy → return feature.name with no team suffix."""
+        from safe.cli.board import _feature_label
+        from safe.models.backlog import Feature
+
+        repos = repos_for(db_path)
+        f = Feature(
+            name="Standalone Feature",
+            pi_id="pi1",
+            team_id=None,
+            user_business_value=5,
+            time_criticality=5,
+            risk_reduction_opportunity_enablement=5,
+            job_size=5,
+        )
+        repos.features.save(f)
+        result = _feature_label(repos, f.id)
+        assert result == "Standalone Feature"
