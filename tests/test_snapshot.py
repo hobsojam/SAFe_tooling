@@ -4,6 +4,7 @@ import json
 
 import pytest
 import typer.testing
+from tinydb import TinyDB
 
 import safe.cli.state as state
 from safe.cli.main import app
@@ -13,7 +14,7 @@ from safe.models.backlog import Feature, Story
 from safe.models.capacity_plan import CapacityPlan
 from safe.models.dependency import Dependency
 from safe.models.objectives import PIObjective
-from safe.models.pi import PI, Iteration
+from safe.models.pi import PI, Iteration, PIStatus
 from safe.models.risk import Risk
 from safe.store.db import get_db
 from safe.store.repos import get_repos
@@ -357,6 +358,201 @@ def test_cli_import_invalid_json(tmp_path):
     )
     assert result.exit_code == 1
     assert "could not parse" in result.output.lower()
+
+
+# ── Bug-fix regression tests ──────────────────────────────────────────────────
+# These tests directly verify the two correctness bugs described in the ticket.
+
+
+def test_import_closed_pi_status_is_reset_to_planning(repos, populated, tmp_path):
+    """Bug 1 regression: importing a CLOSED PI must create it with PLANNING status.
+
+    Previously import_pi passed status=snapshot.pi.status which preserved the
+    source status — meaning a closed PI was imported already closed and could not
+    be activated or have features added to it.
+    """
+    # Mark the source PI as CLOSED before exporting
+    closed_pi = populated["pi"].model_copy(update={"status": PIStatus.CLOSED})
+    repos.pis.save(closed_pi)
+
+    snapshot = export_pi(repos, closed_pi.id)
+    assert snapshot.pi.status == PIStatus.CLOSED  # snapshot faithfully captures source
+
+    # Import into a separate TinyDB to avoid singleton conflicts
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+        new_pi = import_pi(target_repos, snapshot)
+        assert new_pi.status == PIStatus.PLANNING
+    finally:
+        target_db.close()
+
+
+def test_import_active_pi_status_is_reset_to_planning(repos, populated, tmp_path):
+    """Import of an ACTIVE PI must also start in PLANNING status."""
+    active_pi = populated["pi"].model_copy(update={"status": PIStatus.ACTIVE})
+    repos.pis.save(active_pi)
+
+    snapshot = export_pi(repos, active_pi.id)
+
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+        new_pi = import_pi(target_repos, snapshot)
+        assert new_pi.status == PIStatus.PLANNING
+    finally:
+        target_db.close()
+
+
+def test_objective_with_unmapped_team_is_skipped(repos, populated, tmp_path):
+    """Bug 2 regression: objectives whose team_id has no mapping must be skipped.
+
+    Previously import_pi fell back to the original (stale) team_id when the
+    team was not in the snapshot, silently writing a dangling FK into the DB.
+    """
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # Inject a ghost objective referencing a team_id that is not in snapshot.teams
+    ghost_obj = PIObjective(
+        description="Ghost objective with stale team",
+        team_id="stale-team-id-not-in-snapshot",
+        pi_id=snapshot.pi.id,
+        planned_business_value=5,
+    )
+    snapshot = snapshot.model_copy(update={"objectives": snapshot.objectives + [ghost_obj]})
+
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+        new_pi = import_pi(target_repos, snapshot)
+
+        new_objectives = target_repos.objectives.find(pi_id=new_pi.id)
+        # The one valid objective from populated fixture must be imported
+        assert len(new_objectives) == 1
+        assert new_objectives[0].description == "Deliver Auth v2"
+
+        # The ghost objective must not appear anywhere in the target DB
+        all_obj_descriptions = [o.description for o in target_repos.objectives.get_all()]
+        assert "Ghost objective with stale team" not in all_obj_descriptions
+
+        # Critically: no objective must carry the stale team_id
+        all_team_ids = {o.team_id for o in target_repos.objectives.get_all()}
+        assert "stale-team-id-not-in-snapshot" not in all_team_ids
+    finally:
+        target_db.close()
+
+
+def test_all_objectives_unmapped_team_results_in_zero_objectives(repos, populated, tmp_path):
+    """When every objective has an unmapped team_id, zero objectives are imported
+    and the function still returns successfully (no exception)."""
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    ghost_only = PIObjective(
+        description="All ghost",
+        team_id="phantom-team-id",
+        pi_id=snapshot.pi.id,
+        planned_business_value=3,
+    )
+    snapshot = snapshot.model_copy(update={"objectives": [ghost_only]})
+
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+        new_pi = import_pi(target_repos, snapshot)
+        assert target_repos.objectives.find(pi_id=new_pi.id) == []
+    finally:
+        target_db.close()
+
+
+def test_round_trip_into_fresh_db_all_relationships_remapped(repos, populated, tmp_path):
+    """Full round-trip into a separate database.
+
+    Verifies that every cross-entity relationship in the imported data uses the
+    new IDs assigned by import_pi — no reference to any source ID survives.
+    """
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # Collect all source IDs
+    source_ids: set[str] = {
+        populated["art"].id,
+        populated["team"].id,
+        populated["pi"].id,
+        populated["iteration"].id,
+        populated["feature"].id,
+        populated["feature2"].id,
+        populated["story"].id,
+        populated["objective"].id,
+        populated["risk"].id,
+        populated["dependency"].id,
+        populated["capacity_plan"].id,
+    }
+
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+        new_pi = import_pi(target_repos, snapshot)
+
+        assert new_pi.id not in source_ids
+
+        # Stories reference new feature IDs
+        new_features = target_repos.features.find(pi_id=new_pi.id)
+        new_feature_ids = {f.id for f in new_features}
+        assert new_feature_ids.isdisjoint(source_ids)
+
+        imported_stories = target_repos.stories.get_all()
+        assert len(imported_stories) == 1
+        assert imported_stories[0].feature_id in new_feature_ids
+        assert imported_stories[0].feature_id not in source_ids
+
+        # Dependencies reference new feature IDs
+        new_deps = target_repos.dependencies.find(pi_id=new_pi.id)
+        assert len(new_deps) == 1
+        assert new_deps[0].from_feature_id in new_feature_ids
+        assert new_deps[0].to_feature_id in new_feature_ids
+
+        # Capacity plans reference new iteration and team IDs
+        new_iter_id = new_pi.iteration_ids[0]
+        assert new_iter_id not in source_ids
+        new_cps = target_repos.capacity_plans.find(pi_id=new_pi.id)
+        assert len(new_cps) == 1
+        assert new_cps[0].iteration_id == new_iter_id
+
+        # Objectives reference new team IDs
+        new_teams = target_repos.teams.get_all()
+        new_team_ids = {t.id for t in new_teams}
+        new_objs = target_repos.objectives.find(pi_id=new_pi.id)
+        assert len(new_objs) == 1
+        assert new_objs[0].team_id in new_team_ids
+        assert new_objs[0].team_id not in source_ids
+    finally:
+        target_db.close()
+
+
+def test_existing_art_and_team_reused_not_duplicated(repos, populated, tmp_path):
+    """If the target DB already has an ART and team with the same names,
+    import_pi must reuse them and not create duplicates."""
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+
+        # Pre-populate target with the same ART and team names
+        pre_art = target_repos.arts.save(ART(name="Test ART"))
+        pre_team = target_repos.teams.save(Team(name="Alpha", member_count=5, art_id=pre_art.id))
+        pre_art = pre_art.model_copy(update={"team_ids": [pre_team.id]})
+        target_repos.arts.save(pre_art)
+
+        import_pi(target_repos, snapshot)
+
+        assert target_repos.arts.count() == 1
+        assert target_repos.teams.count() == 1
+
+        # The IDs must be the pre-existing ones
+        assert target_repos.arts.get_all()[0].id == pre_art.id
+        assert target_repos.teams.get_all()[0].id == pre_team.id
+    finally:
+        target_db.close()
 
 
 # ── coverage gap tests ────────────────────────────────────────────────────────
