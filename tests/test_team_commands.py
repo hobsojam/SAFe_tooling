@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 import safe.cli.state as state
 import safe.cli.team as team_module
 from safe.cli.main import app
+from safe.models import CapacityPlan, Feature, PIObjective, Story
 from safe.store.db import get_db
 from safe.store.repos import get_repos
 
@@ -250,3 +251,83 @@ class TestTeamDelete:
     def test_missing_id_exits_1(self, db_path, patch_console):
         result = invoke(db_path, "team", "delete", "nonexistent")
         assert result.exit_code == 1
+
+    def test_blocked_when_team_has_feature(self, db_path, patch_console):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team = repos_for(db_path).teams.get_all()[0]
+        repos = repos_for(db_path)
+        feature = Feature(
+            name="Auth Service",
+            team_id=team.id,
+            user_business_value=8,
+            time_criticality=7,
+            risk_reduction_opportunity_enablement=6,
+            job_size=5,
+        )
+        repos.features.save(feature)
+        result = invoke(db_path, "team", "delete", team.id)
+        assert result.exit_code == 1
+        assert "features" in patch_console.getvalue()
+
+    def test_blocked_when_team_has_story(self, db_path, patch_console):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team = repos_for(db_path).teams.get_all()[0]
+        repos = repos_for(db_path)
+        feature = Feature(
+            name="Auth Service",
+            team_id=team.id,
+            user_business_value=8,
+            time_criticality=7,
+            risk_reduction_opportunity_enablement=6,
+            job_size=5,
+        )
+        repos.features.save(feature)
+        story = Story(
+            name="Login flow",
+            feature_id=feature.id,
+            team_id=team.id,
+            points=3,
+        )
+        repos.stories.save(story)
+        # Remove the feature so only the story blocks deletion
+        repos.features.delete(feature.id)
+        result = invoke(db_path, "team", "delete", team.id)
+        assert result.exit_code == 1
+        assert "stories" in patch_console.getvalue()
+
+    def test_blocked_when_team_has_objective(self, db_path, patch_console):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team = repos_for(db_path).teams.get_all()[0]
+        repos = repos_for(db_path)
+        objective = PIObjective(
+            description="Deliver auth capability",
+            team_id=team.id,
+            pi_id="pi-001",
+            planned_business_value=7,
+        )
+        repos.objectives.save(objective)
+        result = invoke(db_path, "team", "delete", team.id)
+        assert result.exit_code == 1
+        assert "objectives" in patch_console.getvalue()
+
+    def test_blocked_when_team_has_capacity_plan(self, db_path, patch_console):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team = repos_for(db_path).teams.get_all()[0]
+        repos = repos_for(db_path)
+        plan = CapacityPlan(
+            team_id=team.id,
+            iteration_id="iter-001",
+            pi_id="pi-001",
+            team_size=6,
+        )
+        repos.capacity_plans.save(plan)
+        result = invoke(db_path, "team", "delete", team.id)
+        assert result.exit_code == 1
+        assert "capacity plans" in patch_console.getvalue()
+
+    def test_succeeds_when_team_has_no_dependents(self, db_path, patch_console):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team = repos_for(db_path).teams.get_all()[0]
+        result = invoke(db_path, "team", "delete", team.id)
+        assert result.exit_code == 0
+        assert repos_for(db_path).teams.count() == 0

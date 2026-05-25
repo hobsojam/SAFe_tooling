@@ -37,7 +37,7 @@ def team_create(
     team = Team(name=name, member_count=members, art_id=art_id, topology_type=topology_type)
     repos.teams.save(team)
     if art_id is not None:
-        art.team_ids.append(team.id)
+        art = art.model_copy(update={"team_ids": art.team_ids + [team.id]})
         repos.arts.save(art)
     console.print(f"Created team [bold]{team.name}[/bold] (id: {team.id})")
 
@@ -90,10 +90,22 @@ def team_delete(team_id: str = typer.Argument(..., help="Team id")):
     if team is None:
         console.print(f"[red]Error: Team '{team_id}' not found[/red]")
         raise typer.Exit(1)
+    if repos.features.find(team_id=team_id):
+        console.print("[red]Error: Team has features — reassign them first[/red]")
+        raise typer.Exit(1)
+    if repos.stories.find(team_id=team_id):
+        console.print("[red]Error: Team has stories — reassign them first[/red]")
+        raise typer.Exit(1)
+    if repos.objectives.find(team_id=team_id):
+        console.print("[red]Error: Team has objectives — delete them first[/red]")
+        raise typer.Exit(1)
+    if repos.capacity_plans.find(team_id=team_id):
+        console.print("[red]Error: Team has capacity plans — delete them first[/red]")
+        raise typer.Exit(1)
     if team.art_id is not None:
         art = repos.arts.get(team.art_id)
-        if art is not None and team.id in art.team_ids:
-            art.team_ids.remove(team.id)
+        if art is not None:
+            art = art.model_copy(update={"team_ids": [t for t in art.team_ids if t != team.id]})
             repos.arts.save(art)
     repos.teams.delete(team_id)
     console.print(f"Deleted team [bold]{team.name}[/bold]")
