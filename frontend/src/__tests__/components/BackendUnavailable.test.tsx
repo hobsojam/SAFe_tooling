@@ -4,14 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { BackendUnavailable } from '../../components/BackendUnavailable';
 
 describe('BackendUnavailable', () => {
-  it('renders the maintenance heading', () => {
+  it('renders the starting-up heading', () => {
     render(<BackendUnavailable onRetry={() => {}} />);
-    expect(screen.getByRole('heading', { name: /down for maintenance/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /backend is starting up/i })).toBeInTheDocument();
   });
 
   it('renders explanatory description text', () => {
     render(<BackendUnavailable onRetry={() => {}} />);
-    expect(screen.getByText(/temporarily unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText(/waking up/i)).toBeInTheDocument();
   });
 
   it('renders exactly one interactive element — the retry button', () => {

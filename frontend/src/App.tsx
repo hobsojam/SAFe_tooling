@@ -1,6 +1,7 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ToastProvider } from './components/Toaster';
+import { useBackendHeartbeat } from './hooks/useBackendHeartbeat';
 import { ARTSync } from './pages/ARTSync';
 import { Backlog } from './pages/Backlog';
 import { Board } from './pages/Board';
@@ -19,6 +20,8 @@ import { Setup } from './pages/Setup';
 import { TeamSetup } from './pages/TeamSetup';
 
 export default function App() {
+  useBackendHeartbeat();
+
   return (
     <ToastProvider>
     <Router>
