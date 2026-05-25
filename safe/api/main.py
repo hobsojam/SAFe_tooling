@@ -78,8 +78,12 @@ def create_app() -> FastAPI:
         api_app.include_router(dev.router)
 
     @api_app.get("/health", include_in_schema=False)
-    def health() -> dict[str, str]:
-        return {"status": "ok", "version": pkg_version("safe-tooling")}
+    def health() -> dict:
+        return {
+            "status": "ok",
+            "version": pkg_version("safe-tooling"),
+            "demo": os.environ.get("SAFE_DEMO_SEED") == "1",
+        }
 
     return api_app
 
