@@ -116,11 +116,15 @@ safe/
     risk.py              # Risk, ROAMStatus
     dependency.py        # Dependency, DependencyStatus
     capacity_plan.py     # CapacityPlan
+  exceptions.py          # SafeToolingError, IllegalPITransitionError, IllegalStateError, InvalidCapacityError, DomainValidationError
+  dev_seed.py            # dev/demo data seeding (used when SAFE_SEED_DEV=1 or SAFE_DEMO_SEED=1)
   logic/
     wsjf.py              # cost_of_delay(), wsjf(), rank_features()
     capacity.py          # available_capacity(), load_percentage(), capacity_warning()
     predictability.py    # team_predictability(), art_predictability(), predictability_rating()
     board.py             # build_board() — feature-to-iteration grid logic
+    pi.py                # validate_pi_transition() — enforces PLANNING→ACTIVE→CLOSED state machine
+    snapshot.py          # export_pi(), import_pi() — PI snapshot portability; NOTE: imports Repos (I/O) — should move to safe/services/ in a future refactor
   cli/
     main.py              # root Typer app; --db-path callback; wsjf score; registers all sub-apps
     state.py             # shared CLI state: db_path (set by --db-path, read by _repos())
@@ -152,6 +156,7 @@ safe/
       dependencies.py    # GET/POST /dependencies, GET/PATCH/DELETE /{id}, POST /roam
       capacity_plans.py  # GET/POST /capacity-plans (upsert), GET/PATCH/DELETE /{id}
       compute.py         # POST /compute/predictability (stateless)
+      dev.py             # POST /dev/reset-db — TinyDB reload for e2e test fixtures (only mounted when SAFE_DEV_ROUTES=1)
   store/
     db.py                # get_db(path?), close_db() — singleton TinyDB
     repository.py        # Repository[T] — generic save/get/find/delete
@@ -191,6 +196,7 @@ tests/
   test_api_compute.py
   test_api_smoke.py          # end-to-end smoke test across all routers
   test_openapi_contract.py   # schemathesis contract test — parametrizes all OAS 3.1 operations
+  test_pi_logic.py           # tests for validate_pi_transition
 Dockerfile
 docker-compose.yml       # podman compose up -d --build
 pyproject.toml

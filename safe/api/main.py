@@ -35,7 +35,7 @@ def create_app() -> FastAPI:
     docs_disabled = os.environ.get("SAFE_DISABLE_API_DOCS") == "1"
     api_app = FastAPI(
         title="SAFe Tooling API",
-        version="1.0.0",
+        version=pkg_version("safe-tooling"),
         description="HTTP API for SAFe PI Planning tooling",
         lifespan=lifespan,
         docs_url=None if docs_disabled else "/docs",
