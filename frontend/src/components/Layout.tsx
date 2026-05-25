@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useDemoMode } from '../hooks/useDemoMode';
 import { api } from '../api';
 import type { PICreate } from '../types';
 import { Modal } from './Modal';
@@ -78,6 +79,7 @@ export function Layout() {
   const qc = useQueryClient();
   const toast = useToast();
 
+  const isDemo = useDemoMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [piModalOpen, setPiModalOpen] = useState(false);
   const [piForm, setPiForm] = useState<PICreate>(EMPTY_PI_FORM);
@@ -128,7 +130,16 @@ export function Layout() {
     || PI_SETUP_ITEMS.some(({ to }) => location.pathname === `/pi/${piId}/${to}`);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
+      {isDemo && (
+        <div
+          role="banner"
+          className="shrink-0 w-full bg-amber-100 border-b border-amber-300 px-4 py-2 text-center text-sm font-medium text-amber-800"
+        >
+          Demo mode — data resets on each server restart. Do not enter real or sensitive information.
+        </div>
+      )}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <button
@@ -411,6 +422,7 @@ export function Layout() {
           </div>
         </form>
       </Modal>
+    </div>
     </div>
   );
 }
