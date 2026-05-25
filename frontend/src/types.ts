@@ -160,6 +160,11 @@ export interface CapacityPlanUpdate {
   overhead_pct?: number;
 }
 
+export interface CapacityPlanSeedResult {
+  created: number;
+  skipped: number;
+}
+
 export interface Risk {
   id: string;
   description: string;
