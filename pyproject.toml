@@ -50,6 +50,7 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--cov=safe --cov-report=term-missing --cov-fail-under=80"
 
 [tool.ruff]
 target-version = "py311"
