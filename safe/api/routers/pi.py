@@ -6,6 +6,8 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import PICreate, PIUpdate
+from safe.exceptions import IllegalPITransitionError
+from safe.logic.pi import validate_pi_transition
 from safe.models.pi import PI, PIStatus
 from safe.store.repos import Repos
 
@@ -76,10 +78,10 @@ def delete_pi(pi_id: str, repos: ReposDep):
 )
 def activate_pi(pi_id: str, repos: ReposDep):
     pi = _get_or_404(repos, pi_id)
-    if pi.status != PIStatus.PLANNING:
-        raise HTTPException(
-            status_code=409, detail=f"PI '{pi_id}' is {pi.status.value}, not planning"
-        )
+    try:
+        validate_pi_transition(pi, PIStatus.ACTIVE)
+    except IllegalPITransitionError as e:
+        raise HTTPException(status_code=409, detail=str(e)) from e
 
     active = repos.pis.find(art_id=pi.art_id, status=PIStatus.ACTIVE)
     if active:
@@ -98,9 +100,9 @@ def activate_pi(pi_id: str, repos: ReposDep):
 )
 def close_pi(pi_id: str, repos: ReposDep):
     pi = _get_or_404(repos, pi_id)
-    if pi.status != PIStatus.ACTIVE:
-        raise HTTPException(
-            status_code=409, detail=f"PI '{pi_id}' is {pi.status.value}, not active"
-        )
+    try:
+        validate_pi_transition(pi, PIStatus.CLOSED)
+    except IllegalPITransitionError as e:
+        raise HTTPException(status_code=409, detail=str(e)) from e
     updated = pi.model_copy(update={"status": PIStatus.CLOSED})
     return repos.pis.save(updated)

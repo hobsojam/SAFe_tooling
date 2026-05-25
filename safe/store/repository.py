@@ -11,10 +11,6 @@ T = TypeVar("T", bound=SAFeBaseModel)
 _Q = Query()
 
 
-class ReferentialIntegrityError(Exception):
-    pass
-
-
 class Repository(Generic[T]):
     def __init__(self, db: TinyDB, table_name: str, model: type[T]) -> None:
         self._table = db.table(table_name)
