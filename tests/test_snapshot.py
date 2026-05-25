@@ -357,3 +357,121 @@ def test_cli_import_invalid_json(tmp_path):
     )
     assert result.exit_code == 1
     assert "could not parse" in result.output.lower()
+
+
+# ── coverage gap tests ────────────────────────────────────────────────────────
+
+
+def test_export_raises_when_art_deleted_after_pi_creation(repos):
+    """Line 47: export_pi raises ValueError when the PI's art_id references no ART."""
+    art = repos.arts.save(ART(name="Deleted ART"))
+    pi = repos.pis.save(
+        PI(
+            name="Orphan PI",
+            art_id=art.id,
+            start_date="2026-01-01",
+            end_date="2026-03-31",
+        )
+    )
+    # Delete the ART so art_id is now dangling
+    repos.arts.delete(art.id)
+
+    with pytest.raises(ValueError, match="not found"):
+        export_pi(repos, pi.id)
+
+
+def test_import_skips_story_with_unmapped_feature_id(repos, populated):
+    """Line 179: story is skipped when its feature_id maps to nothing in id_map."""
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # Inject a story whose feature_id has no match in the snapshot's feature list
+    ghost_story = Story(
+        name="Ghost story",
+        feature_id="nonexistent-feature-id",
+        team_id=populated["team"].id,
+        points=2,
+    )
+    snapshot = snapshot.model_copy(update={"stories": snapshot.stories + [ghost_story]})
+
+    new_pi = import_pi(repos, snapshot)
+
+    # Ghost story must not be imported; all other stories (from the real feature) must be
+    imported_stories = [s for s in repos.stories.get_all() if s.id != populated["story"].id]
+    new_feature_ids = {f.id for f in repos.features.find(pi_id=new_pi.id)}
+    valid_imported = [s for s in imported_stories if s.feature_id in new_feature_ids]
+    ghost_imported = [s for s in imported_stories if s.name == "Ghost story"]
+
+    assert len(ghost_imported) == 0
+    assert len(valid_imported) == 1  # the real story was imported
+
+
+def test_import_skips_dependency_with_unmapped_from_feature(repos, populated):
+    """Line 231: dependency is skipped when from_feature_id maps to nothing in id_map."""
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # Inject a dependency whose from_feature_id has no match in the snapshot
+    ghost_dep = Dependency(
+        description="Ghost dependency",
+        pi_id=populated["pi"].id,
+        from_feature_id="nonexistent-feature-id",
+        to_feature_id=populated["feature"].id,
+    )
+    snapshot = snapshot.model_copy(update={"dependencies": snapshot.dependencies + [ghost_dep]})
+
+    new_pi = import_pi(repos, snapshot)
+
+    # Only the real dependency (auth→observability) must be imported; ghost must be skipped
+    new_deps = repos.dependencies.find(pi_id=new_pi.id)
+    ghost_deps = [d for d in new_deps if d.description == "Ghost dependency"]
+    assert len(ghost_deps) == 0
+    # The original dependency was imported
+    assert len(new_deps) == 1
+
+
+def test_import_backfills_feature_dependency_ids(repos, populated):
+    """Lines 250–257: dependency_ids on a feature are remapped during import."""
+    # Give the first feature a dependency_ids list referencing the existing dependency
+    dep = populated["dependency"]
+    feature = populated["feature"]
+    feature_with_deps = feature.model_copy(update={"dependency_ids": [dep.id]})
+    repos.features.save(feature_with_deps)
+
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # The snapshot should capture the feature's dependency_ids
+    snap_feature = next(f for f in snapshot.features if f.id == feature.id)
+    assert len(snap_feature.dependency_ids) == 1
+
+    new_pi = import_pi(repos, snapshot)
+
+    new_features = repos.features.find(pi_id=new_pi.id)
+    # Find the imported counterpart of 'feature' (Auth Service)
+    imported_auth = next(f for f in new_features if f.name == "Auth Service")
+    # Its dependency_ids must have been backfilled with new (remapped) dep IDs
+    assert len(imported_auth.dependency_ids) == 1
+    # The remapped dep ID must exist in the new PI's dependencies
+    new_deps = {d.id for d in repos.dependencies.find(pi_id=new_pi.id)}
+    assert imported_auth.dependency_ids[0] in new_deps
+
+
+def test_import_skips_capacity_plan_with_unmapped_team(repos, populated):
+    """Line 264: capacity plan is skipped when team_id maps to nothing in id_map."""
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # Inject a capacity plan whose team_id doesn't match any team in the snapshot
+    ghost_plan = CapacityPlan(
+        team_id="nonexistent-team-id",
+        iteration_id=populated["iteration"].id,
+        pi_id=populated["pi"].id,
+        team_size=3,
+        iteration_days=10,
+    )
+    snapshot = snapshot.model_copy(
+        update={"capacity_plans": snapshot.capacity_plans + [ghost_plan]}
+    )
+
+    new_pi = import_pi(repos, snapshot)
+
+    new_plans = repos.capacity_plans.find(pi_id=new_pi.id)
+    # Only the real plan (mapped team) must exist; the ghost must be skipped
+    assert len(new_plans) == 1
