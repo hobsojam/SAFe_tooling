@@ -129,7 +129,6 @@ def import_pi(repos: Repos, snapshot: PISnapshot) -> PI:
         art_id=art.id,
         start_date=snapshot.pi.start_date,
         end_date=snapshot.pi.end_date,
-        status=snapshot.pi.status,
         iteration_ids=[],
     )
     id_map[snapshot.pi.id] = new_pi.id
@@ -193,7 +192,9 @@ def import_pi(repos: Repos, snapshot: PISnapshot) -> PI:
 
     # ── Objectives ────────────────────────────────────────────────────────────
     for o in snapshot.objectives:
-        team_id = id_map.get(o.team_id, o.team_id)
+        team_id = id_map.get(o.team_id)
+        if not team_id:
+            continue  # skip objectives whose team wasn't in the snapshot
         new_o = repos.objectives.save(
             PIObjective(
                 description=o.description,
