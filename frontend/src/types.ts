@@ -1,8 +1,8 @@
-export type PIStatus = 'planning' | 'active' | 'closed';
-export type ImprovementActionStatus = 'open' | 'in_progress' | 'done';
-export type FeatureStatus = 'funnel' | 'analyzing' | 'backlog' | 'implementing' | 'done';
-export type ROAMStatus = 'unroamed' | 'owned' | 'accepted' | 'mitigated' | 'resolved';
-export type DependencyStatus = 'identified' | 'acknowledged' | 'in_progress' | 'resolved';
+export type PIStatus = "planning" | "active" | "closed";
+export type ImprovementActionStatus = "open" | "in_progress" | "done";
+export type FeatureStatus = "funnel" | "analyzing" | "backlog" | "implementing" | "done";
+export type ROAMStatus = "unroamed" | "owned" | "accepted" | "mitigated" | "resolved";
+export type DependencyStatus = "identified" | "acknowledged" | "in_progress" | "resolved";
 
 export interface ART {
   id: string;
@@ -28,7 +28,7 @@ export interface PI {
   status: PIStatus;
 }
 
-export type TeamTopologyType = 'stream_aligned' | 'enabling' | 'complicated_subsystem' | 'platform';
+export type TeamTopologyType = "stream_aligned" | "enabling" | "complicated_subsystem" | "platform";
 
 export interface Team {
   id: string;
@@ -66,7 +66,7 @@ export interface Feature {
   wsjf_score: number;
 }
 
-export type StoryStatus = 'not_started' | 'in_progress' | 'done' | 'accepted';
+export type StoryStatus = "not_started" | "in_progress" | "done" | "accepted";
 
 export interface Story {
   id: string;

@@ -1,68 +1,68 @@
-import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
-import { api } from '../api';
-import { PIStatusBadge } from '../components/Badge';
-import { EmptyState } from '../components/EmptyState';
-import { Spinner } from '../components/Spinner';
+import { useQuery } from "@tanstack/react-query";
+import { Link, useParams } from "react-router-dom";
+import { api } from "../api";
+import { PIStatusBadge } from "../components/Badge";
+import { EmptyState } from "../components/EmptyState";
+import { Spinner } from "../components/Spinner";
 
 export function predictabilityClass(pct: number): string {
-  if (pct >= 80) return 'text-teal-700';
-  if (pct >= 60) return 'text-amber-600';
-  return 'text-red-600';
+  if (pct >= 80) return "text-teal-700";
+  if (pct >= 60) return "text-amber-600";
+  return "text-red-600";
 }
 
 export function loadPctClass(pct: number): string {
-  if (pct > 100) return 'text-red-600';
-  if (pct >= 70) return 'text-blue-700';
-  return 'text-amber-600';
+  if (pct > 100) return "text-red-600";
+  if (pct >= 70) return "text-blue-700";
+  return "text-amber-600";
 }
 
 export function PIHealth() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
 
   const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams', pi?.art_id],
+    queryKey: ["teams", pi?.art_id],
     queryFn: () => api.listTeamsByArt(pi!.art_id),
     enabled: !!pi?.art_id,
   });
 
   const { data: objectives = [], isLoading: loadingObj } = useQuery({
-    queryKey: ['objectives', piId],
+    queryKey: ["objectives", piId],
     queryFn: () => api.listObjectives(piId),
     enabled: !!piId,
   });
 
   const { data: capacityPlans = [] } = useQuery({
-    queryKey: ['capacity-plans', piId],
+    queryKey: ["capacity-plans", piId],
     queryFn: () => api.listCapacityPlans(piId),
     enabled: !!piId,
   });
 
   const { data: stories = [] } = useQuery({
-    queryKey: ['stories'],
+    queryKey: ["stories"],
     queryFn: api.listStories,
   });
 
   const { data: risks = [], isLoading: loadingRisks } = useQuery({
-    queryKey: ['risks', piId],
+    queryKey: ["risks", piId],
     queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 
   const { data: dependencies = [], isLoading: loadingDeps } = useQuery({
-    queryKey: ['dependencies', piId],
+    queryKey: ["dependencies", piId],
     queryFn: () => api.listDependencies(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
-    queryKey: ['iterations', piId],
+    queryKey: ["iterations", piId],
     queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
@@ -81,10 +81,10 @@ export function PIHealth() {
       : null;
 
   const unresolvedRisks = risks.filter(
-    (r) => r.roam_status !== 'resolved' && r.roam_status !== 'mitigated',
+    (r) => r.roam_status !== "resolved" && r.roam_status !== "mitigated"
   );
 
-  const openDeps = dependencies.filter((d) => d.status !== 'resolved');
+  const openDeps = dependencies.filter((d) => d.status !== "resolved");
 
   const iterationIds = new Set(iterations.filter((it) => !it.is_ip).map((it) => it.id));
   const teamCapMap: Record<string, { available: number; committed: number }> = {};
@@ -141,7 +141,7 @@ export function PIHealth() {
           </p>
           <p
             className={`text-3xl font-bold ${
-              unresolvedRisks.length === 0 ? 'text-teal-700' : 'text-amber-600'
+              unresolvedRisks.length === 0 ? "text-teal-700" : "text-amber-600"
             }`}
           >
             {unresolvedRisks.length}
@@ -158,7 +158,7 @@ export function PIHealth() {
           </p>
           <p
             className={`text-3xl font-bold ${
-              openDeps.length === 0 ? 'text-teal-700' : 'text-amber-600'
+              openDeps.length === 0 ? "text-teal-700" : "text-amber-600"
             }`}
           >
             {openDeps.length}
@@ -198,7 +198,7 @@ export function PIHealth() {
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {['Team', 'Available (days)', 'Committed (pts)', 'Load %'].map((h) => (
+                  {["Team", "Available (days)", "Committed (pts)", "Load %"].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
@@ -250,7 +250,7 @@ export function PIHealth() {
         )}
         <p className="mt-2 text-xs text-slate-400">
           Load % = Committed story points ÷ Available capacity (person-days) × 100. Target: 70–100%.
-          Capacity plans are set on the{' '}
+          Capacity plans are set on the{" "}
           <Link to={`/pi/${piId}/capacity`} className="underline hover:text-slate-600">
             Capacity page
           </Link>

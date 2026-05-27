@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
-import { type ReactElement } from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { ToastProvider } from '../components/Toaster';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
+import { type ReactElement } from "react";
+import { MemoryRouter } from "react-router-dom";
+import { ToastProvider } from "../components/Toaster";
 
-interface ProviderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface ProviderOptions extends Omit<RenderOptions, "wrapper"> {
   initialRoute?: string;
 }
 
@@ -26,7 +26,7 @@ function makeQueryClient() {
  */
 export function renderWithProviders(
   ui: ReactElement,
-  { initialRoute = '/', ...renderOptions }: ProviderOptions = {},
+  { initialRoute = "/", ...renderOptions }: ProviderOptions = {}
 ): RenderResult {
   const queryClient = makeQueryClient();
 

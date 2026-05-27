@@ -1,41 +1,50 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
-import { api } from '../api';
-import type { ImprovementAction, ImprovementActionCreate, ImprovementActionStatus, ImprovementActionUpdate, Risk, ROAMStatus, Team } from '../types';
-import { ROAMBadge } from '../components/Badge';
-import { EmptyState } from '../components/EmptyState';
-import { Modal } from '../components/Modal';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
-import { usePIObjectives } from '../hooks/usePIObjectives';
-import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { useState } from "react";
+import { api } from "../api";
+import type {
+  ImprovementAction,
+  ImprovementActionCreate,
+  ImprovementActionStatus,
+  ImprovementActionUpdate,
+  Risk,
+  ROAMStatus,
+  Team,
+} from "../types";
+import { ROAMBadge } from "../components/Badge";
+import { EmptyState } from "../components/EmptyState";
+import { Modal } from "../components/Modal";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
+import { usePIObjectives } from "../hooks/usePIObjectives";
+import { buildPredictabilitySummary, predictabilityBadgeClass } from "../utils/predictability";
 
-const ROAM_ORDER: ROAMStatus[] = ['resolved', 'owned', 'accepted', 'mitigated', 'unroamed'];
-const SUMMARY_CARD_CLASS = 'rounded-lg border border-slate-200 bg-white p-4 shadow-sm';
-const STAT_LABEL_CLASS = 'text-xs font-medium uppercase tracking-wide text-slate-500';
-const STAT_VALUE_CLASS = 'mt-1 text-2xl font-bold tabular-nums text-slate-800';
-const TABLE_HEADER_CLASS = 'px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600';
-const OBJECTIVE_HEADERS = ['Objective', 'Team', 'Type', 'Planned BV', 'Actual BV'];
+const ROAM_ORDER: ROAMStatus[] = ["resolved", "owned", "accepted", "mitigated", "unroamed"];
+const SUMMARY_CARD_CLASS = "rounded-lg border border-slate-200 bg-white p-4 shadow-sm";
+const STAT_LABEL_CLASS = "text-xs font-medium uppercase tracking-wide text-slate-500";
+const STAT_VALUE_CLASS = "mt-1 text-2xl font-bold tabular-nums text-slate-800";
+const TABLE_HEADER_CLASS =
+  "px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600";
+const OBJECTIVE_HEADERS = ["Objective", "Team", "Type", "Planned BV", "Actual BV"];
 
 const ACTION_STATUS_LABELS: Record<ImprovementActionStatus, string> = {
-  open: 'Open',
-  in_progress: 'In Progress',
-  done: 'Done',
+  open: "Open",
+  in_progress: "In Progress",
+  done: "Done",
 };
 
 const ACTION_STATUS_BADGE: Record<ImprovementActionStatus, string> = {
-  open: 'bg-blue-100 text-blue-800',
-  in_progress: 'bg-amber-100 text-amber-800',
-  done: 'bg-teal-100 text-teal-800',
+  open: "bg-blue-100 text-blue-800",
+  in_progress: "bg-amber-100 text-amber-800",
+  done: "bg-teal-100 text-teal-800",
 };
 
 const EMPTY_ACTION_FORM = {
-  problem_statement: '',
-  root_cause: '',
-  action: '',
-  owner: '',
-  status: 'open' as ImprovementActionStatus,
+  problem_statement: "",
+  root_cause: "",
+  action: "",
+  owner: "",
+  status: "open" as ImprovementActionStatus,
 };
 
 function buildRoamCounts(risks: Risk[]): Record<ROAMStatus, number> {
@@ -45,8 +54,8 @@ function buildRoamCounts(risks: Risk[]): Record<ROAMStatus, number> {
 }
 
 function teamName(teams: Team[], teamId: string | null): string {
-  if (!teamId) return '—';
-  return teams.find((t) => t.id === teamId)?.name ?? '—';
+  if (!teamId) return "—";
+  return teams.find((t) => t.id === teamId)?.name ?? "—";
 }
 
 function Section({
@@ -67,20 +76,20 @@ function Section({
 function StatCard({ label, children }: Readonly<{ label: ReactNode; children: ReactNode }>) {
   return (
     <div className={SUMMARY_CARD_CLASS}>
-      {typeof label === 'string' ? <p className={STAT_LABEL_CLASS}>{label}</p> : label}
+      {typeof label === "string" ? <p className={STAT_LABEL_CLASS}>{label}</p> : label}
       <div className={STAT_VALUE_CLASS}>{children}</div>
     </div>
   );
 }
 
 function ObjectiveTypeBadge({ isStretch }: Readonly<{ isStretch: boolean }>) {
-  const styles = isStretch
-    ? 'bg-amber-100 text-amber-800'
-    : 'bg-teal-100 text-teal-800';
+  const styles = isStretch ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800";
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles}`}>
-      {isStretch ? 'Stretch' : 'Committed'}
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles}`}
+    >
+      {isStretch ? "Stretch" : "Committed"}
     </span>
   );
 }
@@ -91,19 +100,19 @@ export function InspectAdapt() {
   const toast = useToast();
 
   const { data: risks = [], isLoading: loadingRisks } = useQuery({
-    queryKey: ['risks', piId],
+    queryKey: ["risks", piId],
     queryFn: () => api.listRisks(piId!),
     enabled: !!piId,
   });
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
-    queryKey: ['teams', pi?.art_id],
+    queryKey: ["teams", pi?.art_id],
     queryFn: () => api.listTeamsByArt(pi!.art_id),
     enabled: !!pi?.art_id,
   });
 
   const { data: actions = [], isLoading: loadingActions } = useQuery({
-    queryKey: ['improvement-actions', piId],
+    queryKey: ["improvement-actions", piId],
     queryFn: () => api.listImprovementActions(piId!),
     enabled: !!piId,
   });
@@ -111,22 +120,30 @@ export function InspectAdapt() {
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<ImprovementAction | null>(null);
   const [actionForm, setActionForm] = useState(EMPTY_ACTION_FORM);
-  const [actionError, setActionError] = useState('');
+  const [actionError, setActionError] = useState("");
   const [deleteActionId, setDeleteActionId] = useState<string | null>(null);
-  const [deleteActionError, setDeleteActionError] = useState('');
+  const [deleteActionError, setDeleteActionError] = useState("");
 
-  const invalidateActions = () => qc.invalidateQueries({ queryKey: ['improvement-actions', piId] });
+  const invalidateActions = () => qc.invalidateQueries({ queryKey: ["improvement-actions", piId] });
 
   const createActionMut = useMutation({
     mutationFn: (body: ImprovementActionCreate) => api.createImprovementAction(body),
-    onSuccess: () => { invalidateActions(); closeActionModal(); toast('Action added'); },
+    onSuccess: () => {
+      invalidateActions();
+      closeActionModal();
+      toast("Action added");
+    },
     onError: (e: Error) => setActionError(e.message),
   });
 
   const updateActionMut = useMutation({
     mutationFn: ({ id, body }: { id: string; body: ImprovementActionUpdate }) =>
       api.updateImprovementAction(id, body),
-    onSuccess: () => { invalidateActions(); closeActionModal(); toast('Action updated'); },
+    onSuccess: () => {
+      invalidateActions();
+      closeActionModal();
+      toast("Action updated");
+    },
     onError: (e: Error) => setActionError(e.message),
   });
 
@@ -135,8 +152,8 @@ export function InspectAdapt() {
     onSuccess: () => {
       invalidateActions();
       setDeleteActionId(null);
-      setDeleteActionError('');
-      toast('Action deleted');
+      setDeleteActionError("");
+      toast("Action deleted");
     },
     onError: (e: Error) => setDeleteActionError(e.message),
   });
@@ -144,7 +161,7 @@ export function InspectAdapt() {
   function openNewAction() {
     setEditingAction(null);
     setActionForm(EMPTY_ACTION_FORM);
-    setActionError('');
+    setActionError("");
     setActionModalOpen(true);
   }
 
@@ -157,24 +174,24 @@ export function InspectAdapt() {
       owner: a.owner,
       status: a.status,
     });
-    setActionError('');
+    setActionError("");
     setActionModalOpen(true);
   }
 
   function closeActionModal() {
     setActionModalOpen(false);
     setEditingAction(null);
-    setActionError('');
+    setActionError("");
   }
 
   function handleActionSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!actionForm.problem_statement.trim()) {
-      setActionError('Problem statement is required.');
+      setActionError("Problem statement is required.");
       return;
     }
     if (!actionForm.action.trim()) {
-      setActionError('Action is required.');
+      setActionError("Action is required.");
       return;
     }
     if (editingAction) {
@@ -202,9 +219,7 @@ export function InspectAdapt() {
         <h1 className="mb-1 text-xl font-semibold text-slate-800">
           Inspect &amp; Adapt — {pi?.name}
         </h1>
-        <p className="text-sm text-slate-500">
-          End-of-PI ceremony summary · Read-only
-        </p>
+        <p className="text-sm text-slate-500">End-of-PI ceremony summary · Read-only</p>
       </div>
 
       <Section title="ART Predictability" headingId="pred-heading">
@@ -238,7 +253,8 @@ export function InspectAdapt() {
 
         {committed.length > 0 && stretch.length > 0 && (
           <p className="mt-2 text-xs text-slate-400">
-            {stretch.length} stretch {stretch.length === 1 ? 'objective' : 'objectives'} excluded from predictability calculation.
+            {stretch.length} stretch {stretch.length === 1 ? "objective" : "objectives"} excluded
+            from predictability calculation.
           </p>
         )}
       </Section>
@@ -293,8 +309,8 @@ export function InspectAdapt() {
               ))}
             </div>
             <p className="mt-2 text-xs text-slate-400">
-              {risks.length} total {risks.length === 1 ? 'risk' : 'risks'} ·{' '}
-              {roamCounts.unroamed} unroamed
+              {risks.length} total {risks.length === 1 ? "risk" : "risks"} · {roamCounts.unroamed}{" "}
+              unroamed
             </p>
           </>
         )}
@@ -317,8 +333,10 @@ export function InspectAdapt() {
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {['Problem Statement', 'Root Cause', 'Action', 'Owner', 'Status', ''].map((h) => (
-                    <th key={h} className={TABLE_HEADER_CLASS}>{h}</th>
+                  {["Problem Statement", "Root Cause", "Action", "Owner", "Status", ""].map((h) => (
+                    <th key={h} className={TABLE_HEADER_CLASS}>
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -333,21 +351,25 @@ export function InspectAdapt() {
                               <span className="text-xs text-red-600">{deleteActionError}</span>
                             )}
                             <span className="text-sm text-slate-700">
-                              Delete{' '}
+                              Delete{" "}
                               <strong>
                                 {a.problem_statement.slice(0, 50)}
-                                {a.problem_statement.length > 50 ? '…' : ''}
-                              </strong>?
+                                {a.problem_statement.length > 50 ? "…" : ""}
+                              </strong>
+                              ?
                             </span>
                             <button
                               onClick={() => deleteActionMut.mutate(a.id)}
                               disabled={deleteActionMut.isPending}
                               className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                             >
-                              {deleteActionMut.isPending ? 'Deleting…' : 'Yes, delete'}
+                              {deleteActionMut.isPending ? "Deleting…" : "Yes, delete"}
                             </button>
                             <button
-                              onClick={() => { setDeleteActionId(null); setDeleteActionError(''); }}
+                              onClick={() => {
+                                setDeleteActionId(null);
+                                setDeleteActionError("");
+                              }}
                               className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                             >
                               Cancel
@@ -389,7 +411,10 @@ export function InspectAdapt() {
                           Edit
                         </button>
                         <button
-                          onClick={() => { setDeleteActionId(a.id); setDeleteActionError(''); }}
+                          onClick={() => {
+                            setDeleteActionId(a.id);
+                            setDeleteActionError("");
+                          }}
                           className="text-xs text-red-400 hover:text-red-600 underline"
                         >
                           Delete
@@ -406,14 +431,17 @@ export function InspectAdapt() {
 
       <Modal
         open={actionModalOpen}
-        title={editingAction ? 'Edit Improvement Action' : 'New Improvement Action'}
+        title={editingAction ? "Edit Improvement Action" : "New Improvement Action"}
         onClose={closeActionModal}
       >
         <form onSubmit={handleActionSubmit} className="space-y-4">
           {actionError && <p className="text-sm text-red-600">{actionError}</p>}
 
           <div>
-            <label htmlFor="action-problem" className="mb-1 block text-sm font-medium text-slate-700">
+            <label
+              htmlFor="action-problem"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
               Problem Statement<span aria-hidden="true"> *</span>
             </label>
             <textarea
@@ -426,7 +454,10 @@ export function InspectAdapt() {
           </div>
 
           <div>
-            <label htmlFor="action-root-cause" className="mb-1 block text-sm font-medium text-slate-700">
+            <label
+              htmlFor="action-root-cause"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
               Root Cause
             </label>
             <textarea
@@ -439,7 +470,10 @@ export function InspectAdapt() {
           </div>
 
           <div>
-            <label htmlFor="action-action" className="mb-1 block text-sm font-medium text-slate-700">
+            <label
+              htmlFor="action-action"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
               Action<span aria-hidden="true"> *</span>
             </label>
             <textarea
@@ -453,7 +487,10 @@ export function InspectAdapt() {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="action-owner" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="action-owner"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
                 Owner
               </label>
               <input
@@ -466,13 +503,21 @@ export function InspectAdapt() {
               />
             </div>
             <div>
-              <label htmlFor="action-status" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="action-status"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
                 Status
               </label>
               <select
                 id="action-status"
                 value={actionForm.status}
-                onChange={(e) => setActionForm({ ...actionForm, status: e.target.value as ImprovementActionStatus })}
+                onChange={(e) =>
+                  setActionForm({
+                    ...actionForm,
+                    status: e.target.value as ImprovementActionStatus,
+                  })
+                }
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
                 <option value="open">Open</option>
@@ -496,10 +541,10 @@ export function InspectAdapt() {
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
               {createActionMut.isPending || updateActionMut.isPending
-                ? 'Saving…'
+                ? "Saving…"
                 : editingAction
-                  ? 'Save Changes'
-                  : 'Add Action'}
+                  ? "Save Changes"
+                  : "Add Action"}
             </button>
           </div>
         </form>

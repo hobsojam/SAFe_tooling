@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 
 interface Props {
   readonly open: boolean;
@@ -39,11 +39,11 @@ export function Modal({ open, title, onClose, children }: Props) {
             tabIndex={-1}
             onClick={onClose}
           />
-          <div
-            className="relative z-10 mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl"
-          >
+          <div className="relative z-10 mx-3 sm:mx-0 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-              <h2 id="modal-title" className="text-base font-semibold text-slate-800">{title}</h2>
+              <h2 id="modal-title" className="text-base font-semibold text-slate-800">
+                {title}
+              </h2>
               <button
                 onClick={onClose}
                 className="text-slate-400 hover:text-slate-600 transition-colors"

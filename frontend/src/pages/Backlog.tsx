@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Fragment, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { api } from '../api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Fragment, useState } from "react";
+import { useParams } from "react-router-dom";
+import { api } from "../api";
 import type {
   Feature,
   FeatureCreate,
@@ -13,17 +13,23 @@ import type {
   StoryStatus,
   StoryUpdate,
   Team,
-} from '../types';
-import { FeatureStatusBadge, StoryStatusBadge } from '../components/Badge';
-import { EmptyState } from '../components/EmptyState';
-import { Modal } from '../components/Modal';
-import { Pagination } from '../components/Pagination';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
-import { usePagination } from '../hooks/usePagination';
+} from "../types";
+import { FeatureStatusBadge, StoryStatusBadge } from "../components/Badge";
+import { EmptyState } from "../components/EmptyState";
+import { Modal } from "../components/Modal";
+import { Pagination } from "../components/Pagination";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
+import { usePagination } from "../hooks/usePagination";
 
-const FEATURE_STATUS_OPTIONS: FeatureStatus[] = ['funnel', 'analyzing', 'backlog', 'implementing', 'done'];
-const STORY_STATUS_OPTIONS: StoryStatus[] = ['not_started', 'in_progress', 'done', 'accepted'];
+const FEATURE_STATUS_OPTIONS: FeatureStatus[] = [
+  "funnel",
+  "analyzing",
+  "backlog",
+  "implementing",
+  "done",
+];
+const STORY_STATUS_OPTIONS: StoryStatus[] = ["not_started", "in_progress", "done", "accepted"];
 
 // ---------- Story panel ----------
 
@@ -57,37 +63,37 @@ function StoryPanel({
   const toast = useToast();
 
   const { data: stories = [], isLoading } = useQuery({
-    queryKey: ['stories', feature.id],
+    queryKey: ["stories", feature.id],
     queryFn: () => api.listStoriesByFeature(feature.id),
   });
 
-  const defaultTeamId = feature.team_id ?? (teams[0]?.id ?? '');
+  const defaultTeamId = feature.team_id ?? teams[0]?.id ?? "";
 
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState<StoryFormState>({
-    name: '',
+    name: "",
     team_id: defaultTeamId,
-    iteration_id: '',
+    iteration_id: "",
     points: 3,
-    status: 'not_started',
+    status: "not_started",
   });
-  const [addError, setAddError] = useState('');
+  const [addError, setAddError] = useState("");
 
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<StoryEditState>({
-    name: '',
-    iteration_id: '',
+    name: "",
+    iteration_id: "",
     points: 1,
-    status: 'not_started',
+    status: "not_started",
   });
-  const [editError, setEditError] = useState('');
+  const [editError, setEditError] = useState("");
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState('');
+  const [deleteError, setDeleteError] = useState("");
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ['stories', feature.id] });
-    qc.invalidateQueries({ queryKey: ['features', piId] });
+    qc.invalidateQueries({ queryKey: ["stories", feature.id] });
+    qc.invalidateQueries({ queryKey: ["features", piId] });
   };
 
   const createMut = useMutation({
@@ -95,22 +101,38 @@ function StoryPanel({
     onSuccess: () => {
       invalidate();
       setAddOpen(false);
-      setAddForm({ name: '', team_id: defaultTeamId, iteration_id: '', points: 3, status: 'not_started' });
-      setAddError('');
-      toast('Story added');
+      setAddForm({
+        name: "",
+        team_id: defaultTeamId,
+        iteration_id: "",
+        points: 3,
+        status: "not_started",
+      });
+      setAddError("");
+      toast("Story added");
     },
     onError: (e: Error) => setAddError(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, body }: { id: string; body: StoryUpdate }) => api.updateStory(id, body),
-    onSuccess: () => { invalidate(); setEditId(null); setEditError(''); toast('Story updated'); },
+    onSuccess: () => {
+      invalidate();
+      setEditId(null);
+      setEditError("");
+      toast("Story updated");
+    },
     onError: (e: Error) => setEditError(e.message),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.deleteStory(id),
-    onSuccess: () => { invalidate(); setDeleteId(null); setDeleteError(''); toast('Story deleted'); },
+    onSuccess: () => {
+      invalidate();
+      setDeleteId(null);
+      setDeleteError("");
+      toast("Story deleted");
+    },
     onError: (e: Error) => setDeleteError(e.message),
   });
 
@@ -118,24 +140,43 @@ function StoryPanel({
 
   function startEdit(s: Story) {
     setEditId(s.id);
-    setEditForm({ name: s.name, iteration_id: s.iteration_id ?? '', points: s.points, status: s.status });
-    setEditError('');
+    setEditForm({
+      name: s.name,
+      iteration_id: s.iteration_id ?? "",
+      points: s.points,
+      status: s.status,
+    });
+    setEditError("");
     setDeleteId(null);
   }
 
   function submitEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!editForm.name.trim()) { setEditError('Name is required.'); return; }
+    if (!editForm.name.trim()) {
+      setEditError("Name is required.");
+      return;
+    }
     updateMut.mutate({
       id: editId!,
-      body: { name: editForm.name, iteration_id: editForm.iteration_id || null, points: editForm.points, status: editForm.status },
+      body: {
+        name: editForm.name,
+        iteration_id: editForm.iteration_id || null,
+        points: editForm.points,
+        status: editForm.status,
+      },
     });
   }
 
   function submitAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!addForm.name.trim()) { setAddError('Name is required.'); return; }
-    if (!addForm.team_id) { setAddError('Team is required.'); return; }
+    if (!addForm.name.trim()) {
+      setAddError("Name is required.");
+      return;
+    }
+    if (!addForm.team_id) {
+      setAddError("Team is required.");
+      return;
+    }
     createMut.mutate({
       name: addForm.name,
       feature_id: feature.id,
@@ -152,7 +193,7 @@ function StoryPanel({
         <div className="rounded-md border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Stories {isLoading ? '…' : `(${stories.length})`}
+              Stories {isLoading ? "…" : `(${stories.length})`}
             </span>
             {!addOpen && (
               <button
@@ -168,8 +209,13 @@ function StoryPanel({
             <table className="w-full text-sm">
               <thead className="border-b border-slate-100 bg-slate-50">
                 <tr>
-                  {['Name', 'Team', 'Iteration', 'Pts', 'Status', ''].map((h) => (
-                    <th key={h} className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{h}</th>
+                  {["Name", "Team", "Iteration", "Pts", "Status", ""].map((h) => (
+                    <th
+                      key={h}
+                      className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -180,7 +226,9 @@ function StoryPanel({
                       <tr key={story.id}>
                         <td colSpan={6} className="px-3 py-2">
                           <form onSubmit={submitEdit} className="flex flex-wrap items-center gap-2">
-                            {editError && <span className="w-full text-xs text-red-600">{editError}</span>}
+                            {editError && (
+                              <span className="w-full text-xs text-red-600">{editError}</span>
+                            )}
                             <input
                               type="text"
                               value={editForm.name}
@@ -190,31 +238,41 @@ function StoryPanel({
                             />
                             <select
                               value={editForm.iteration_id}
-                              onChange={(e) => setEditForm({ ...editForm, iteration_id: e.target.value })}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, iteration_id: e.target.value })
+                              }
                               aria-label="Iteration"
                               className="rounded border border-slate-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400"
                             >
                               <option value="">No iteration</option>
                               {nonIpIterations.map((it) => (
-                                <option key={it.id} value={it.id}>Iter {it.number}</option>
+                                <option key={it.id} value={it.id}>
+                                  Iter {it.number}
+                                </option>
                               ))}
                             </select>
                             <input
                               type="number"
                               min={1}
                               value={editForm.points}
-                              onChange={(e) => setEditForm({ ...editForm, points: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, points: Number(e.target.value) })
+                              }
                               aria-label="Points"
                               className="w-14 rounded border border-slate-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400"
                             />
                             <select
                               value={editForm.status}
-                              onChange={(e) => setEditForm({ ...editForm, status: e.target.value as StoryStatus })}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, status: e.target.value as StoryStatus })
+                              }
                               aria-label="Status"
                               className="rounded border border-slate-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400"
                             >
                               {STORY_STATUS_OPTIONS.map((s) => (
-                                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                                <option key={s} value={s}>
+                                  {s.replace(/_/g, " ")}
+                                </option>
                               ))}
                             </select>
                             <button
@@ -222,11 +280,14 @@ function StoryPanel({
                               disabled={updateMut.isPending}
                               className="rounded bg-slate-800 px-2 py-1 text-xs text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
                             >
-                              {updateMut.isPending ? '…' : 'Save'}
+                              {updateMut.isPending ? "…" : "Save"}
                             </button>
                             <button
                               type="button"
-                              onClick={() => { setEditId(null); setEditError(''); }}
+                              onClick={() => {
+                                setEditId(null);
+                                setEditError("");
+                              }}
                               className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                             >
                               Cancel
@@ -242,17 +303,24 @@ function StoryPanel({
                       <tr key={story.id} className="bg-red-50">
                         <td colSpan={6} className="px-3 py-2">
                           <div className="flex items-center gap-2">
-                            {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
-                            <span className="text-xs text-slate-700">Delete <strong>{story.name}</strong>?</span>
+                            {deleteError && (
+                              <span className="text-xs text-red-600">{deleteError}</span>
+                            )}
+                            <span className="text-xs text-slate-700">
+                              Delete <strong>{story.name}</strong>?
+                            </span>
                             <button
                               onClick={() => deleteMut.mutate(story.id)}
                               disabled={deleteMut.isPending}
                               className="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                             >
-                              {deleteMut.isPending ? '…' : 'Yes, delete'}
+                              {deleteMut.isPending ? "…" : "Yes, delete"}
                             </button>
                             <button
-                              onClick={() => { setDeleteId(null); setDeleteError(''); }}
+                              onClick={() => {
+                                setDeleteId(null);
+                                setDeleteError("");
+                              }}
                               className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                             >
                               Cancel
@@ -266,16 +334,20 @@ function StoryPanel({
                   return (
                     <tr key={story.id} className="hover:bg-slate-50/60">
                       <td className="px-3 py-2 text-slate-800">{story.name}</td>
-                      <td className="px-3 py-2 text-xs text-slate-500">{teamMap[story.team_id] ?? '—'}</td>
+                      <td className="px-3 py-2 text-xs text-slate-500">
+                        {teamMap[story.team_id] ?? "—"}
+                      </td>
                       <td className="px-3 py-2 text-xs text-slate-500">
                         {(() => {
-                          if (!story.iteration_id) return '—';
+                          if (!story.iteration_id) return "—";
                           const iter = nonIpIterations.find((i) => i.id === story.iteration_id);
-                          return iter == null ? '—' : `Iter ${iter.number}`;
+                          return iter == null ? "—" : `Iter ${iter.number}`;
                         })()}
                       </td>
                       <td className="px-3 py-2 tabular-nums text-slate-700">{story.points}</td>
-                      <td className="px-3 py-2"><StoryStatusBadge status={story.status} /></td>
+                      <td className="px-3 py-2">
+                        <StoryStatusBadge status={story.status} />
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap text-right">
                         <button
                           onClick={() => startEdit(story)}
@@ -284,7 +356,11 @@ function StoryPanel({
                           Edit
                         </button>
                         <button
-                          onClick={() => { setDeleteId(story.id); setDeleteError(''); setEditId(null); }}
+                          onClick={() => {
+                            setDeleteId(story.id);
+                            setDeleteError("");
+                            setEditId(null);
+                          }}
                           className="text-xs text-red-400 hover:text-red-600 underline"
                         >
                           Delete
@@ -299,7 +375,9 @@ function StoryPanel({
 
           {addOpen && (
             <form onSubmit={submitAdd} className="border-t border-slate-100 px-4 py-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">New Story</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                New Story
+              </p>
               {addError && <p className="mb-1 text-xs text-red-600">{addError}</p>}
               <div className="flex flex-wrap items-center gap-2">
                 <input
@@ -317,7 +395,11 @@ function StoryPanel({
                   className="rounded border border-slate-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400"
                 >
                   <option value="">Team *</option>
-                  {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
                 </select>
                 <select
                   value={addForm.iteration_id}
@@ -327,7 +409,9 @@ function StoryPanel({
                 >
                   <option value="">Iteration</option>
                   {nonIpIterations.map((it) => (
-                    <option key={it.id} value={it.id}>Iter {it.number}</option>
+                    <option key={it.id} value={it.id}>
+                      Iter {it.number}
+                    </option>
                   ))}
                 </select>
                 <input
@@ -343,11 +427,14 @@ function StoryPanel({
                   disabled={createMut.isPending}
                   className="rounded bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
                 >
-                  {createMut.isPending ? 'Adding…' : 'Add'}
+                  {createMut.isPending ? "Adding…" : "Add"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setAddOpen(false); setAddError(''); }}
+                  onClick={() => {
+                    setAddOpen(false);
+                    setAddError("");
+                  }}
                   className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                 >
                   Cancel
@@ -381,58 +468,62 @@ interface FeatureFormState {
 }
 
 const EMPTY_FORM: FeatureFormState = {
-  name: '',
-  description: '',
+  name: "",
+  description: "",
   team_id: null,
-  status: 'backlog',
-  acceptance_criteria: '',
-  nfr: '',
+  status: "backlog",
+  acceptance_criteria: "",
+  nfr: "",
   user_business_value: 5,
   time_criticality: 5,
   risk_reduction_opportunity_enablement: 5,
   job_size: 5,
 };
 
-type NumKey = 'user_business_value' | 'time_criticality' | 'risk_reduction_opportunity_enablement' | 'job_size';
+type NumKey =
+  | "user_business_value"
+  | "time_criticality"
+  | "risk_reduction_opportunity_enablement"
+  | "job_size";
 
 // ---------- Backlog page ----------
 
 export function Backlog() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Feature | null>(null);
   const [form, setForm] = useState<FeatureFormState>(EMPTY_FORM);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [expandedFeatureId, setExpandedFeatureId] = useState<string | null>(null);
 
   const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: features = [], isLoading } = useQuery({
-    queryKey: ['features', piId],
+    queryKey: ["features", piId],
     queryFn: () => api.listFeatures(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
+    queryKey: ["teams"],
     queryFn: api.listTeams,
   });
 
   const { data: iterations = [] } = useQuery({
-    queryKey: ['iterations', piId],
+    queryKey: ["iterations", piId],
     queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
   const { data: allStories = [] } = useQuery({
-    queryKey: ['stories'],
+    queryKey: ["stories"],
     queryFn: api.listStories,
   });
 
@@ -442,24 +533,35 @@ export function Backlog() {
     features.map((f) => [f.id, allStories.filter((s) => s.feature_id === f.id).length])
   );
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['features', piId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["features", piId] });
 
   const createMut = useMutation({
     mutationFn: (body: FeatureCreate) => api.createFeature(body),
-    onSuccess: () => { invalidate(); closeModal(); toast('Feature created'); },
+    onSuccess: () => {
+      invalidate();
+      closeModal();
+      toast("Feature created");
+    },
     onError: (e: Error) => setError(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, body }: { id: string; body: FeatureUpdate }) => api.updateFeature(id, body),
-    onSuccess: () => { invalidate(); closeModal(); toast('Feature updated'); },
+    onSuccess: () => {
+      invalidate();
+      closeModal();
+      toast("Feature updated");
+    },
     onError: (e: Error) => setError(e.message),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.deleteFeature(id),
-    onSuccess: () => { invalidate(); toast('Feature deleted'); },
-    onError: (e: Error) => toast(e.message, 'error'),
+    onSuccess: () => {
+      invalidate();
+      toast("Feature deleted");
+    },
+    onError: (e: Error) => toast(e.message, "error"),
   });
 
   const sorted = [...features].sort((a, b) => b.wsjf_score - a.wsjf_score);
@@ -472,7 +574,7 @@ export function Backlog() {
   function openNew() {
     setEditing(null);
     setForm(EMPTY_FORM);
-    setError('');
+    setError("");
     setModalOpen(true);
   }
 
@@ -490,19 +592,22 @@ export function Backlog() {
       risk_reduction_opportunity_enablement: f.risk_reduction_opportunity_enablement,
       job_size: f.job_size,
     });
-    setError('');
+    setError("");
     setModalOpen(true);
   }
 
   function closeModal() {
     setModalOpen(false);
     setEditing(null);
-    setError('');
+    setError("");
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!form.name.trim()) { setError('Feature name is required.'); return; }
+    if (!form.name.trim()) {
+      setError("Feature name is required.");
+      return;
+    }
     if (editing) {
       updateMut.mutate({ id: editing.id, body: { ...form, team_id: form.team_id || null } });
     } else {
@@ -511,7 +616,7 @@ export function Backlog() {
   }
 
   function handleDelete(id: string) {
-    if (!globalThis.confirm('Delete this feature?')) return;
+    if (!globalThis.confirm("Delete this feature?")) return;
     deleteMut.mutate(id);
   }
 
@@ -521,16 +626,19 @@ export function Backlog() {
 
   const isPending = createMut.isPending || updateMut.isPending;
   let featureSubmitLabel: string;
-  if (isPending) featureSubmitLabel = 'Saving…';
-  else featureSubmitLabel = editing ? 'Save Changes' : 'Add Feature';
+  if (isPending) featureSubmitLabel = "Saving…";
+  else featureSubmitLabel = editing ? "Save Changes" : "Add Feature";
 
   function numInput(label: string, key: NumKey, min: number, max: number) {
-    const id = `feature-${key.replace(/_/g, '-')}`;
+    const id = `feature-${key.replace(/_/g, "-")}`;
     return (
       <div>
         <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-700">
           {label}
-          <span aria-hidden="true" className="font-normal text-slate-400"> ({min}–{max})</span>
+          <span aria-hidden="true" className="font-normal text-slate-400">
+            {" "}
+            ({min}–{max})
+          </span>
         </label>
         <input
           id={id}
@@ -587,7 +695,9 @@ export function Backlog() {
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <FeatureStatusBadge status={f.status} />
                   {f.team_id && (
-                    <span className="text-xs text-slate-500">{teamMap[f.team_id] ?? f.team_id}</span>
+                    <span className="text-xs text-slate-500">
+                      {teamMap[f.team_id] ?? f.team_id}
+                    </span>
                   )}
                 </div>
                 <div className="mb-3 flex gap-4 text-xs text-slate-500">
@@ -595,7 +705,10 @@ export function Backlog() {
                   <span>CoD: {f.cost_of_delay}</span>
                   <span>Size: {f.job_size}</span>
                   {storyCountByFeature[f.id] > 0 && (
-                    <span>{storyCountByFeature[f.id]} stor{storyCountByFeature[f.id] === 1 ? 'y' : 'ies'}</span>
+                    <span>
+                      {storyCountByFeature[f.id]} stor
+                      {storyCountByFeature[f.id] === 1 ? "y" : "ies"}
+                    </span>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -621,21 +734,25 @@ export function Backlog() {
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {['#', 'Feature', 'Status', 'Team', 'CoD', 'Size', 'WSJF', 'Stories', ''].map((h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide"
-                    >
-                      {h}
-                    </th>
-                  ))}
+                  {["#", "Feature", "Status", "Team", "CoD", "Size", "WSJF", "Stories", ""].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide"
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {pageSorted.map((f, i) => (
                   <Fragment key={f.id}>
                     <tr className="hover:bg-slate-50/60">
-                      <td className="px-4 py-2.5 text-slate-400 tabular-nums">{(page - 1) * 25 + i + 1}</td>
+                      <td className="px-4 py-2.5 text-slate-400 tabular-nums">
+                        {(page - 1) * 25 + i + 1}
+                      </td>
                       <td className="px-4 py-2.5">
                         <button
                           onClick={() => openEdit(f)}
@@ -653,12 +770,14 @@ export function Backlog() {
                         <FeatureStatusBadge status={f.status} />
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">
-                        {f.team_id ? teamMap[f.team_id] ?? f.team_id : '—'}
+                        {f.team_id ? (teamMap[f.team_id] ?? f.team_id) : "—"}
                       </td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">{f.cost_of_delay}</td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">{f.job_size}</td>
                       <td className="px-4 py-2.5">
-                        <span className="font-semibold text-slate-800 tabular-nums">{f.wsjf_score}</span>
+                        <span className="font-semibold text-slate-800 tabular-nums">
+                          {f.wsjf_score}
+                        </span>
                       </td>
                       <td className="px-4 py-2.5">
                         <button
@@ -666,8 +785,11 @@ export function Backlog() {
                           className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 transition-colors"
                           aria-expanded={expandedFeatureId === f.id}
                         >
-                          <span>{expandedFeatureId === f.id ? '▼' : '▶'}</span>
-                          <span>Stories{storyCountByFeature[f.id] > 0 ? ` (${storyCountByFeature[f.id]})` : ''}</span>
+                          <span>{expandedFeatureId === f.id ? "▼" : "▶"}</span>
+                          <span>
+                            Stories
+                            {storyCountByFeature[f.id] > 0 ? ` (${storyCountByFeature[f.id]})` : ""}
+                          </span>
                         </button>
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
@@ -703,11 +825,7 @@ export function Backlog() {
         </div>
       )}
 
-      <Modal
-        open={modalOpen}
-        title={editing ? 'Edit Feature' : 'New Feature'}
-        onClose={closeModal}
-      >
+      <Modal open={modalOpen} title={editing ? "Edit Feature" : "New Feature"} onClose={closeModal}>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -725,7 +843,12 @@ export function Backlog() {
           </div>
 
           <div>
-            <label htmlFor="feature-description" className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+            <label
+              htmlFor="feature-description"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
+              Description
+            </label>
             <textarea
               id="feature-description"
               value={form.description}
@@ -736,7 +859,9 @@ export function Backlog() {
           </div>
 
           <div>
-            <label htmlFor="feature-ac" className="mb-1 block text-sm font-medium text-slate-700">Acceptance Criteria</label>
+            <label htmlFor="feature-ac" className="mb-1 block text-sm font-medium text-slate-700">
+              Acceptance Criteria
+            </label>
             <textarea
               id="feature-ac"
               value={form.acceptance_criteria}
@@ -763,7 +888,12 @@ export function Backlog() {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="feature-status" className="mb-1 block text-sm font-medium text-slate-700">Status</label>
+              <label
+                htmlFor="feature-status"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Status
+              </label>
               <select
                 id="feature-status"
                 value={form.status}
@@ -771,21 +901,30 @@ export function Backlog() {
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
                 {FEATURE_STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label htmlFor="feature-team" className="mb-1 block text-sm font-medium text-slate-700">Team</label>
+              <label
+                htmlFor="feature-team"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Team
+              </label>
               <select
                 id="feature-team"
-                value={form.team_id ?? ''}
+                value={form.team_id ?? ""}
                 onChange={(e) => setForm({ ...form, team_id: e.target.value || null })}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
                 <option value="">— none —</option>
                 {teams.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -795,10 +934,10 @@ export function Backlog() {
             WSJF Inputs
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {numInput('User / Business Value', 'user_business_value', 1, 10)}
-            {numInput('Time Criticality', 'time_criticality', 1, 10)}
-            {numInput('Risk Reduction / OE', 'risk_reduction_opportunity_enablement', 1, 10)}
-            {numInput('Job Size', 'job_size', 1, 13)}
+            {numInput("User / Business Value", "user_business_value", 1, 10)}
+            {numInput("Time Criticality", "time_criticality", 1, 10)}
+            {numInput("Risk Reduction / OE", "risk_reduction_opportunity_enablement", 1, 10)}
+            {numInput("Job Size", "job_size", 1, 13)}
           </div>
 
           <div className="flex justify-end gap-3 pt-2">

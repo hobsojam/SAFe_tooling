@@ -1,17 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { api } from '../api';
-import type { Risk, RiskCreate, RiskUpdate, ROAMStatus } from '../types';
-import { ROAMBadge } from '../components/Badge';
-import { EmptyState } from '../components/EmptyState';
-import { Modal } from '../components/Modal';
-import { Pagination } from '../components/Pagination';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
-import { usePagination } from '../hooks/usePagination';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { api } from "../api";
+import type { Risk, RiskCreate, RiskUpdate, ROAMStatus } from "../types";
+import { ROAMBadge } from "../components/Badge";
+import { EmptyState } from "../components/EmptyState";
+import { Modal } from "../components/Modal";
+import { Pagination } from "../components/Pagination";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
+import { usePagination } from "../hooks/usePagination";
 
-const ROAM_OPTIONS: ROAMStatus[] = ['unroamed', 'owned', 'accepted', 'mitigated', 'resolved'];
+const ROAM_OPTIONS: ROAMStatus[] = ["unroamed", "owned", "accepted", "mitigated", "resolved"];
 
 interface RiskFormState {
   description: string;
@@ -22,59 +22,72 @@ interface RiskFormState {
 }
 
 const EMPTY_FORM: RiskFormState = {
-  description: '',
+  description: "",
   team_id: null,
-  roam_status: 'unroamed',
+  roam_status: "unroamed",
   owner: null,
-  mitigation_notes: '',
+  mitigation_notes: "",
 };
 
 export function Risks() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Risk | null>(null);
   const [form, setForm] = useState<RiskFormState>(EMPTY_FORM);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState('');
+  const [deleteError, setDeleteError] = useState("");
 
   const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: risks = [], isLoading } = useQuery({
-    queryKey: ['risks', piId],
+    queryKey: ["risks", piId],
     queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
+    queryKey: ["teams"],
     queryFn: api.listTeams,
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['risks', piId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["risks", piId] });
 
   const createMut = useMutation({
     mutationFn: (body: RiskCreate) => api.createRisk(body),
-    onSuccess: () => { invalidate(); closeModal(); toast('Risk added'); },
+    onSuccess: () => {
+      invalidate();
+      closeModal();
+      toast("Risk added");
+    },
     onError: (e: Error) => setError(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, body }: { id: string; body: RiskUpdate }) => api.updateRisk(id, body),
-    onSuccess: () => { invalidate(); closeModal(); toast('Risk updated'); },
+    onSuccess: () => {
+      invalidate();
+      closeModal();
+      toast("Risk updated");
+    },
     onError: (e: Error) => setError(e.message),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.deleteRisk(id),
-    onSuccess: () => { invalidate(); setDeleteId(null); setDeleteError(''); toast('Risk deleted'); },
+    onSuccess: () => {
+      invalidate();
+      setDeleteId(null);
+      setDeleteError("");
+      toast("Risk deleted");
+    },
     onError: (e: Error) => setDeleteError(e.message),
   });
 
@@ -83,12 +96,12 @@ export function Risks() {
   if (isLoading) return <Spinner />;
 
   const teamMap = Object.fromEntries(teams.map((t) => [t.id, t.name]));
-  const unroamed = risks.filter((r) => r.roam_status === 'unroamed').length;
+  const unroamed = risks.filter((r) => r.roam_status === "unroamed").length;
 
   function openNew() {
     setEditing(null);
     setForm(EMPTY_FORM);
-    setError('');
+    setError("");
     setModalOpen(true);
   }
 
@@ -101,19 +114,22 @@ export function Risks() {
       owner: r.owner,
       mitigation_notes: r.mitigation_notes,
     });
-    setError('');
+    setError("");
     setModalOpen(true);
   }
 
   function closeModal() {
     setModalOpen(false);
     setEditing(null);
-    setError('');
+    setError("");
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!form.description.trim()) { setError('Description is required.'); return; }
+    if (!form.description.trim()) {
+      setError("Description is required.");
+      return;
+    }
     if (editing) {
       updateMut.mutate({
         id: editing.id,
@@ -135,11 +151,9 @@ export function Risks() {
     <div className="p-3 sm:p-6">
       <div className="mb-5 flex flex-wrap items-baseline justify-between gap-y-2">
         <div>
-          <h1 className="mb-1 text-xl font-semibold text-slate-800">
-            Risk Register — {pi?.name}
-          </h1>
+          <h1 className="mb-1 text-xl font-semibold text-slate-800">Risk Register — {pi?.name}</h1>
           <p className="text-sm text-slate-500">
-            {risks.length} risk{risks.length === 1 ? '' : 's'}
+            {risks.length} risk{risks.length === 1 ? "" : "s"}
             {unroamed > 0 && (
               <Link
                 to={`/pi/${piId}/risks/roam`}
@@ -170,7 +184,12 @@ export function Risks() {
                   <div key={r.id} className="bg-red-50 px-4 py-4">
                     {deleteError && <p className="mb-2 text-xs text-red-600">{deleteError}</p>}
                     <p className="mb-3 text-sm text-slate-700">
-                      Delete <strong>{r.description.slice(0, 60)}{r.description.length > 60 ? '…' : ''}</strong>?
+                      Delete{" "}
+                      <strong>
+                        {r.description.slice(0, 60)}
+                        {r.description.length > 60 ? "…" : ""}
+                      </strong>
+                      ?
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -178,10 +197,13 @@ export function Risks() {
                         disabled={deleteMut.isPending}
                         className="rounded-md bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                       >
-                        {deleteMut.isPending ? 'Deleting…' : 'Yes, delete'}
+                        {deleteMut.isPending ? "Deleting…" : "Yes, delete"}
                       </button>
                       <button
-                        onClick={() => { setDeleteId(null); setDeleteError(''); }}
+                        onClick={() => {
+                          setDeleteId(null);
+                          setDeleteError("");
+                        }}
                         className="rounded-md bg-white px-4 py-2.5 text-sm text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
                       >
                         Cancel
@@ -201,14 +223,18 @@ export function Risks() {
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <ROAMBadge status={r.roam_status} />
                     {r.team_id && (
-                      <span className="text-xs text-slate-500">{teamMap[r.team_id] ?? r.team_id}</span>
+                      <span className="text-xs text-slate-500">
+                        {teamMap[r.team_id] ?? r.team_id}
+                      </span>
                     )}
                   </div>
                   <div className="mb-3 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
                     {r.owner && <span>Owner: {r.owner}</span>}
                     <span>Raised: {r.raised_date}</span>
                     {r.mitigation_notes && (
-                      <span className="w-full text-slate-400 line-clamp-2">{r.mitigation_notes}</span>
+                      <span className="w-full text-slate-400 line-clamp-2">
+                        {r.mitigation_notes}
+                      </span>
                     )}
                   </div>
                   <div className="flex gap-2">
@@ -219,7 +245,10 @@ export function Risks() {
                       Edit
                     </button>
                     <button
-                      onClick={() => { setDeleteId(r.id); setDeleteError(''); }}
+                      onClick={() => {
+                        setDeleteId(r.id);
+                        setDeleteError("");
+                      }}
                       className="rounded-md bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors"
                     >
                       Delete
@@ -235,7 +264,7 @@ export function Risks() {
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {['Description', 'Team', 'Status', 'Owner', 'Raised', 'Notes', ''].map((h) => (
+                  {["Description", "Team", "Status", "Owner", "Raised", "Notes", ""].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide"
@@ -252,19 +281,29 @@ export function Risks() {
                       <tr key={r.id} className="bg-red-50">
                         <td colSpan={7} className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
+                            {deleteError && (
+                              <span className="text-xs text-red-600">{deleteError}</span>
+                            )}
                             <span className="text-sm text-slate-700">
-                              Delete <strong>{r.description.slice(0, 60)}{r.description.length > 60 ? '…' : ''}</strong>?
+                              Delete{" "}
+                              <strong>
+                                {r.description.slice(0, 60)}
+                                {r.description.length > 60 ? "…" : ""}
+                              </strong>
+                              ?
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(r.id)}
                               disabled={deleteMut.isPending}
                               className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                             >
-                              {deleteMut.isPending ? 'Deleting…' : 'Yes, delete'}
+                              {deleteMut.isPending ? "Deleting…" : "Yes, delete"}
                             </button>
                             <button
-                              onClick={() => { setDeleteId(null); setDeleteError(''); }}
+                              onClick={() => {
+                                setDeleteId(null);
+                                setDeleteError("");
+                              }}
                               className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                             >
                               Cancel
@@ -285,15 +324,15 @@ export function Risks() {
                         </button>
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">
-                        {r.team_id ? teamMap[r.team_id] ?? r.team_id : '—'}
+                        {r.team_id ? (teamMap[r.team_id] ?? r.team_id) : "—"}
                       </td>
                       <td className="px-4 py-2.5">
                         <ROAMBadge status={r.roam_status} />
                       </td>
-                      <td className="px-4 py-2.5 text-slate-500">{r.owner ?? '—'}</td>
+                      <td className="px-4 py-2.5 text-slate-500">{r.owner ?? "—"}</td>
                       <td className="px-4 py-2.5 text-slate-500 tabular-nums">{r.raised_date}</td>
                       <td className="max-w-xs px-4 py-2.5 text-slate-500">
-                        {r.mitigation_notes || '—'}
+                        {r.mitigation_notes || "—"}
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         <button
@@ -303,7 +342,10 @@ export function Risks() {
                           Edit
                         </button>
                         <button
-                          onClick={() => { setDeleteId(r.id); setDeleteError(''); }}
+                          onClick={() => {
+                            setDeleteId(r.id);
+                            setDeleteError("");
+                          }}
                           className="text-xs text-red-400 hover:text-red-600 underline"
                         >
                           Delete
@@ -319,12 +361,15 @@ export function Risks() {
         </div>
       )}
 
-      <Modal open={modalOpen} title={editing ? 'Edit Risk' : 'New Risk'} onClose={closeModal}>
+      <Modal open={modalOpen} title={editing ? "Edit Risk" : "New Risk"} onClose={closeModal}>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div>
-            <label htmlFor="risk-description" className="mb-1 block text-sm font-medium text-slate-700">
+            <label
+              htmlFor="risk-description"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
               Description<span aria-hidden="true"> *</span>
             </label>
             <textarea
@@ -337,22 +382,31 @@ export function Risks() {
           </div>
 
           <div>
-            <label htmlFor="risk-team" className="mb-1 block text-sm font-medium text-slate-700">Team</label>
+            <label htmlFor="risk-team" className="mb-1 block text-sm font-medium text-slate-700">
+              Team
+            </label>
             <select
               id="risk-team"
-              value={form.team_id ?? ''}
+              value={form.team_id ?? ""}
               onChange={(e) => setForm({ ...form, team_id: e.target.value || null })}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             >
               <option value="">— none —</option>
               {teams.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="risk-roam-status" className="mb-1 block text-sm font-medium text-slate-700">ROAM Status</label>
+            <label
+              htmlFor="risk-roam-status"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
+              ROAM Status
+            </label>
             <select
               id="risk-roam-status"
               value={form.roam_status}
@@ -360,24 +414,30 @@ export function Risks() {
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             >
               {ROAM_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="risk-owner" className="mb-1 block text-sm font-medium text-slate-700">Owner</label>
+            <label htmlFor="risk-owner" className="mb-1 block text-sm font-medium text-slate-700">
+              Owner
+            </label>
             <input
               id="risk-owner"
               type="text"
-              value={form.owner ?? ''}
+              value={form.owner ?? ""}
               onChange={(e) => setForm({ ...form, owner: e.target.value || null })}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
             />
           </div>
 
           <div>
-            <label htmlFor="risk-notes" className="mb-1 block text-sm font-medium text-slate-700">Mitigation Notes</label>
+            <label htmlFor="risk-notes" className="mb-1 block text-sm font-medium text-slate-700">
+              Mitigation Notes
+            </label>
             <textarea
               id="risk-notes"
               value={form.mitigation_notes}
@@ -401,9 +461,9 @@ export function Risks() {
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
               {(() => {
-                if (isPending) return 'Saving…';
-                if (editing) return 'Save Changes';
-                return 'Add Risk';
+                if (isPending) return "Saving…";
+                if (editing) return "Save Changes";
+                return "Add Risk";
               })()}
             </button>
           </div>
