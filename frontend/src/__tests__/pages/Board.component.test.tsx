@@ -1,6 +1,10 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useDroppable } from '@dnd-kit/core';
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
+
+vi.mock('html2canvas', () => ({
+  default: vi.fn(),
+}));
 
 // jsdom does not implement ResizeObserver
 beforeAll(() => {
@@ -51,6 +55,7 @@ vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
 
 vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
 
+import html2canvas from 'html2canvas';
 import { Board, DependencyArrows } from '../../pages/Board';
 import type { Arrow } from '../../pages/Board';
 import { makeFeature, makeIteration, makePI, makeTeam, makeDependency } from '../factories';
@@ -396,6 +401,71 @@ describe('Board page', () => {
       });
     });
     expect(mutate).not.toHaveBeenCalled();
+  });
+});
+
+describe('Download Image button', () => {
+  const mockCanvas = { toDataURL: vi.fn(() => 'data:image/png;base64,abc') };
+
+  beforeEach(() => {
+    vi.mocked(html2canvas).mockResolvedValue(mockCanvas as any);
+    mockCanvas.toDataURL.mockReturnValue('data:image/png;base64,abc');
+  });
+
+  it('renders the Download Image button', () => {
+    setupBoardMocks();
+    render(<Board />);
+    expect(screen.getByRole('button', { name: /Download Image/i })).toBeInTheDocument();
+  });
+
+  it('calls html2canvas with scale 2 and triggers anchor download on click', async () => {
+    const anchorClick = vi.fn();
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(anchorClick);
+
+    setupBoardMocks();
+    render(<Board />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Download Image/i }));
+    });
+
+    expect(vi.mocked(html2canvas)).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      expect.objectContaining({ scale: 2, useCORS: true, logging: false }),
+    );
+    expect(anchorClick).toHaveBeenCalled();
+  });
+
+  it('names the file program-board-<slug>-<date>.png', async () => {
+    let downloadAttr = '';
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      downloadAttr = this.download;
+    });
+
+    setupBoardMocks();
+    render(<Board />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Download Image/i }));
+    });
+
+    expect(downloadAttr).toMatch(/^program-board-pi-2026-1-\d{4}-\d{2}-\d{2}\.png$/);
+  });
+
+  it('shows Exporting… and disables the button while html2canvas is pending', async () => {
+    let resolveCanvas!: (v: any) => void;
+    vi.mocked(html2canvas).mockReturnValue(new Promise((r) => { resolveCanvas = r; }) as any);
+
+    setupBoardMocks();
+    render(<Board />);
+
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /Download Image/i })); });
+
+    const exportingBtn = await screen.findByRole('button', { name: /Exporting/i });
+    expect(exportingBtn).toBeDisabled();
+
+    await act(async () => { resolveCanvas(mockCanvas); });
+    expect(screen.getByRole('button', { name: /Download Image/i })).not.toBeDisabled();
   });
 });
 
