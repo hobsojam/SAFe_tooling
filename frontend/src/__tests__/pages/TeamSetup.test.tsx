@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -63,8 +63,10 @@ interface MutationCapture {
   opts: MutationOpts;
 }
 
+type TeamStub = { id: string; name: string; member_count: number; art_id: string; topology_type: string | null };
+
 /** Returns a live array that grows with each useMutation call across all renders. */
-function setupMocks(teams = mockTeams): MutationCapture[] {
+function setupMocks(teams: TeamStub[] = mockTeams): MutationCapture[] {
   const captured: MutationCapture[] = [];
   vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as unknown as ReturnType<typeof useQueryClient>);
   vi.mocked(useMutation).mockImplementation((opts: unknown) => {
