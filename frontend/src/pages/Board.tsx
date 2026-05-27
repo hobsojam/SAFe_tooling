@@ -9,6 +9,7 @@ import {
 } from '@dnd-kit/core';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import html2canvas from 'html2canvas';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { api } from '../api';
@@ -215,7 +216,9 @@ export function Board() {
   const toast = useToast();
   const [activeFeature, setActiveFeature] = useState<Feature | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const boardGridRef = useRef<HTMLDivElement>(null);
   const [arrows, setArrows] = useState<Arrow[]>([]);
+  const [exporting, setExporting] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -360,6 +363,27 @@ export function Board() {
     moveMutation.mutate({ featureId: feature.id, teamId: newTeamId, iterationId: newIterationId });
   }
 
+  async function handleExportImage() {
+    if (!boardGridRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(boardGridRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      const piSlug = pi?.name?.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() ?? 'board';
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = `program-board-${piSlug}-${date}.png`;
+      a.href = url;
+      a.click();
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (loadingFeatures || loadingTeams || loadingPi) return <Spinner />;
 
   const sortedIters = [...iterations].sort((a, b) => a.number - b.number);
@@ -386,14 +410,30 @@ export function Board() {
 
   return (
     <div className="p-3 sm:p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-800">
-        Program Board — {pi?.name}
-      </h1>
-      <p className="mb-5 text-sm text-slate-500">
-        Drag features between cells to reassign team and iteration
-      </p>
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="mb-1 text-xl font-semibold text-slate-800">
+            Program Board — {pi?.name}
+          </h1>
+          <p className="text-sm text-slate-500">
+            Drag features between cells to reassign team and iteration
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => { void handleExportImage(); }}
+          disabled={exporting}
+          className="shrink-0 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {exporting ? 'Exporting…' : 'Download Image'}
+        </button>
+      </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div
+        ref={boardGridRef}
+        data-export-target="board-grid"
+        className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm"
+      >
         <div ref={boardRef} style={{ position: 'relative' }}>
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div style={{ display: 'grid', gridTemplateColumns }}>
