@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "test": "vitest",
     "test:run": "vitest run --coverage",
     "stryker": "stryker run"
@@ -22,6 +24,7 @@
     "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.16",
     "@playwright/test": "^1.60.0",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
