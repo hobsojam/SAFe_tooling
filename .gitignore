@@ -38,6 +38,10 @@ env/
 
 # Tool data (stored outside repo at ~/.safe_tooling/)
 
+# Local AI tool state — user-specific, never commit
+.claude-flow/
+.codex/
+
 # Frontend
 frontend/node_modules/
 frontend/dist/
