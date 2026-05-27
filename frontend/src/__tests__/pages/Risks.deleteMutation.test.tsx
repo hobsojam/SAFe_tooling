@@ -8,31 +8,31 @@
  * button appears in both layouts and take the first result.
  */
 
-import { render, screen, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { render, screen, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock('react-router-dom', () => ({
-  useParams: () => ({ piId: 'pi-1' }),
+vi.mock("react-router-dom", () => ({
+  useParams: () => ({ piId: "pi-1" }),
   Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@tanstack/react-query', () => ({
+vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn(),
   useMutation: vi.fn(),
   useQueryClient: vi.fn(),
 }));
 
-vi.mock('../../components/Toaster', () => ({ useToast: () => vi.fn() }));
-vi.mock('../../components/Spinner', () => ({ Spinner: () => <div>Loading…</div> }));
+vi.mock("../../components/Toaster", () => ({ useToast: () => vi.fn() }));
+vi.mock("../../components/Spinner", () => ({ Spinner: () => <div>Loading…</div> }));
 
-import { Risks } from '../../pages/Risks';
-import { makePI, makeRisk, makeTeam } from '../factories';
+import { Risks } from "../../pages/Risks";
+import { makePI, makeRisk, makeTeam } from "../factories";
 
-const mockPI = makePI({ id: 'pi-1', name: 'PI 2026.1', status: 'active' });
-const mockTeams = [makeTeam({ id: 'team-1', name: 'Alpha' })];
-const baseRisk = makeRisk({ id: 'risk-1', pi_id: 'pi-1', description: 'DB migration risk' });
+const mockPI = makePI({ id: "pi-1", name: "PI 2026.1", status: "active" });
+const mockTeams = [makeTeam({ id: "team-1", name: "Alpha" })];
+const baseRisk = makeRisk({ id: "risk-1", pi_id: "pi-1", description: "DB migration risk" });
 
 type MutSetup = {
   mutate: ReturnType<typeof vi.fn>;
@@ -60,9 +60,9 @@ function setupMocks({
 
   vi.mocked(useQuery).mockImplementation(({ queryKey }: Parameters<typeof useQuery>[0]) => {
     const key = (queryKey as string[])[0];
-    if (key === 'pi') return { data: mockPI, isLoading: false } as any;
-    if (key === 'risks') return { data: risks, isLoading: false } as any;
-    if (key === 'teams') return { data: mockTeams, isLoading: false } as any;
+    if (key === "pi") return { data: mockPI, isLoading: false } as any;
+    if (key === "risks") return { data: risks, isLoading: false } as any;
+    if (key === "teams") return { data: mockTeams, isLoading: false } as any;
     return { data: undefined, isLoading: false } as any;
   });
 }
@@ -75,15 +75,15 @@ beforeEach(() => {
 // Delete flow
 // ---------------------------------------------------------------------------
 
-describe('Risks page — delete flow', () => {
-  it('shows delete confirmation when the Delete button is clicked', async () => {
+describe("Risks page — delete flow", () => {
+  it("shows delete confirmation when the Delete button is clicked", async () => {
     setupMocks();
     const user = userEvent.setup();
     render(<Risks />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
     await user.click(deleteButtons[0]);
     // Both mobile and desktop render confirmation rows — use getAllByRole
-    const confirmButtons = screen.getAllByRole('button', { name: 'Yes, delete' });
+    const confirmButtons = screen.getAllByRole("button", { name: "Yes, delete" });
     expect(confirmButtons.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -92,40 +92,40 @@ describe('Risks page — delete flow', () => {
     setupMocks({ del: { mutate: deleteMutate, isPending: false } });
     const user = userEvent.setup();
     render(<Risks />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
     await user.click(deleteButtons[0]);
-    const confirmButtons = screen.getAllByRole('button', { name: 'Yes, delete' });
+    const confirmButtons = screen.getAllByRole("button", { name: "Yes, delete" });
     await user.click(confirmButtons[0]);
     expect(deleteMutate).toHaveBeenCalled();
   });
 
-  it('hides the delete confirmation when Cancel is clicked', async () => {
+  it("hides the delete confirmation when Cancel is clicked", async () => {
     setupMocks();
     const user = userEvent.setup();
     render(<Risks />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
     await user.click(deleteButtons[0]);
-    const cancelButtons = screen.getAllByRole('button', { name: 'Cancel' });
+    const cancelButtons = screen.getAllByRole("button", { name: "Cancel" });
     await user.click(cancelButtons[0]);
-    expect(screen.queryByRole('button', { name: 'Yes, delete' })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Yes, delete" })).not.toBeInTheDocument();
   });
 
   it('shows "Deleting…" on the confirm button while delete mutation is pending', async () => {
     setupMocks({ del: { mutate: vi.fn(), isPending: true } });
     const user = userEvent.setup();
     render(<Risks />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
     await user.click(deleteButtons[0]);
     // Both mobile and desktop confirmation rows show "Deleting…"
-    const deletingButtons = screen.getAllByRole('button', { name: 'Deleting…' });
+    const deletingButtons = screen.getAllByRole("button", { name: "Deleting…" });
     expect(deletingButtons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows delete error message in the confirmation row after mutation error', async () => {
+  it("shows delete error message in the confirmation row after mutation error", async () => {
     let capturedOnError: ((e: Error) => void) | undefined;
     vi.mocked(useMutation)
-      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false } as any)) // createMut
-      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false } as any)) // updateMut
+      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false }) as any) // createMut
+      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false }) as any) // updateMut
       .mockImplementationOnce((opts: any) => {
         capturedOnError = opts?.onError;
         return { mutate: vi.fn(), isPending: false } as any;
@@ -134,35 +134,35 @@ describe('Risks page — delete flow', () => {
     vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as any);
     vi.mocked(useQuery).mockImplementation(({ queryKey }: any) => {
       const key = queryKey[0];
-      if (key === 'pi') return { data: mockPI, isLoading: false } as any;
-      if (key === 'risks') return { data: [baseRisk], isLoading: false } as any;
-      if (key === 'teams') return { data: mockTeams, isLoading: false } as any;
+      if (key === "pi") return { data: mockPI, isLoading: false } as any;
+      if (key === "risks") return { data: [baseRisk], isLoading: false } as any;
+      if (key === "teams") return { data: mockTeams, isLoading: false } as any;
       return { data: undefined, isLoading: false } as any;
     });
 
     const user = userEvent.setup();
     render(<Risks />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
     await user.click(deleteButtons[0]);
 
     act(() => {
-      capturedOnError?.(new Error('Delete failed'));
+      capturedOnError?.(new Error("Delete failed"));
     });
 
-    const errorMessages = screen.getAllByText('Delete failed');
+    const errorMessages = screen.getAllByText("Delete failed");
     expect(errorMessages.length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows the truncated description (60 chars + "…") in the confirmation', async () => {
     const longRisk = makeRisk({
-      id: 'risk-long',
-      pi_id: 'pi-1',
-      description: 'A'.repeat(70),
+      id: "risk-long",
+      pi_id: "pi-1",
+      description: "A".repeat(70),
     });
     setupMocks({ risks: [longRisk] });
     const user = userEvent.setup();
     render(<Risks />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
     await user.click(deleteButtons[0]);
     const truncated = screen.getAllByText(/A{60}…/);
     expect(truncated.length).toBeGreaterThanOrEqual(1);
@@ -173,81 +173,81 @@ describe('Risks page — delete flow', () => {
 // Update mutation
 // ---------------------------------------------------------------------------
 
-describe('Risks page — update mutation', () => {
-  it('edit modal pre-fills form with the existing risk description', async () => {
+describe("Risks page — update mutation", () => {
+  it("edit modal pre-fills form with the existing risk description", async () => {
     const risk = makeRisk({
-      id: 'risk-1',
-      pi_id: 'pi-1',
-      description: 'Service outage risk',
-      roam_status: 'owned',
-      owner: 'Alice',
-      mitigation_notes: 'Mitigating with redundancy',
-      team_id: 'team-1',
+      id: "risk-1",
+      pi_id: "pi-1",
+      description: "Service outage risk",
+      roam_status: "owned",
+      owner: "Alice",
+      mitigation_notes: "Mitigating with redundancy",
+      team_id: "team-1",
     });
     setupMocks({ risks: [risk] });
     const user = userEvent.setup();
     render(<Risks />);
-    const editButtons = screen.getAllByRole('button', { name: 'Edit' });
+    const editButtons = screen.getAllByRole("button", { name: "Edit" });
     await user.click(editButtons[0]);
-    const textarea = screen.getByRole('textbox', { name: /Description/i }) as HTMLTextAreaElement;
-    expect(textarea.value).toBe('Service outage risk');
+    const textarea = screen.getByRole("textbox", { name: /Description/i }) as HTMLTextAreaElement;
+    expect(textarea.value).toBe("Service outage risk");
   });
 
-  it('edit modal pre-fills the owner field', async () => {
+  it("edit modal pre-fills the owner field", async () => {
     const risk = makeRisk({
-      id: 'risk-1',
-      pi_id: 'pi-1',
-      description: 'Risk X',
-      owner: 'Alice',
-      mitigation_notes: '',
+      id: "risk-1",
+      pi_id: "pi-1",
+      description: "Risk X",
+      owner: "Alice",
+      mitigation_notes: "",
     });
     setupMocks({ risks: [risk] });
     const user = userEvent.setup();
     render(<Risks />);
-    const editButtons = screen.getAllByRole('button', { name: 'Edit' });
+    const editButtons = screen.getAllByRole("button", { name: "Edit" });
     await user.click(editButtons[0]);
-    const ownerInput = screen.getByRole('textbox', { name: /Owner/i }) as HTMLInputElement;
-    expect(ownerInput.value).toBe('Alice');
+    const ownerInput = screen.getByRole("textbox", { name: /Owner/i }) as HTMLInputElement;
+    expect(ownerInput.value).toBe("Alice");
   });
 
-  it('shows error in update modal when update mutation calls onError', async () => {
+  it("shows error in update modal when update mutation calls onError", async () => {
     let capturedOnError: ((e: Error) => void) | undefined;
     vi.mocked(useMutation)
-      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false } as any)) // createMut
+      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false }) as any) // createMut
       .mockImplementationOnce((opts: any) => {
         capturedOnError = opts?.onError;
         return { mutate: vi.fn(), isPending: false } as any;
       }) // updateMut
-      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false } as any)); // deleteMut
+      .mockImplementationOnce(() => ({ mutate: vi.fn(), isPending: false }) as any); // deleteMut
 
     vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as any);
     vi.mocked(useQuery).mockImplementation(({ queryKey }: any) => {
       const key = queryKey[0];
-      if (key === 'pi') return { data: mockPI, isLoading: false } as any;
-      if (key === 'risks') return { data: [baseRisk], isLoading: false } as any;
-      if (key === 'teams') return { data: mockTeams, isLoading: false } as any;
+      if (key === "pi") return { data: mockPI, isLoading: false } as any;
+      if (key === "risks") return { data: [baseRisk], isLoading: false } as any;
+      if (key === "teams") return { data: mockTeams, isLoading: false } as any;
       return { data: undefined, isLoading: false } as any;
     });
 
     const user = userEvent.setup();
     render(<Risks />);
-    const editButtons = screen.getAllByRole('button', { name: 'Edit' });
+    const editButtons = screen.getAllByRole("button", { name: "Edit" });
     await user.click(editButtons[0]);
 
     act(() => {
-      capturedOnError?.(new Error('Update failed'));
+      capturedOnError?.(new Error("Update failed"));
     });
 
-    expect(screen.getByText('Update failed')).toBeInTheDocument();
+    expect(screen.getByText("Update failed")).toBeInTheDocument();
   });
 
-  it('shows validation error when description is empty on submit', async () => {
+  it("shows validation error when description is empty on submit", async () => {
     setupMocks({ risks: [] });
     const user = userEvent.setup();
     render(<Risks />);
-    await user.click(screen.getByRole('button', { name: '+ New Risk' }));
-    await user.click(screen.getByRole('button', { name: 'Add Risk' }));
-    expect(screen.getByText('Description is required.')).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "+ New Risk" }));
+    await user.click(screen.getByRole("button", { name: "Add Risk" }));
+    expect(screen.getByText("Description is required.")).toBeInTheDocument();
   });
 });
 
@@ -255,18 +255,18 @@ describe('Risks page — update mutation', () => {
 // Risk count display
 // ---------------------------------------------------------------------------
 
-describe('Risks page — risk count display', () => {
+describe("Risks page — risk count display", () => {
   it('shows singular "risk" when there is exactly 1 roamed risk', () => {
     // Use a roamed risk so no "unroamed" link appends extra text to the same <p>
-    const roamedRisk = makeRisk({ id: 'r-r', pi_id: 'pi-1', roam_status: 'resolved' });
+    const roamedRisk = makeRisk({ id: "r-r", pi_id: "pi-1", roam_status: "resolved" });
     setupMocks({ risks: [roamedRisk] });
     render(<Risks />);
     expect(screen.getByText(/^1 risk$/)).toBeInTheDocument();
   });
 
   it('shows plural "risks" when there are multiple roamed risks', () => {
-    const r1 = makeRisk({ id: 'risk-x1', pi_id: 'pi-1', roam_status: 'resolved' });
-    const r2 = makeRisk({ id: 'risk-x2', pi_id: 'pi-1', roam_status: 'resolved' });
+    const r1 = makeRisk({ id: "risk-x1", pi_id: "pi-1", roam_status: "resolved" });
+    const r2 = makeRisk({ id: "risk-x2", pi_id: "pi-1", roam_status: "resolved" });
     setupMocks({ risks: [r1, r2] });
     render(<Risks />);
     expect(screen.getByText(/^2 risks$/)).toBeInTheDocument();
@@ -279,15 +279,15 @@ describe('Risks page — risk count display', () => {
     expect(screen.getByText(/^0 risks$/)).toBeInTheDocument();
   });
 
-  it('does not show unroamed text when all risks have been ROAMed', () => {
-    const roamedRisk = makeRisk({ id: 'r-r2', pi_id: 'pi-1', roam_status: 'resolved' });
+  it("does not show unroamed text when all risks have been ROAMed", () => {
+    const roamedRisk = makeRisk({ id: "r-r2", pi_id: "pi-1", roam_status: "resolved" });
     setupMocks({ risks: [roamedRisk] });
     render(<Risks />);
     expect(screen.queryByText(/unroamed/)).not.toBeInTheDocument();
   });
 
-  it('renders an unroamed count link when risks have unroamed status', () => {
-    const unroamedRisk = makeRisk({ id: 'r-u', pi_id: 'pi-1', roam_status: 'unroamed' });
+  it("renders an unroamed count link when risks have unroamed status", () => {
+    const unroamedRisk = makeRisk({ id: "r-u", pi_id: "pi-1", roam_status: "unroamed" });
     setupMocks({ risks: [unroamedRisk] });
     render(<Risks />);
     // The Link component renders its children as a fragment — the text "1 unroamed"

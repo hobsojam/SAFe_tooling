@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../api';
-import type { PIObjective, Team } from '../types';
-import { EmptyState } from '../components/EmptyState';
-import { Spinner } from '../components/Spinner';
-import { usePIObjectives } from '../hooks/usePIObjectives';
-import { buildPredictabilitySummary, predictabilityBadgeClass } from '../utils/predictability';
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../api";
+import type { PIObjective, Team } from "../types";
+import { EmptyState } from "../components/EmptyState";
+import { Spinner } from "../components/Spinner";
+import { usePIObjectives } from "../hooks/usePIObjectives";
+import { buildPredictabilitySummary, predictabilityBadgeClass } from "../utils/predictability";
 
 interface TeamRow {
   team: Team;
@@ -32,7 +32,7 @@ export function Predictability() {
   const { pi, objectives, isLoading: loadingObj } = usePIObjectives();
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
-    queryKey: ['teams', pi?.art_id],
+    queryKey: ["teams", pi?.art_id],
     queryFn: () => api.listTeamsByArt(pi!.art_id),
     enabled: !!pi?.art_id,
   });
@@ -52,9 +52,7 @@ export function Predictability() {
         <h1 className="mb-1 text-xl font-semibold text-slate-800">
           ART Predictability — {pi?.name}
         </h1>
-        <p className="text-sm text-slate-500">
-          Committed objectives only · SAFe target: 80–100%
-        </p>
+        <p className="text-sm text-slate-500">Committed objectives only · SAFe target: 80–100%</p>
       </div>
 
       {committed.length === 0 ? (
@@ -64,7 +62,7 @@ export function Predictability() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
-                {['Team', 'Objectives', 'Planned BV', 'Actual BV', 'Scored', 'Predictability'].map(
+                {["Team", "Objectives", "Planned BV", "Actual BV", "Scored", "Predictability"].map(
                   (h) => (
                     <th
                       key={h}
@@ -72,45 +70,46 @@ export function Predictability() {
                     >
                       {h}
                     </th>
-                  ),
+                  )
                 )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.map(({ team, objectives: objs, plannedBV, actualBV, scored, predictability }) =>
-                objs.length === 0 ? (
-                  <tr key={team.id} className="text-slate-400">
-                    <td className="px-4 py-3 font-medium">{team.name}</td>
-                    <td className="px-4 py-3">0</td>
-                    <td className="px-4 py-3">—</td>
-                    <td className="px-4 py-3">—</td>
-                    <td className="px-4 py-3">—</td>
-                    <td className="px-4 py-3 text-xs">No committed objectives</td>
-                  </tr>
-                ) : (
-                  <tr key={team.id} className="hover:bg-slate-50/60">
-                    <td className="px-4 py-3 font-medium text-slate-800">{team.name}</td>
-                    <td className="px-4 py-3 text-slate-600">{objs.length}</td>
-                    <td className="px-4 py-3 tabular-nums text-slate-700">{plannedBV}</td>
-                    <td className="px-4 py-3 tabular-nums text-slate-700">
-                      {scored > 0 ? actualBV : <span className="text-slate-400">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">
-                      {scored} / {objs.length}
-                    </td>
-                    <td className="px-4 py-3">
-                      {predictability === null ? (
-                        <span className="text-xs text-slate-400">Not yet scored</span>
-                      ) : (
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${predictabilityBadgeClass(predictability)}`}
-                        >
-                          {predictability}%
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ),
+              {rows.map(
+                ({ team, objectives: objs, plannedBV, actualBV, scored, predictability }) =>
+                  objs.length === 0 ? (
+                    <tr key={team.id} className="text-slate-400">
+                      <td className="px-4 py-3 font-medium">{team.name}</td>
+                      <td className="px-4 py-3">0</td>
+                      <td className="px-4 py-3">—</td>
+                      <td className="px-4 py-3">—</td>
+                      <td className="px-4 py-3">—</td>
+                      <td className="px-4 py-3 text-xs">No committed objectives</td>
+                    </tr>
+                  ) : (
+                    <tr key={team.id} className="hover:bg-slate-50/60">
+                      <td className="px-4 py-3 font-medium text-slate-800">{team.name}</td>
+                      <td className="px-4 py-3 text-slate-600">{objs.length}</td>
+                      <td className="px-4 py-3 tabular-nums text-slate-700">{plannedBV}</td>
+                      <td className="px-4 py-3 tabular-nums text-slate-700">
+                        {scored > 0 ? actualBV : <span className="text-slate-400">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500">
+                        {scored} / {objs.length}
+                      </td>
+                      <td className="px-4 py-3">
+                        {predictability === null ? (
+                          <span className="text-xs text-slate-400">Not yet scored</span>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${predictabilityBadgeClass(predictability)}`}
+                          >
+                            {predictability}%
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
               )}
             </tbody>
             <tfoot className="border-t-2 border-slate-300 bg-slate-50">

@@ -1,4 +1,4 @@
-const PREFIX = '[api]';
+const PREFIX = "[api]";
 
 export const logger = {
   warn(message: string, ...args: unknown[]): void {

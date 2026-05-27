@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { api } from '../api';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
-import type { ART, ARTCreate, ARTUpdate } from '../types';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { api } from "../api";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
+import type { ART, ARTCreate, ARTUpdate } from "../types";
 
 interface EditState {
   artId: string;
@@ -15,27 +15,27 @@ export function ARTSetup() {
   const toast = useToast();
 
   const { data: arts = [], isLoading } = useQuery({
-    queryKey: ['arts'],
+    queryKey: ["arts"],
     queryFn: api.listARTs,
   });
 
   const [edit, setEdit] = useState<EditState | null>(null);
-  const [editError, setEditError] = useState('');
+  const [editError, setEditError] = useState("");
 
   const [addOpen, setAddOpen] = useState(false);
-  const [addName, setAddName] = useState('');
-  const [addError, setAddError] = useState('');
+  const [addName, setAddName] = useState("");
+  const [addError, setAddError] = useState("");
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState('');
+  const [deleteError, setDeleteError] = useState("");
 
   const updateMut = useMutation({
     mutationFn: ({ id, body }: { id: string; body: ARTUpdate }) => api.updateART(id, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['arts'] });
+      qc.invalidateQueries({ queryKey: ["arts"] });
       setEdit(null);
-      setEditError('');
-      toast('ART updated');
+      setEditError("");
+      toast("ART updated");
     },
     onError: (e: Error) => setEditError(e.message),
   });
@@ -43,11 +43,11 @@ export function ARTSetup() {
   const createMut = useMutation({
     mutationFn: (body: ARTCreate) => api.createART(body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['arts'] });
+      qc.invalidateQueries({ queryKey: ["arts"] });
       setAddOpen(false);
-      setAddName('');
-      setAddError('');
-      toast('ART created');
+      setAddName("");
+      setAddError("");
+      toast("ART created");
     },
     onError: (e: Error) => setAddError(e.message),
   });
@@ -55,10 +55,10 @@ export function ARTSetup() {
   const deleteMut = useMutation({
     mutationFn: (id: string) => api.deleteART(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['arts'] });
+      qc.invalidateQueries({ queryKey: ["arts"] });
       setDeleteId(null);
-      setDeleteError('');
-      toast('ART deleted');
+      setDeleteError("");
+      toast("ART deleted");
     },
     onError: (e: Error) => setDeleteError(e.message),
   });
@@ -67,19 +67,25 @@ export function ARTSetup() {
 
   function startEdit(art: ART) {
     setEdit({ artId: art.id, name: art.name });
-    setEditError('');
+    setEditError("");
     setDeleteId(null);
   }
 
   function submitEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!edit!.name.trim()) { setEditError('Name is required.'); return; }
+    if (!edit!.name.trim()) {
+      setEditError("Name is required.");
+      return;
+    }
     updateMut.mutate({ id: edit!.artId, body: { name: edit!.name } });
   }
 
   function submitAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!addName.trim()) { setAddError('Name is required.'); return; }
+    if (!addName.trim()) {
+      setAddError("Name is required.");
+      return;
+    }
     createMut.mutate({ name: addName });
   }
 
@@ -96,7 +102,11 @@ export function ARTSetup() {
           </h2>
           {!addOpen && (
             <button
-              onClick={() => { setAddOpen(true); setAddName(''); setAddError(''); }}
+              onClick={() => {
+                setAddOpen(true);
+                setAddName("");
+                setAddError("");
+              }}
               className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
             >
               + Add ART
@@ -108,8 +118,11 @@ export function ARTSetup() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-100 bg-slate-50">
               <tr>
-                {['Name', 'Teams', ''].map((h) => (
-                  <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                {["Name", "Teams", ""].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                  >
                     {h}
                   </th>
                 ))}
@@ -135,11 +148,14 @@ export function ARTSetup() {
                             disabled={updateMut.isPending}
                             className="rounded-md bg-slate-800 px-3 py-1 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
                           >
-                            {updateMut.isPending ? 'Saving…' : 'Save'}
+                            {updateMut.isPending ? "Saving…" : "Save"}
                           </button>
                           <button
                             type="button"
-                            onClick={() => { setEdit(null); setEditError(''); }}
+                            onClick={() => {
+                              setEdit(null);
+                              setEditError("");
+                            }}
                             className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                           >
                             Cancel
@@ -155,17 +171,24 @@ export function ARTSetup() {
                     <tr key={art.id} className="bg-red-50">
                       <td colSpan={3} className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          {deleteError && <span className="text-xs text-red-600">{deleteError}</span>}
-                          <span className="text-sm text-slate-700">Delete <strong>{art.name}</strong>?</span>
+                          {deleteError && (
+                            <span className="text-xs text-red-600">{deleteError}</span>
+                          )}
+                          <span className="text-sm text-slate-700">
+                            Delete <strong>{art.name}</strong>?
+                          </span>
                           <button
                             onClick={() => deleteMut.mutate(art.id)}
                             disabled={deleteMut.isPending}
                             className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                           >
-                            {deleteMut.isPending ? 'Deleting…' : 'Yes, delete'}
+                            {deleteMut.isPending ? "Deleting…" : "Yes, delete"}
                           </button>
                           <button
-                            onClick={() => { setDeleteId(null); setDeleteError(''); }}
+                            onClick={() => {
+                              setDeleteId(null);
+                              setDeleteError("");
+                            }}
                             className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
                           >
                             Cancel
@@ -188,7 +211,11 @@ export function ARTSetup() {
                         Edit
                       </button>
                       <button
-                        onClick={() => { setDeleteId(art.id); setDeleteError(''); setEdit(null); }}
+                        onClick={() => {
+                          setDeleteId(art.id);
+                          setDeleteError("");
+                          setEdit(null);
+                        }}
                         className="text-xs text-red-500 hover:text-red-700 transition-colors"
                       >
                         Delete
@@ -221,7 +248,10 @@ export function ARTSetup() {
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
-                onClick={() => { setAddOpen(false); setAddError(''); }}
+                onClick={() => {
+                  setAddOpen(false);
+                  setAddError("");
+                }}
                 className="rounded-md px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 transition-colors"
               >
                 Cancel
@@ -231,7 +261,7 @@ export function ARTSetup() {
                 disabled={createMut.isPending}
                 className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
               >
-                {createMut.isPending ? 'Adding…' : 'Add ART'}
+                {createMut.isPending ? "Adding…" : "Add ART"}
               </button>
             </div>
           </form>

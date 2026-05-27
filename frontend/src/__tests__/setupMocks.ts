@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vi } from 'vitest';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { vi } from "vitest";
 
 type QueryData = Record<string, unknown>;
 type QueryResolver = (opts: { queryKey: unknown[] }) => unknown;
@@ -30,7 +30,7 @@ interface MockOptions {
  */
 export function setupQueryMocks(
   dataOrResolver: QueryData | QueryResolver,
-  options: MockOptions = {},
+  options: MockOptions = {}
 ): { mutate: ReturnType<typeof vi.fn>; invalidateQueries: ReturnType<typeof vi.fn> } {
   const mutate = vi.fn();
   const invalidateQueries = vi.fn();
@@ -40,7 +40,7 @@ export function setupQueryMocks(
   vi.mocked(useQuery).mockImplementation((opts: any) => {
     const queryKey = opts.queryKey as unknown[];
     const data =
-      typeof dataOrResolver === 'function'
+      typeof dataOrResolver === "function"
         ? dataOrResolver({ queryKey })
         : dataOrResolver[queryKey[0] as string];
     return {

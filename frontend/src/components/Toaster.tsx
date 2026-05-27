@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
-type Variant = 'success' | 'error' | 'info';
+type Variant = "success" | "error" | "info";
 
 interface ToastItem {
   id: number;
@@ -18,9 +18,9 @@ export function useToast(): ToastFn {
 }
 
 const STYLES: Record<Variant, string> = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error:   'bg-red-50 border-red-200 text-red-800',
-  info:    'bg-blue-50 border-blue-200 text-blue-800',
+  success: "bg-green-50 border-green-200 text-green-800",
+  error: "bg-red-50 border-red-200 text-red-800",
+  info: "bg-blue-50 border-blue-200 text-blue-800",
 };
 
 export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
@@ -32,25 +32,30 @@ export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   // when state value is unchanged, which would silence the screen reader on
   // duplicate messages. requestAnimationFrame ensures the clear lands first.
   const statusRef = useRef<HTMLDivElement>(null);
-  const alertRef  = useRef<HTMLDivElement>(null);
+  const alertRef = useRef<HTMLDivElement>(null);
 
   const announce = useCallback((message: string, isAlert: boolean) => {
     const el = isAlert ? alertRef.current : statusRef.current;
     if (!el) return;
-    el.textContent = '';
-    requestAnimationFrame(() => { el.textContent = message; });
+    el.textContent = "";
+    requestAnimationFrame(() => {
+      el.textContent = message;
+    });
   }, []);
 
   const dismiss = useCallback((id: number) => {
-    setToasts(ts => ts.filter(t => t.id !== id));
+    setToasts((ts) => ts.filter((t) => t.id !== id));
   }, []);
 
-  const toast = useCallback<ToastFn>((message, variant = 'success') => {
-    const id = ++counterRef.current;
-    announce(message, variant === 'error');
-    setToasts(ts => [...ts, { id, message, variant }]);
-    setTimeout(() => dismiss(id), 4000);
-  }, [announce, dismiss]);
+  const toast = useCallback<ToastFn>(
+    (message, variant = "success") => {
+      const id = ++counterRef.current;
+      announce(message, variant === "error");
+      setToasts((ts) => [...ts, { id, message, variant }]);
+      setTimeout(() => dismiss(id), 4000);
+    },
+    [announce, dismiss]
+  );
 
   return (
     <ToastContext.Provider value={toast}>
@@ -58,12 +63,24 @@ export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
 
       {/* Live regions — always in the DOM, never receive focus.
           Screen readers detect text injection as a DOM mutation and announce it. */}
-      <div role="status" aria-live="polite"    aria-atomic="true" className="sr-only" ref={statusRef} />
-      <div role="alert"  aria-live="assertive" aria-atomic="true" className="sr-only" ref={alertRef}  />
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        ref={statusRef}
+      />
+      <div
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        className="sr-only"
+        ref={alertRef}
+      />
 
       {toasts.length > 0 && (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col-reverse gap-2 w-80">
-          {toasts.map(t => (
+          {toasts.map((t) => (
             <div
               key={t.id}
               className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${STYLES[t.variant]}`}

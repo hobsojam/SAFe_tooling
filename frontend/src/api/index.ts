@@ -32,11 +32,11 @@ import type {
   TeamCreate,
   TeamUpdate,
   VelocityEntry,
-} from '../types';
+} from "../types";
 
-import { logger } from '../logger';
+import { logger } from "../logger";
 
-const BASE = '/api';
+const BASE = "/api";
 
 async function logAndThrow(res: Response, method: string, path: string): Promise<never> {
   const message = await extractErrorMessage(res);
@@ -58,14 +58,14 @@ function onNetworkError(method: string, path: string): (err: unknown) => never {
 async function extractErrorMessage(res: Response): Promise<string> {
   try {
     const body = (await res.json()) as { detail?: unknown };
-    if (typeof body.detail === 'string') return body.detail;
+    if (typeof body.detail === "string") return body.detail;
     if (Array.isArray(body.detail)) {
       return (body.detail as { loc?: string[]; msg: string }[])
         .map((e) => {
-          const field = e.loc?.filter((p) => p !== 'body').join('.') ?? '';
+          const field = e.loc?.filter((p) => p !== "body").join(".") ?? "";
           return field ? `${field}: ${e.msg}` : e.msg;
         })
-        .join('; ');
+        .join("; ");
     }
   } catch {
     // body wasn't JSON — fall through to status text
@@ -74,98 +74,101 @@ async function extractErrorMessage(res: Response): Promise<string> {
 }
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`).catch(onNetworkError('GET', path));
-  if (!res.ok) return logAndThrow(res, 'GET', path);
+  const res = await fetch(`${BASE}${path}`).catch(onNetworkError("GET", path));
+  if (!res.ok) return logAndThrow(res, "GET", path);
   return res.json();
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  }).catch(onNetworkError('POST', path));
-  if (!res.ok) return logAndThrow(res, 'POST', path);
+  }).catch(onNetworkError("POST", path));
+  if (!res.ok) return logAndThrow(res, "POST", path);
   return res.json();
 }
 
 async function patch<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  }).catch(onNetworkError('PATCH', path));
-  if (!res.ok) return logAndThrow(res, 'PATCH', path);
+  }).catch(onNetworkError("PATCH", path));
+  if (!res.ok) return logAndThrow(res, "PATCH", path);
   return res.json();
 }
 
 async function del(path: string): Promise<void> {
-  const res = await fetch(`${BASE}${path}`, { method: 'DELETE' }).catch(
-    onNetworkError('DELETE', path),
+  const res = await fetch(`${BASE}${path}`, { method: "DELETE" }).catch(
+    onNetworkError("DELETE", path)
   );
-  if (!res.ok) return logAndThrow(res, 'DELETE', path);
+  if (!res.ok) return logAndThrow(res, "DELETE", path);
 }
 
 export const api = {
-  listPIs: () => get<PI[]>('/pi'),
+  listPIs: () => get<PI[]>("/pi"),
   getPI: (id: string) => get<PI>(`/pi/${id}`),
-  createPI: (body: PICreate) => post<PI>('/pi', body),
+  createPI: (body: PICreate) => post<PI>("/pi", body),
   updatePI: (id: string, body: PIUpdate) => patch<PI>(`/pi/${id}`, body),
   activatePI: (id: string) => post<PI>(`/pi/${id}/activate`, {}),
   closePI: (id: string) => post<PI>(`/pi/${id}/close`, {}),
   deletePI: (id: string) => del(`/pi/${id}`),
 
-  listARTs: () => get<ART[]>('/art'),
-  createART: (body: ARTCreate) => post<ART>('/art', body),
+  listARTs: () => get<ART[]>("/art"),
+  createART: (body: ARTCreate) => post<ART>("/art", body),
   updateART: (id: string, body: ARTUpdate) => patch<ART>(`/art/${id}`, body),
   deleteART: (id: string) => del(`/art/${id}`),
 
-  listTeams: () => get<Team[]>('/team'),
+  listTeams: () => get<Team[]>("/team"),
   listTeamsByArt: (artId: string) => get<Team[]>(`/team?art_id=${artId}`),
-  createTeam: (body: TeamCreate) => post<Team>('/team', body),
+  createTeam: (body: TeamCreate) => post<Team>("/team", body),
   updateTeam: (id: string, body: TeamUpdate) => patch<Team>(`/team/${id}`, body),
   deleteTeam: (id: string) => del(`/team/${id}`),
 
   listIterations: (piId: string) => get<Iteration[]>(`/iterations?pi_id=${piId}`),
-  createIteration: (body: IterationCreate) => post<Iteration>('/iterations', body),
+  createIteration: (body: IterationCreate) => post<Iteration>("/iterations", body),
   deleteIteration: (id: string) => del(`/iterations/${id}`),
 
   listFeatures: (piId: string) => get<Feature[]>(`/features?pi_id=${piId}`),
-  listAllFeatures: () => get<Feature[]>('/features'),
-  createFeature: (body: FeatureCreate) => post<Feature>('/features', body),
+  listAllFeatures: () => get<Feature[]>("/features"),
+  createFeature: (body: FeatureCreate) => post<Feature>("/features", body),
   updateFeature: (id: string, body: FeatureUpdate) => patch<Feature>(`/features/${id}`, body),
   deleteFeature: (id: string) => del(`/features/${id}`),
 
-  listStories: () => get<Story[]>('/stories'),
+  listStories: () => get<Story[]>("/stories"),
   listStoriesByFeature: (featureId: string) => get<Story[]>(`/stories?feature_id=${featureId}`),
-  createStory: (body: StoryCreate) => post<Story>('/stories', body),
+  createStory: (body: StoryCreate) => post<Story>("/stories", body),
   updateStory: (id: string, body: StoryUpdate) => patch<Story>(`/stories/${id}`, body),
   deleteStory: (id: string) => del(`/stories/${id}`),
 
   listObjectives: (piId: string) => get<PIObjective[]>(`/objectives?pi_id=${piId}`),
-  createObjective: (body: PIObjectiveCreate) => post<PIObjective>('/objectives', body),
-  updateObjective: (id: string, body: PIObjectiveUpdate) => patch<PIObjective>(`/objectives/${id}`, body),
+  createObjective: (body: PIObjectiveCreate) => post<PIObjective>("/objectives", body),
+  updateObjective: (id: string, body: PIObjectiveUpdate) =>
+    patch<PIObjective>(`/objectives/${id}`, body),
   deleteObjective: (id: string) => del(`/objectives/${id}`),
 
   listCapacityPlans: (piId: string) => get<CapacityPlan[]>(`/capacity-plans?pi_id=${piId}`),
-  upsertCapacityPlan: (body: CapacityPlanCreate) => post<CapacityPlan>('/capacity-plans', body),
-  seedCapacityPlans: (piId: string) => post<CapacityPlanSeedResult>('/capacity-plans/seed', { pi_id: piId }),
+  upsertCapacityPlan: (body: CapacityPlanCreate) => post<CapacityPlan>("/capacity-plans", body),
+  seedCapacityPlans: (piId: string) =>
+    post<CapacityPlanSeedResult>("/capacity-plans/seed", { pi_id: piId }),
   listVelocity: (piId: string) => get<VelocityEntry[]>(`/capacity-plans/velocity?pi_id=${piId}`),
 
   listRisks: (piId: string) => get<Risk[]>(`/risks?pi_id=${piId}`),
-  createRisk: (body: RiskCreate) => post<Risk>('/risks', body),
+  createRisk: (body: RiskCreate) => post<Risk>("/risks", body),
   updateRisk: (id: string, body: RiskUpdate) => patch<Risk>(`/risks/${id}`, body),
   deleteRisk: (id: string) => del(`/risks/${id}`),
 
   listDependencies: (piId: string) => get<Dependency[]>(`/dependencies?pi_id=${piId}`),
-  createDependency: (body: DependencyCreate) => post<Dependency>('/dependencies', body),
-  updateDependency: (id: string, body: DependencyUpdate) => patch<Dependency>(`/dependencies/${id}`, body),
+  createDependency: (body: DependencyCreate) => post<Dependency>("/dependencies", body),
+  updateDependency: (id: string, body: DependencyUpdate) =>
+    patch<Dependency>(`/dependencies/${id}`, body),
   deleteDependency: (id: string) => del(`/dependencies/${id}`),
 
   listImprovementActions: (piId: string) =>
     get<ImprovementAction[]>(`/improvement-actions?pi_id=${piId}`),
   createImprovementAction: (body: ImprovementActionCreate) =>
-    post<ImprovementAction>('/improvement-actions', body),
+    post<ImprovementAction>("/improvement-actions", body),
   updateImprovementAction: (id: string, body: ImprovementActionUpdate) =>
     patch<ImprovementAction>(`/improvement-actions/${id}`, body),
   deleteImprovementAction: (id: string) => del(`/improvement-actions/${id}`),
