@@ -1,130 +1,130 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-import { Modal } from '../../components/Modal';
+import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { Modal } from "../../components/Modal";
 
-describe('Modal', () => {
-  it('renders nothing when closed', () => {
+describe("Modal", () => {
+  it("renders nothing when closed", () => {
     render(
       <Modal open={false} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it('renders the dialog when open', () => {
+  it("renders the dialog when open", () => {
     render(
       <Modal open={true} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it('renders the title', () => {
+  it("renders the title", () => {
     render(
       <Modal open={true} title="My Modal Title" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByText('My Modal Title')).toBeInTheDocument();
+    expect(screen.getByText("My Modal Title")).toBeInTheDocument();
   });
 
-  it('renders children', () => {
+  it("renders children", () => {
     render(
       <Modal open={true} title="Test" onClose={() => {}}>
         child content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByText('child content')).toBeInTheDocument();
+    expect(screen.getByText("child content")).toBeInTheDocument();
   });
 
   it('has aria-modal="true"', () => {
     render(
       <Modal open={true} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
   });
 
-  it('labels the dialog with the title element', () => {
+  it("labels the dialog with the title element", () => {
     render(
       <Modal open={true} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', 'modal-title');
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-labelledby", "modal-title");
   });
 
-  it('has an accessible close button', () => {
+  it("has an accessible close button", () => {
     render(
       <Modal open={true} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
   });
 
-  it('calls onClose when the close button is clicked', async () => {
+  it("calls onClose when the close button is clicked", async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     render(
       <Modal open={true} title="Test" onClose={onClose}>
         content
-      </Modal>,
+      </Modal>
     );
-    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('calls onClose when the backdrop is clicked', () => {
+  it("calls onClose when the backdrop is clicked", () => {
     const onClose = vi.fn();
     render(
       <Modal open={true} title="Test" onClose={onClose}>
         content
-      </Modal>,
+      </Modal>
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Close modal backdrop' }));
+    fireEvent.click(screen.getByRole("button", { name: "Close modal backdrop" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('does not call onClose when clicking inside the dialog', () => {
+  it("does not call onClose when clicking inside the dialog", () => {
     const onClose = vi.fn();
     render(
       <Modal open={true} title="Test" onClose={onClose}>
         content
-      </Modal>,
+      </Modal>
     );
-    fireEvent.click(screen.getByText('content'));
+    fireEvent.click(screen.getByText("content"));
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('calls onClose when the native dialog cancel event fires', () => {
+  it("calls onClose when the native dialog cancel event fires", () => {
     const onClose = vi.fn();
     render(
       <Modal open={true} title="Test" onClose={onClose}>
         content
-      </Modal>,
+      </Modal>
     );
-    const dialog = screen.getByRole('dialog');
-    fireEvent(dialog, new Event('cancel', { cancelable: true }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent(dialog, new Event("cancel", { cancelable: true }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('closes the dialog when transitioning from open to closed', () => {
+  it("closes the dialog when transitioning from open to closed", () => {
     const { rerender } = render(
       <Modal open={true} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     rerender(
       <Modal open={false} title="Test" onClose={() => {}}>
         content
-      </Modal>,
+      </Modal>
     );
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

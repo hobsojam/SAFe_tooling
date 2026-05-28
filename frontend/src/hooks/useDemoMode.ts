@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface HealthResponse {
   demo?: boolean;
@@ -10,7 +10,7 @@ export function useDemoMode(): boolean {
   useEffect(() => {
     let cancelled = false;
 
-    fetch('/api/health')
+    fetch("/api/health")
       .then((response) => response.json() as Promise<HealthResponse>)
       .then((data) => {
         if (!cancelled) setIsDemo(data.demo === true);

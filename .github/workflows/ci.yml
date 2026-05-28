@@ -148,6 +148,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Biome lint & format check
+        working-directory: frontend
+        run: npx biome ci .
+
       - name: Audit npm dependencies
         working-directory: frontend
         run: npm audit --audit-level=high

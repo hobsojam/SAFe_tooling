@@ -1,57 +1,57 @@
-import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import { api } from '../api';
-import { EmptyState } from '../components/EmptyState';
-import { Spinner } from '../components/Spinner';
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { api } from "../api";
+import { EmptyState } from "../components/EmptyState";
+import { Spinner } from "../components/Spinner";
 
-type CellVariant = 'empty' | 'not_started' | 'in_progress' | 'all_done';
+type CellVariant = "empty" | "not_started" | "in_progress" | "all_done";
 
 function getCellVariant(committed: number, done: number): CellVariant {
-  if (committed === 0) return 'empty';
-  if (done === committed) return 'all_done';
-  if (done > 0) return 'in_progress';
-  return 'not_started';
+  if (committed === 0) return "empty";
+  if (done === committed) return "all_done";
+  if (done > 0) return "in_progress";
+  return "not_started";
 }
 
 const CELL_BG: Record<CellVariant, string> = {
-  empty: '',
-  not_started: 'bg-amber-50',
-  in_progress: 'bg-blue-50',
-  all_done: 'bg-teal-50',
+  empty: "",
+  not_started: "bg-amber-50",
+  in_progress: "bg-blue-50",
+  all_done: "bg-teal-50",
 };
 
 const CELL_TEXT: Record<CellVariant, string> = {
-  empty: 'text-slate-300',
-  not_started: 'font-semibold text-amber-900',
-  in_progress: 'font-semibold text-blue-900',
-  all_done: 'font-semibold text-teal-900',
+  empty: "text-slate-300",
+  not_started: "font-semibold text-amber-900",
+  in_progress: "font-semibold text-blue-900",
+  all_done: "font-semibold text-teal-900",
 };
 
-const TH = 'px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide';
+const TH = "px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide";
 
 export function ARTSync() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
 
   const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [], isLoading: loadingIter } = useQuery({
-    queryKey: ['iterations', piId],
+    queryKey: ["iterations", piId],
     queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
-    queryKey: ['teams', pi?.art_id],
+    queryKey: ["teams", pi?.art_id],
     queryFn: () => api.listTeamsByArt(pi!.art_id),
     enabled: !!pi?.art_id,
   });
 
   const { data: stories = [], isLoading: loadingStories } = useQuery({
-    queryKey: ['stories'],
+    queryKey: ["stories"],
     queryFn: api.listStories,
   });
 
@@ -71,7 +71,7 @@ export function ARTSync() {
     if (story.iteration_id && iterIds.has(story.iteration_id)) {
       const key = `${story.team_id}:${story.iteration_id}`;
       committedMap[key] = (committedMap[key] ?? 0) + 1;
-      if (story.status === 'done' || story.status === 'accepted') {
+      if (story.status === "done" || story.status === "accepted") {
         doneMap[key] = (doneMap[key] ?? 0) + 1;
       }
     }
@@ -88,15 +88,24 @@ export function ARTSync() {
 
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-teal-100 border border-teal-200" aria-hidden="true" />
+          <span
+            className="inline-block h-3 w-3 rounded-sm bg-teal-100 border border-teal-200"
+            aria-hidden="true"
+          />
           <span>All done</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-blue-100 border border-blue-200" aria-hidden="true" />
+          <span
+            className="inline-block h-3 w-3 rounded-sm bg-blue-100 border border-blue-200"
+            aria-hidden="true"
+          />
           <span>In progress</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-amber-100 border border-amber-200" aria-hidden="true" />
+          <span
+            className="inline-block h-3 w-3 rounded-sm bg-amber-100 border border-amber-200"
+            aria-hidden="true"
+          />
           <span>Not started</span>
         </span>
       </div>
@@ -105,8 +114,8 @@ export function ARTSync() {
         <EmptyState
           message={
             nonIpIterations.length === 0
-              ? 'No iterations defined for this PI.'
-              : 'No teams found. Add teams via Team Setup first.'
+              ? "No iterations defined for this PI."
+              : "No teams found. Add teams via Team Setup first."
           }
         />
       ) : (
@@ -132,12 +141,9 @@ export function ARTSync() {
                     const done = doneMap[key] ?? 0;
                     const variant = getCellVariant(committed, done);
                     return (
-                      <td
-                        key={iter.id}
-                        className={`px-4 py-3 tabular-nums ${CELL_BG[variant]}`}
-                      >
+                      <td key={iter.id} className={`px-4 py-3 tabular-nums ${CELL_BG[variant]}`}>
                         <span className={`text-sm ${CELL_TEXT[variant]}`}>
-                          {committed === 0 ? '—' : `${done} / ${committed}`}
+                          {committed === 0 ? "—" : `${done} / ${committed}`}
                         </span>
                       </td>
                     );

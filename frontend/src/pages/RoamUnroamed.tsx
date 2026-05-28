@@ -1,13 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { api } from '../api';
-import type { Risk, RiskUpdate, ROAMStatus } from '../types';
-import { EmptyState } from '../components/EmptyState';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { api } from "../api";
+import type { Risk, RiskUpdate, ROAMStatus } from "../types";
+import { EmptyState } from "../components/EmptyState";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
 
-const ROAM_OPTIONS: ROAMStatus[] = ['owned', 'accepted', 'mitigated', 'resolved'];
+const ROAM_OPTIONS: ROAMStatus[] = ["owned", "accepted", "mitigated", "resolved"];
 
 interface RowState {
   roam_status: ROAMStatus;
@@ -16,24 +16,24 @@ interface RowState {
 }
 
 export function RoamUnroamed() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
   const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: risks = [], isLoading } = useQuery({
-    queryKey: ['risks', piId],
+    queryKey: ["risks", piId],
     queryFn: () => api.listRisks(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
+    queryKey: ["teams"],
     queryFn: api.listTeams,
   });
 
@@ -44,11 +44,19 @@ export function RoamUnroamed() {
   const updateMut = useMutation({
     mutationFn: ({ id, body }: { id: string; body: RiskUpdate }) => api.updateRisk(id, body),
     onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ['risks', piId] });
+      qc.invalidateQueries({ queryKey: ["risks", piId] });
       setSaving((p) => ({ ...p, [id]: false }));
-      setRows((p) => { const n = { ...p }; delete n[id]; return n; });
-      setErrors((p) => { const n = { ...p }; delete n[id]; return n; });
-      toast('Risk ROAMed');
+      setRows((p) => {
+        const n = { ...p };
+        delete n[id];
+        return n;
+      });
+      setErrors((p) => {
+        const n = { ...p };
+        delete n[id];
+        return n;
+      });
+      toast("Risk ROAMed");
     },
     onError: (e: Error, { id }) => {
       setSaving((p) => ({ ...p, [id]: false }));
@@ -58,15 +66,17 @@ export function RoamUnroamed() {
 
   if (isLoading) return <Spinner />;
 
-  const unroamed = risks.filter((r) => r.roam_status === 'unroamed');
+  const unroamed = risks.filter((r) => r.roam_status === "unroamed");
   const teamMap = Object.fromEntries(teams.map((t) => [t.id, t.name]));
 
   function getRow(r: Risk): RowState {
-    return rows[r.id] ?? {
-      roam_status: 'owned',
-      owner: r.owner ?? '',
-      mitigation_notes: r.mitigation_notes,
-    };
+    return (
+      rows[r.id] ?? {
+        roam_status: "owned",
+        owner: r.owner ?? "",
+        mitigation_notes: r.mitigation_notes,
+      }
+    );
   }
 
   function setField(id: string, risk: Risk, key: keyof RowState, val: string) {
@@ -99,7 +109,7 @@ export function RoamUnroamed() {
           ROAM Unroamed Risks — {pi?.name}
         </h1>
         <p className="text-sm text-slate-500">
-          {unroamed.length} risk{unroamed.length === 1 ? '' : 's'} need attention
+          {unroamed.length} risk{unroamed.length === 1 ? "" : "s"} need attention
         </p>
       </div>
 
@@ -120,55 +130,66 @@ export function RoamUnroamed() {
                 )}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div>
-                    <label htmlFor={`roam-status-${r.id}`} className="mb-1 block text-xs font-medium text-slate-600">
+                    <label
+                      htmlFor={`roam-status-${r.id}`}
+                      className="mb-1 block text-xs font-medium text-slate-600"
+                    >
                       ROAM Status
                     </label>
                     <select
                       id={`roam-status-${r.id}`}
                       value={row.roam_status}
-                      onChange={(e) => setField(r.id, r, 'roam_status', e.target.value)}
+                      onChange={(e) => setField(r.id, r, "roam_status", e.target.value)}
                       className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                     >
                       {ROAM_OPTIONS.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label htmlFor={`owner-${r.id}`} className="mb-1 block text-xs font-medium text-slate-600">Owner</label>
+                    <label
+                      htmlFor={`owner-${r.id}`}
+                      className="mb-1 block text-xs font-medium text-slate-600"
+                    >
+                      Owner
+                    </label>
                     <input
                       id={`owner-${r.id}`}
                       type="text"
                       value={row.owner}
-                      onChange={(e) => setField(r.id, r, 'owner', e.target.value)}
+                      onChange={(e) => setField(r.id, r, "owner", e.target.value)}
                       placeholder="Assign owner…"
                       className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
                   <div>
-                    <label htmlFor={`mitigation-notes-${r.id}`} className="mb-1 block text-xs font-medium text-slate-600">
+                    <label
+                      htmlFor={`mitigation-notes-${r.id}`}
+                      className="mb-1 block text-xs font-medium text-slate-600"
+                    >
                       Mitigation Notes
                     </label>
                     <input
                       id={`mitigation-notes-${r.id}`}
                       type="text"
                       value={row.mitigation_notes}
-                      onChange={(e) => setField(r.id, r, 'mitigation_notes', e.target.value)}
+                      onChange={(e) => setField(r.id, r, "mitigation_notes", e.target.value)}
                       placeholder="Notes…"
                       className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
                 </div>
                 <div className="mt-3 flex items-center gap-3">
-                  {errors[r.id] && (
-                    <span className="text-xs text-red-600">{errors[r.id]}</span>
-                  )}
+                  {errors[r.id] && <span className="text-xs text-red-600">{errors[r.id]}</span>}
                   <button
                     onClick={() => save(r)}
                     disabled={pending}
                     className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
                   >
-                    {pending ? 'Saving…' : 'ROAM this risk'}
+                    {pending ? "Saving…" : "ROAM this risk"}
                   </button>
                 </div>
               </div>

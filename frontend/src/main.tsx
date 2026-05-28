@@ -1,10 +1,10 @@
-import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { StrictMode, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import { BackendUnavailable } from './components/BackendUnavailable.tsx';
-import { isBackendUnavailable } from './utils/backendHealth.ts';
-import './index.css';
+import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StrictMode, useState } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import { BackendUnavailable } from "./components/BackendUnavailable.tsx";
+import { isBackendUnavailable } from "./utils/backendHealth.ts";
+import "./index.css";
 
 export function Root() {
   const [backendDown, setBackendDown] = useState(false);
@@ -23,7 +23,7 @@ export function Root() {
             retry: 1,
           },
         },
-      }),
+      })
   );
 
   function handleRetry() {
@@ -40,11 +40,11 @@ export function Root() {
   );
 }
 
-const container = document.getElementById('root');
+const container = document.getElementById("root");
 if (container) {
   createRoot(container).render(
     <StrictMode>
       <Root />
-    </StrictMode>,
+    </StrictMode>
   );
 }

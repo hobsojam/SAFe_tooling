@@ -1,47 +1,51 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { api } from '../api';
-import type { CapacityPlan, CapacityPlanCreate, VelocityEntry } from '../types';
-import { EmptyState } from '../components/EmptyState';
-import { Modal } from '../components/Modal';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { api } from "../api";
+import type { CapacityPlan, CapacityPlanCreate, VelocityEntry } from "../types";
+import { EmptyState } from "../components/EmptyState";
+import { Modal } from "../components/Modal";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
 
-type CapacityVariant = 'unset' | 'yellow' | 'blue' | 'red';
+type CapacityVariant = "unset" | "yellow" | "blue" | "red";
 
 function getCapacityVariant(availableCapacity: number, committedPoints: number): CapacityVariant {
-  if (availableCapacity <= 0) return committedPoints > 0 ? 'red' : 'yellow';
+  if (availableCapacity <= 0) return committedPoints > 0 ? "red" : "yellow";
   const loadPct = (committedPoints / availableCapacity) * 100;
-  if (loadPct > 100) return 'red';
-  if (loadPct >= 70) return 'blue';
-  return 'yellow';
+  if (loadPct > 100) return "red";
+  if (loadPct >= 70) return "blue";
+  return "yellow";
 }
 
-const variantStyles: Record<CapacityVariant, { button: string; primary: string; secondary: string; detail: string }> = {
+const variantStyles: Record<
+  CapacityVariant,
+  { button: string; primary: string; secondary: string; detail: string }
+> = {
   unset: {
-    button: 'border border-dashed border-slate-300 text-slate-400 hover:border-slate-400 hover:text-slate-600',
-    primary: '',
-    secondary: '',
-    detail: '',
+    button:
+      "border border-dashed border-slate-300 text-slate-400 hover:border-slate-400 hover:text-slate-600",
+    primary: "",
+    secondary: "",
+    detail: "",
   },
   yellow: {
-    button: 'bg-amber-50 hover:bg-amber-100',
-    primary: 'font-semibold text-amber-900',
-    secondary: 'text-amber-700',
-    detail: 'text-amber-600',
+    button: "bg-amber-50 hover:bg-amber-100",
+    primary: "font-semibold text-amber-900",
+    secondary: "text-amber-700",
+    detail: "text-amber-600",
   },
   blue: {
-    button: 'bg-blue-50 hover:bg-blue-100',
-    primary: 'font-semibold text-blue-900',
-    secondary: 'text-blue-700',
-    detail: 'text-blue-500',
+    button: "bg-blue-50 hover:bg-blue-100",
+    primary: "font-semibold text-blue-900",
+    secondary: "text-blue-700",
+    detail: "text-blue-500",
   },
   red: {
-    button: 'bg-red-50 hover:bg-red-100',
-    primary: 'font-semibold text-red-900',
-    secondary: 'text-red-700',
-    detail: 'text-red-500',
+    button: "bg-red-50 hover:bg-red-100",
+    primary: "font-semibold text-red-900",
+    secondary: "text-red-700",
+    detail: "text-red-500",
   },
 };
 
@@ -65,45 +69,52 @@ function countWeekdays(startDate: string, endDate: string): number {
 }
 
 export function Capacity() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
   const qc = useQueryClient();
   const toast = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{ teamId: string; iterationId: string } | null>(null);
-  const [form, setForm] = useState<CapacityFormState>({ team_size: 0, iteration_days: 0, pto_days: 0, overhead_pct: 20 });
-  const [error, setError] = useState('');
+  const [selectedCell, setSelectedCell] = useState<{ teamId: string; iterationId: string } | null>(
+    null
+  );
+  const [form, setForm] = useState<CapacityFormState>({
+    team_size: 0,
+    iteration_days: 0,
+    pto_days: 0,
+    overhead_pct: 20,
+  });
+  const [error, setError] = useState("");
 
   const { data: pi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
-    queryKey: ['iterations', piId],
+    queryKey: ["iterations", piId],
     queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
+    queryKey: ["teams"],
     queryFn: api.listTeams,
   });
 
   const { data: plans = [], isLoading } = useQuery({
-    queryKey: ['capacity-plans', piId],
+    queryKey: ["capacity-plans", piId],
     queryFn: () => api.listCapacityPlans(piId),
     enabled: !!piId,
   });
 
   const { data: stories = [] } = useQuery({
-    queryKey: ['stories'],
+    queryKey: ["stories"],
     queryFn: api.listStories,
   });
 
   const { data: velocityEntries = [] } = useQuery<VelocityEntry[]>({
-    queryKey: ['velocity', piId],
+    queryKey: ["velocity", piId],
     queryFn: () => api.listVelocity(piId),
     enabled: !!piId,
   });
@@ -111,9 +122,9 @@ export function Capacity() {
   const upsertMut = useMutation({
     mutationFn: (body: CapacityPlanCreate) => api.upsertCapacityPlan(body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['capacity-plans', piId] });
+      qc.invalidateQueries({ queryKey: ["capacity-plans", piId] });
       closeModal();
-      toast('Capacity plan saved');
+      toast("Capacity plan saved");
     },
     onError: (e: Error) => setError(e.message),
   });
@@ -125,7 +136,9 @@ export function Capacity() {
   const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
 
   const planMap: Record<string, CapacityPlan> = {};
-  plans.forEach((p) => { planMap[`${p.team_id}:${p.iteration_id}`] = p; });
+  plans.forEach((p) => {
+    planMap[`${p.team_id}:${p.iteration_id}`] = p;
+  });
 
   const iterIds = new Set(nonIpIterations.map((it) => it.id));
   const storyPts: Record<string, number> = {};
@@ -148,9 +161,9 @@ export function Capacity() {
   useEffect(() => {
     if (isLoading || !piId || autoSeededRef.current === piId) return;
     autoSeededRef.current = piId;
-    api.seedCapacityPlans(piId).then(() =>
-      qc.invalidateQueries({ queryKey: ['capacity-plans', piId] })
-    );
+    api
+      .seedCapacityPlans(piId)
+      .then(() => qc.invalidateQueries({ queryKey: ["capacity-plans", piId] }));
   }, [isLoading, piId, qc]);
 
   function openCell(teamId: string, iterationId: string) {
@@ -160,18 +173,19 @@ export function Capacity() {
     setSelectedCell({ teamId, iterationId });
     setForm({
       team_size: existing?.team_size ?? team?.member_count ?? 6,
-      iteration_days: existing?.iteration_days ?? (iter ? countWeekdays(iter.start_date, iter.end_date) : 10),
+      iteration_days:
+        existing?.iteration_days ?? (iter ? countWeekdays(iter.start_date, iter.end_date) : 10),
       pto_days: existing?.pto_days ?? 0,
       overhead_pct: existing ? Math.round(existing.overhead_pct * 100) : 20,
     });
-    setError('');
+    setError("");
     setModalOpen(true);
   }
 
   function closeModal() {
     setModalOpen(false);
     setSelectedCell(null);
-    setError('');
+    setError("");
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -191,7 +205,9 @@ export function Capacity() {
   if (isLoading) return <Spinner />;
 
   const selectedTeam = selectedCell ? sortedTeams.find((t) => t.id === selectedCell.teamId) : null;
-  const selectedIter = selectedCell ? nonIpIterations.find((it) => it.id === selectedCell.iterationId) : null;
+  const selectedIter = selectedCell
+    ? nonIpIterations.find((it) => it.id === selectedCell.iterationId)
+    : null;
 
   const totalSet = plans.length;
   const totalCells = nonIpIterations.length * sortedTeams.length;
@@ -201,7 +217,7 @@ export function Capacity() {
       <div className="mb-5">
         <h1 className="mb-1 text-xl font-semibold text-slate-800">Capacity — {pi?.name}</h1>
         <p className="text-sm text-slate-500">
-          Available person-days per team per iteration.{' '}
+          Available person-days per team per iteration.{" "}
           {totalCells > 0 && `${totalSet} of ${totalCells} cells set. `}
           Click a cell to set or update.
         </p>
@@ -209,15 +225,24 @@ export function Capacity() {
 
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-amber-100 border border-amber-200" aria-hidden="true" />
+          <span
+            className="inline-block h-3 w-3 rounded-sm bg-amber-100 border border-amber-200"
+            aria-hidden="true"
+          />
           <span>Under-loaded (&lt;70%)</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-blue-100 border border-blue-200" aria-hidden="true" />
+          <span
+            className="inline-block h-3 w-3 rounded-sm bg-blue-100 border border-blue-200"
+            aria-hidden="true"
+          />
           <span>Suitably planned (70–100%)</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-200" aria-hidden="true" />
+          <span
+            className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-200"
+            aria-hidden="true"
+          />
           <span>Over capacity (&gt;100%)</span>
         </span>
       </div>
@@ -226,8 +251,8 @@ export function Capacity() {
         <EmptyState
           message={
             nonIpIterations.length === 0
-              ? 'No iterations defined for this PI.'
-              : 'No teams found. Add teams via Team Setup first.'
+              ? "No iterations defined for this PI."
+              : "No teams found. Add teams via Team Setup first."
           }
         />
       ) : (
@@ -239,7 +264,10 @@ export function Capacity() {
                   Iteration
                 </th>
                 {sortedTeams.map((t) => (
-                  <th key={t.id} className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  <th
+                    key={t.id}
+                    className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide"
+                  >
                     {t.name}
                   </th>
                 ))}
@@ -258,7 +286,9 @@ export function Capacity() {
                     const plan = planMap[`${team.id}:${iter.id}`];
                     const committed = storyPts[`${team.id}:${iter.id}`] ?? 0;
                     const done = donePts[`${team.id}:${iter.id}`] ?? 0;
-                    const variant = plan ? getCapacityVariant(plan.available_capacity, committed) : 'unset';
+                    const variant = plan
+                      ? getCapacityVariant(plan.available_capacity, committed)
+                      : "unset";
                     const vs = variantStyles[variant];
                     const loadPct =
                       plan && plan.available_capacity > 0
@@ -275,7 +305,8 @@ export function Capacity() {
                               <span className={vs.primary}>{plan.available_capacity}</span>
                               <span className={vs.secondary}> days</span>
                               <div className={`text-xs ${vs.detail}`}>
-                                {plan.team_size} ppl · {plan.pto_days}d PTO · {Math.round(plan.overhead_pct * 100)}% OH
+                                {plan.team_size} ppl · {plan.pto_days}d PTO ·{" "}
+                                {Math.round(plan.overhead_pct * 100)}% OH
                               </div>
                             </>
                           ) : (
@@ -288,9 +319,7 @@ export function Capacity() {
                             </div>
                           )}
                           {done > 0 && (
-                            <div className="mt-0.5 text-xs text-teal-700">
-                              {done} pts done
-                            </div>
+                            <div className="mt-0.5 text-xs text-teal-700">{done} pts done</div>
                           )}
                         </button>
                       </td>
@@ -305,7 +334,7 @@ export function Capacity() {
 
       <Modal
         open={modalOpen}
-        title={`Capacity: ${selectedTeam?.name ?? '…'} — Iteration ${selectedIter?.number ?? '…'}`}
+        title={`Capacity: ${selectedTeam?.name ?? "…"} — Iteration ${selectedIter?.number ?? "…"}`}
         onClose={closeModal}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -313,7 +342,10 @@ export function Capacity() {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="cap-team-size" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="cap-team-size"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
                 Team Size
               </label>
               <input
@@ -326,7 +358,10 @@ export function Capacity() {
               />
             </div>
             <div>
-              <label htmlFor="cap-iter-days" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="cap-iter-days"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
                 Iteration Days
               </label>
               <input
@@ -353,7 +388,10 @@ export function Capacity() {
               />
             </div>
             <div>
-              <label htmlFor="cap-overhead" className="mb-1 block text-sm font-medium text-slate-700">
+              <label
+                htmlFor="cap-overhead"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
                 Overhead %
               </label>
               <input
@@ -370,13 +408,13 @@ export function Capacity() {
 
           {form.team_size > 0 && form.iteration_days > 0 && (
             <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              Available:{' '}
+              Available:{" "}
               <strong>
                 {(
                   (form.team_size * form.iteration_days - form.pto_days) *
                   (1 - form.overhead_pct / 100)
                 ).toFixed(2)}
-              </strong>{' '}
+              </strong>{" "}
               person-days
             </p>
           )}
@@ -394,7 +432,7 @@ export function Capacity() {
               disabled={upsertMut.isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {upsertMut.isPending ? 'Saving…' : 'Set Capacity'}
+              {upsertMut.isPending ? "Saving…" : "Set Capacity"}
             </button>
           </div>
         </form>

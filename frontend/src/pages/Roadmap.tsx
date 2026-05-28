@@ -1,24 +1,24 @@
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { api } from '../api';
-import { FeatureStatusBadge } from '../components/Badge';
-import { EmptyState } from '../components/EmptyState';
-import { Spinner } from '../components/Spinner';
-import type { Feature, PI, Team } from '../types';
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { api } from "../api";
+import { FeatureStatusBadge } from "../components/Badge";
+import { EmptyState } from "../components/EmptyState";
+import { Spinner } from "../components/Spinner";
+import type { Feature, PI, Team } from "../types";
 
 export function Roadmap() {
   const { data: pis = [], isLoading: pisLoading } = useQuery({
-    queryKey: ['pis'],
+    queryKey: ["pis"],
     queryFn: api.listPIs,
   });
 
   const { data: allFeatures = [], isLoading: featuresLoading } = useQuery({
-    queryKey: ['features'],
+    queryKey: ["features"],
     queryFn: api.listAllFeatures,
   });
 
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ['teams'],
+    queryKey: ["teams"],
     queryFn: api.listTeams,
   });
 
@@ -41,8 +41,8 @@ export function Roadmap() {
 
   const featureGrid: Record<string, Record<string, Feature[]>> = {};
   for (const feature of allFeatures) {
-    const rowKey = feature.team_id ?? 'unassigned';
-    const colKey = feature.pi_id ?? 'unscheduled';
+    const rowKey = feature.team_id ?? "unassigned";
+    const colKey = feature.pi_id ?? "unscheduled";
     if (!featureGrid[rowKey]) featureGrid[rowKey] = {};
     if (!featureGrid[rowKey][colKey]) featureGrid[rowKey][colKey] = [];
     featureGrid[rowKey][colKey].push(feature);
@@ -50,12 +50,12 @@ export function Roadmap() {
 
   const columns: Array<{ key: string; pi?: PI }> = [
     ...sortedPIs.map((pi) => ({ key: pi.id, pi })),
-    ...(hasUnscheduled ? [{ key: 'unscheduled' as const }] : []),
+    ...(hasUnscheduled ? [{ key: "unscheduled" as const }] : []),
   ];
 
   const rows: Array<{ key: string; team?: Team }> = [
     ...teamsWithFeatures.map((t) => ({ key: t.id, team: t })),
-    ...(hasUnassigned ? [{ key: 'unassigned' as const }] : []),
+    ...(hasUnassigned ? [{ key: "unassigned" as const }] : []),
   ];
 
   if (rows.length === 0) {
@@ -73,7 +73,7 @@ export function Roadmap() {
       <h1 className="mb-1 text-xl font-semibold text-slate-800">PI Roadmap</h1>
       <p className="mb-5 text-sm text-slate-500">
         Feature timeline across {sortedPIs.length} Program Increment
-        {sortedPIs.length === 1 ? '' : 's'}
+        {sortedPIs.length === 1 ? "" : "s"}
       </p>
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -114,11 +114,7 @@ export function Roadmap() {
             {rows.map(({ key: rowKey, team }) => (
               <tr key={rowKey} className="hover:bg-slate-50/50">
                 <td className="sticky left-0 z-10 bg-white px-4 py-3 font-medium text-slate-700 border-r border-slate-200 align-top">
-                  {team ? (
-                    team.name
-                  ) : (
-                    <span className="italic text-slate-400">Unassigned</span>
-                  )}
+                  {team ? team.name : <span className="italic text-slate-400">Unassigned</span>}
                 </td>
                 {columns.map(({ key: colKey, pi }) => {
                   const features = featureGrid[rowKey]?.[colKey] ?? [];

@@ -4,11 +4,11 @@ interface PaginationProps {
   readonly onPageChange: (page: number) => void;
 }
 
-function pageRange(current: number, total: number): (number | 'e1' | 'e2')[] {
+function pageRange(current: number, total: number): (number | "e1" | "e2")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, 'e1', total];
-  if (current >= total - 3) return [1, 'e1', total - 4, total - 3, total - 2, total - 1, total];
-  return [1, 'e1', current - 1, current, current + 1, 'e2', total];
+  if (current <= 4) return [1, 2, 3, 4, 5, "e1", total];
+  if (current >= total - 3) return [1, "e1", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "e1", current - 1, current, current + 1, "e2", total];
 }
 
 export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
@@ -28,7 +28,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
           ← Prev
         </button>
         {pageRange(page, totalPages).map((p) =>
-          typeof p === 'string' ? (
+          typeof p === "string" ? (
             <span key={p} className="px-1.5 text-sm text-slate-400">
               …
             </span>
@@ -37,9 +37,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
               key={p}
               onClick={() => onPageChange(p)}
               className={`rounded px-2.5 py-1 text-sm transition-colors ${
-                p === page
-                  ? 'bg-slate-800 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
+                p === page ? "bg-slate-800 text-white" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               {p}

@@ -6,18 +6,18 @@ import {
   useDroppable,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import html2canvas from 'html2canvas';
-import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import { api } from '../api';
-import { DepBadge, FeatureStatusBadge, TopologyBadge } from '../components/Badge';
-import { EmptyState } from '../components/EmptyState';
-import { Spinner } from '../components/Spinner';
-import { useToast } from '../components/Toaster';
-import type { Dependency, Feature, Team } from '../types';
+} from "@dnd-kit/core";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import html2canvas from "html2canvas";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { api } from "../api";
+import { DepBadge, FeatureStatusBadge, TopologyBadge } from "../components/Badge";
+import { EmptyState } from "../components/EmptyState";
+import { Spinner } from "../components/Spinner";
+import { useToast } from "../components/Toaster";
+import type { Dependency, Feature, Team } from "../types";
 
 type BoardGrid = Record<string, Record<string, Feature[]>>;
 
@@ -34,7 +34,7 @@ export function buildBoard(features: Feature[]): BoardGrid {
   const grid: BoardGrid = {};
   for (const feature of features) {
     if (!feature.team_id) continue;
-    const key = feature.iteration_id ?? 'unplanned';
+    const key = feature.iteration_id ?? "unplanned";
     if (!grid[feature.team_id]) grid[feature.team_id] = {};
     if (!grid[feature.team_id][key]) grid[feature.team_id][key] = [];
     grid[feature.team_id][key].push(feature);
@@ -44,10 +44,10 @@ export function buildBoard(features: Feature[]): BoardGrid {
 
 function FeatureCard({ feature, atRisk }: Readonly<{ feature: Feature; atRisk?: boolean }>) {
   const cardCls = atRisk
-    ? 'rounded border border-red-300 bg-red-50 px-2 py-1.5 shadow-sm'
-    : 'rounded border border-slate-200 bg-white px-2 py-1.5 shadow-sm';
+    ? "rounded border border-red-300 bg-red-50 px-2 py-1.5 shadow-sm"
+    : "rounded border border-slate-200 bg-white px-2 py-1.5 shadow-sm";
   return (
-    <div className={cardCls} data-at-risk={atRisk ? 'true' : undefined}>
+    <div className={cardCls} data-at-risk={atRisk ? "true" : undefined}>
       <p className="text-xs font-medium text-slate-800 leading-snug">{feature.name}</p>
       <div className="mt-1 flex items-center gap-1.5">
         <FeatureStatusBadge status={feature.status} />
@@ -57,7 +57,10 @@ function FeatureCard({ feature, atRisk }: Readonly<{ feature: Feature; atRisk?: 
   );
 }
 
-function DraggableFeatureCard({ feature, atRisk }: Readonly<{ feature: Feature; atRisk?: boolean }>) {
+function DraggableFeatureCard({
+  feature,
+  atRisk,
+}: Readonly<{ feature: Feature; atRisk?: boolean }>) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: feature.id,
     data: { feature },
@@ -72,7 +75,7 @@ function DraggableFeatureCard({ feature, atRisk }: Readonly<{ feature: Feature; 
       data-feature-id={feature.id}
       {...attributes}
       {...listeners}
-      className={isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-grab'}
+      className={isDragging ? "opacity-50 cursor-grabbing" : "cursor-grab"}
     >
       <FeatureCard feature={feature} atRisk={atRisk} />
     </div>
@@ -81,7 +84,7 @@ function DraggableFeatureCard({ feature, atRisk }: Readonly<{ feature: Feature; 
 
 function DroppableCell({ id, children }: Readonly<{ id: string; children: React.ReactNode }>) {
   const { setNodeRef, isOver } = useDroppable({ id });
-  const overCls = isOver ? ' bg-blue-50' : '';
+  const overCls = isOver ? " bg-blue-50" : "";
   return (
     <div
       ref={setNodeRef}
@@ -93,13 +96,10 @@ function DroppableCell({ id, children }: Readonly<{ id: string; children: React.
 }
 
 function UnassignedDropZone({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'unassigned' });
-  const overCls = isOver ? ' bg-blue-50 ring-2 ring-blue-200' : '';
+  const { setNodeRef, isOver } = useDroppable({ id: "unassigned" });
+  const overCls = isOver ? " bg-blue-50 ring-2 ring-blue-200" : "";
   return (
-    <div
-      ref={setNodeRef}
-      className={`min-h-[3rem] rounded-md transition-colors${overCls}`}
-    >
+    <div ref={setNodeRef} className={`min-h-[3rem] rounded-md transition-colors${overCls}`}>
       {children}
     </div>
   );
@@ -116,15 +116,15 @@ export function crossTeamOnly(deps: Dependency[], features: Feature[]): Dependen
 export function buildDepLabel(
   feature: Feature | undefined,
   teamMap: Record<string, { name: string }>,
-  fallback: string,
+  fallback: string
 ): string {
   if (!feature) return fallback;
-  const teamName = feature.team_id ? (teamMap[feature.team_id]?.name ?? '') : '';
+  const teamName = feature.team_id ? (teamMap[feature.team_id]?.name ?? "") : "";
   return teamName ? `${feature.name} (${teamName})` : feature.name;
 }
 
 function iterNumForKey(key: string | undefined, iterMap: Record<string, number>): number | null {
-  if (!key || key === 'unplanned') return null;
+  if (!key || key === "unplanned") return null;
   return iterMap[key] ?? null;
 }
 
@@ -133,7 +133,14 @@ export function DependencyArrows({ arrows }: Readonly<{ arrows: Arrow[] }>) {
   return (
     <svg
       aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        overflow: "visible",
+      }}
     >
       <defs>
         <marker id="dep-arrow" markerWidth="6" markerHeight="4" refX="5.5" refY="2" orient="auto">
@@ -154,7 +161,7 @@ export function DependencyArrows({ arrows }: Readonly<{ arrows: Arrow[] }>) {
             strokeWidth="2"
             fill="none"
             opacity={a.resolved ? 0.35 : 0.85}
-            strokeDasharray={a.resolved ? '5 3' : undefined}
+            strokeDasharray={a.resolved ? "5 3" : undefined}
             markerEnd="url(#dep-arrow)"
           />
         );
@@ -172,7 +179,14 @@ interface TeamBoardRowProps {
   atRiskFeatureIds: ReadonlySet<string>;
 }
 
-function TeamBoardRow({ teamId, teamGrid, iterCols, rowBg, teamMap, atRiskFeatureIds }: Readonly<TeamBoardRowProps>) {
+function TeamBoardRow({
+  teamId,
+  teamGrid,
+  iterCols,
+  rowBg,
+  teamMap,
+  atRiskFeatureIds,
+}: Readonly<TeamBoardRowProps>) {
   return (
     <Fragment>
       <div className={`border-b border-r border-slate-100 px-3 py-2 flex flex-col gap-1 ${rowBg}`}>
@@ -201,7 +215,7 @@ function TeamBoardRow({ teamId, teamGrid, iterCols, rowBg, teamMap, atRiskFeatur
         className={`border-b border-slate-100 ${rowBg}`}
       >
         <DroppableCell id={`${teamId}|unplanned`}>
-          {(teamGrid['unplanned'] ?? []).map((f) => (
+          {(teamGrid["unplanned"] ?? []).map((f) => (
             <DraggableFeatureCard key={f.id} feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
           ))}
         </DroppableCell>
@@ -211,7 +225,7 @@ function TeamBoardRow({ teamId, teamGrid, iterCols, rowBg, teamMap, atRiskFeatur
 }
 
 export function Board() {
-  const { piId = '' } = useParams<{ piId: string }>();
+  const { piId = "" } = useParams<{ piId: string }>();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [activeFeature, setActiveFeature] = useState<Feature | null>(null);
@@ -223,30 +237,30 @@ export function Board() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const { data: pi, isLoading: loadingPi } = useQuery({
-    queryKey: ['pi', piId],
+    queryKey: ["pi", piId],
     queryFn: () => api.getPI(piId),
     enabled: !!piId,
   });
 
   const { data: iterations = [] } = useQuery({
-    queryKey: ['iterations', piId],
+    queryKey: ["iterations", piId],
     queryFn: () => api.listIterations(piId),
     enabled: !!piId,
   });
 
   const { data: features = [], isLoading: loadingFeatures } = useQuery({
-    queryKey: ['features', piId],
+    queryKey: ["features", piId],
     queryFn: () => api.listFeatures(piId),
     enabled: !!piId,
   });
 
   const { data: teams = [], isLoading: loadingTeams } = useQuery({
-    queryKey: ['teams'],
+    queryKey: ["teams"],
     queryFn: api.listTeams,
   });
 
   const { data: deps = [] } = useQuery({
-    queryKey: ['dependencies', piId],
+    queryKey: ["dependencies", piId],
     queryFn: () => api.listDependencies(piId),
     enabled: !!piId,
   });
@@ -267,11 +281,11 @@ export function Board() {
 
     const featureIterKey: Record<string, string> = {};
     for (const f of features) {
-      featureIterKey[f.id] = f.iteration_id ?? 'unplanned';
+      featureIterKey[f.id] = f.iteration_id ?? "unplanned";
     }
 
     for (const d of deps) {
-      if (d.status === 'resolved') continue;
+      if (d.status === "resolved") continue;
       // from = consumer (has the dependency), to = provider (must fulfil it first)
       const fromNum = iterNumForKey(featureIterKey[d.from_feature_id], iterNum);
       const toNum = iterNumForKey(featureIterKey[d.to_feature_id], iterNum);
@@ -291,7 +305,9 @@ export function Board() {
     const cr = container.getBoundingClientRect();
     const measured: Arrow[] = [];
     for (const dep of ctDeps) {
-      const fromEl = container.querySelector<HTMLElement>(`[data-feature-id="${dep.from_feature_id}"]`);
+      const fromEl = container.querySelector<HTMLElement>(
+        `[data-feature-id="${dep.from_feature_id}"]`
+      );
       const toEl = container.querySelector<HTMLElement>(`[data-feature-id="${dep.to_feature_id}"]`);
       if (!fromEl || !toEl) continue;
       const fr = fromEl.getBoundingClientRect();
@@ -302,7 +318,7 @@ export function Board() {
         y1: tr.top + tr.height / 2 - cr.top,
         x2: fr.left - cr.left,
         y2: fr.top + fr.height / 2 - cr.top,
-        resolved: dep.status === 'resolved',
+        resolved: dep.status === "resolved",
       });
     }
     setArrows(measured);
@@ -328,12 +344,19 @@ export function Board() {
   }, [measureArrows, boardReady]);
 
   const moveMutation = useMutation({
-    mutationFn: ({ featureId, teamId, iterationId }: { featureId: string; teamId: string | null; iterationId: string | null }) =>
-      api.updateFeature(featureId, { team_id: teamId, iteration_id: iterationId }),
+    mutationFn: ({
+      featureId,
+      teamId,
+      iterationId,
+    }: {
+      featureId: string;
+      teamId: string | null;
+      iterationId: string | null;
+    }) => api.updateFeature(featureId, { team_id: teamId, iteration_id: iterationId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['features', piId] });
+      queryClient.invalidateQueries({ queryKey: ["features", piId] });
     },
-    onError: (e: Error) => toast(e.message, 'error'),
+    onError: (e: Error) => toast(e.message, "error"),
   });
 
   function handleDragStart(event: DragStartEvent) {
@@ -348,15 +371,15 @@ export function Board() {
     const overId = event.over.id as string;
     const feature = (event.active.data.current as { feature: Feature }).feature;
 
-    if (overId === 'unassigned') {
+    if (overId === "unassigned") {
       if (!feature.team_id) return;
       moveMutation.mutate({ featureId: feature.id, teamId: null, iterationId: null });
       return;
     }
 
-    const [newTeamId, newIterColId] = overId.split('|');
-    const newIterationId = newIterColId === 'unplanned' ? null : newIterColId;
-    const currentIterColId = feature.iteration_id ?? 'unplanned';
+    const [newTeamId, newIterColId] = overId.split("|");
+    const newIterationId = newIterColId === "unplanned" ? null : newIterColId;
+    const currentIterColId = feature.iteration_id ?? "unplanned";
 
     if (feature.team_id === newTeamId && currentIterColId === newIterColId) return;
 
@@ -372,9 +395,13 @@ export function Board() {
         useCORS: true,
         logging: false,
       });
-      const url = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      const piSlug = pi?.name?.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() ?? 'board';
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      const piSlug =
+        pi?.name
+          ?.replace(/[^a-z0-9]+/gi, "-")
+          .replace(/^-|-$/g, "")
+          .toLowerCase() ?? "board";
       const date = new Date().toISOString().slice(0, 10);
       a.download = `program-board-${piSlug}-${date}.png`;
       a.href = url;
@@ -402,7 +429,7 @@ export function Board() {
 
   const iterCols = sortedIters.map((i) => ({
     id: i.id,
-    label: `I${i.number}${i.is_ip ? ' (IP)' : ''}`,
+    label: `I${i.number}${i.is_ip ? " (IP)" : ""}`,
   }));
 
   const numCols = iterCols.length + 1; // +1 for Unplanned
@@ -412,20 +439,20 @@ export function Board() {
     <div className="p-3 sm:p-6">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h1 className="mb-1 text-xl font-semibold text-slate-800">
-            Program Board — {pi?.name}
-          </h1>
+          <h1 className="mb-1 text-xl font-semibold text-slate-800">Program Board — {pi?.name}</h1>
           <p className="text-sm text-slate-500">
             Drag features between cells to reassign team and iteration
           </p>
         </div>
         <button
           type="button"
-          onClick={() => { void handleExportImage(); }}
+          onClick={() => {
+            void handleExportImage();
+          }}
           disabled={exporting}
           className="shrink-0 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {exporting ? 'Exporting…' : 'Download Image'}
+          {exporting ? "Exporting…" : "Download Image"}
         </button>
       </div>
 
@@ -434,73 +461,75 @@ export function Board() {
         data-export-target="board-grid"
         className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm"
       >
-        <div ref={boardRef} style={{ position: 'relative' }}>
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div style={{ display: 'grid', gridTemplateColumns }}>
-            {/* Header row */}
-            <div className="border-b border-r border-slate-200 bg-slate-50 px-3 py-2.5">
-              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Team</span>
-            </div>
-            {iterCols.map((c) => (
-              <div
-                key={c.id}
-                className="border-b border-r border-slate-200 bg-slate-50 px-3 py-2.5"
-              >
+        <div ref={boardRef} style={{ position: "relative" }}>
+          <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <div style={{ display: "grid", gridTemplateColumns }}>
+              {/* Header row */}
+              <div className="border-b border-r border-slate-200 bg-slate-50 px-3 py-2.5">
                 <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  {c.label}
+                  Team
                 </span>
               </div>
-            ))}
-            <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Unplanned
-              </span>
+              {iterCols.map((c) => (
+                <div
+                  key={c.id}
+                  className="border-b border-r border-slate-200 bg-slate-50 px-3 py-2.5"
+                >
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                    {c.label}
+                  </span>
+                </div>
+              ))}
+              <div className="border-b border-slate-200 bg-slate-50 px-3 py-2.5">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Unplanned
+                </span>
+              </div>
+
+              {/* Team rows */}
+              {teamIds.map((teamId, rowIdx) => (
+                <TeamBoardRow
+                  key={teamId}
+                  teamId={teamId}
+                  teamGrid={grid[teamId] ?? {}}
+                  iterCols={iterCols}
+                  rowBg={rowIdx % 2 === 0 ? "" : "bg-slate-50/60"}
+                  teamMap={teamMap}
+                  atRiskFeatureIds={atRiskFeatureIds}
+                />
+              ))}
             </div>
 
-            {/* Team rows */}
-            {teamIds.map((teamId, rowIdx) => (
-              <TeamBoardRow
-                key={teamId}
-                teamId={teamId}
-                teamGrid={grid[teamId] ?? {}}
-                iterCols={iterCols}
-                rowBg={rowIdx % 2 === 0 ? '' : 'bg-slate-50/60'}
-                teamMap={teamMap}
-                atRiskFeatureIds={atRiskFeatureIds}
-              />
-            ))}
-          </div>
+            <div className="border-t border-slate-200 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Unassigned ({unassignedFeatures.length})
+              </p>
+              <UnassignedDropZone>
+                {unassignedFeatures.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 p-1">
+                    {unassignedFeatures.map((f) => (
+                      <div key={f.id} className="w-44">
+                        <DraggableFeatureCard feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="p-1 text-xs italic text-slate-400">
+                    No unassigned features — drop a feature here to remove its team assignment
+                  </p>
+                )}
+              </UnassignedDropZone>
+            </div>
 
-          <div className="border-t border-slate-200 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Unassigned ({unassignedFeatures.length})
-            </p>
-            <UnassignedDropZone>
-              {unassignedFeatures.length > 0 ? (
-                <div className="flex flex-wrap gap-2 p-1">
-                  {unassignedFeatures.map((f) => (
-                    <div key={f.id} className="w-44">
-                      <DraggableFeatureCard feature={f} atRisk={atRiskFeatureIds.has(f.id)} />
-                    </div>
-                  ))}
+            <DragOverlay>
+              {activeFeature ? (
+                <div className="opacity-90 shadow-lg">
+                  <FeatureCard feature={activeFeature} />
                 </div>
-              ) : (
-                <p className="p-1 text-xs italic text-slate-400">
-                  No unassigned features — drop a feature here to remove its team assignment
-                </p>
-              )}
-            </UnassignedDropZone>
-          </div>
-
-          <DragOverlay>
-            {activeFeature ? (
-              <div className="opacity-90 shadow-lg">
-                <FeatureCard feature={activeFeature} />
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-        <DependencyArrows arrows={arrows} />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+          <DependencyArrows arrows={arrows} />
         </div>
       </div>
 
@@ -514,7 +543,7 @@ export function Board() {
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  {['From', 'To', 'Description', 'Status', 'Owner'].map((h) => (
+                  {["From", "To", "Description", "Status", "Owner"].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide"
@@ -538,7 +567,7 @@ export function Board() {
                       <td className="px-4 py-2.5">
                         <DepBadge status={d.status} />
                       </td>
-                      <td className="px-4 py-2.5 text-slate-500">{d.owner ?? '—'}</td>
+                      <td className="px-4 py-2.5 text-slate-500">{d.owner ?? "—"}</td>
                     </tr>
                   );
                 })}
