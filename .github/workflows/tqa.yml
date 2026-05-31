@@ -35,10 +35,12 @@ jobs:
         run: pytest --cov=safe --cov-report=xml
 
       - name: Run Python mutation tests
+        id: mutmut
         run: mutmut run --no-progress
         continue-on-error: true
 
       - name: Export mutmut JUnit XML
+        if: steps.mutmut.outcome == 'success'
         run: mutmut junitxml > mutmut.xml
 
       # ── Frontend ──────────────────────────────────────────────────────────
@@ -57,18 +59,31 @@ jobs:
         run: npm run test:run
 
       - name: Run frontend mutation tests
+        id: stryker
         working-directory: frontend
         run: npm run stryker
         continue-on-error: true
 
       # ── TQA ───────────────────────────────────────────────────────────────
-      # --format sonarcloud writes sonar-generic-issues.json (surviving mutants
-      # as SonarCloud external issues) and prints the markdown summary to stdout.
-      # Appending stdout to $GITHUB_STEP_SUMMARY makes the report visible on the
-      # Actions run page without needing a PR to comment on.
+      # Build a runtime config that only includes mutation sources when the
+      # artifact files were actually produced.  If mutations failed or were
+      # skipped, TQA still analyses coverage without reporting misleading
+      # zero-survivor mutation data.
+      - name: Generate runtime TQA config
+        run: |
+          {
+            echo '[components.python]'
+            echo 'cobertura = "coverage.xml"'
+            [ -f mutmut.xml ] && echo 'mutmut = "mutmut.xml"'
+            echo ''
+            echo '[components.frontend]'
+            echo 'lcov = "frontend/coverage/lcov.info"'
+            [ -f frontend/reports/mutation/mutation.json ] && echo 'stryker = "frontend/reports/mutation/mutation.json"'
+          } > tqa-runtime.toml
+
       - name: Analyse with TQA
         id: tqa
-        run: tqa analyze --config tqa.toml --format sonarcloud >> $GITHUB_STEP_SUMMARY
+        run: tqa analyze --config tqa-runtime.toml --format sonarcloud >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
 
       # ── SonarCloud ────────────────────────────────────────────────────────
