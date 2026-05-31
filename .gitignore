@@ -30,10 +30,10 @@ env/
 .vscode/
 .idea/
 
-# Claude Code — ignore local settings but track shared project commands and agents
+# Claude Code — ignore everything except committed project agents
 .claude/*
-!.claude/commands
-!.claude/agents
+!.claude/agents/python-backend.md
+!.claude/agents/typescript-frontend.md
 .mcp.json
 
 # Tool data (stored outside repo at ~/.safe_tooling/)
