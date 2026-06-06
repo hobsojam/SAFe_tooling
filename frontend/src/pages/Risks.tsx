@@ -133,7 +133,13 @@ export function Risks() {
     if (editing) {
       updateMut.mutate({
         id: editing.id,
-        body: { ...form, team_id: form.team_id || null, owner: form.owner || null },
+        body: {
+          description: form.description,
+          team_id: form.team_id || null,
+          roam_status: form.roam_status,
+          owner: form.owner || null,
+          ...(form.mitigation_notes !== "" && { mitigation_notes: form.mitigation_notes }),
+        },
       });
     } else {
       createMut.mutate({
