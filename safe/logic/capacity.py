@@ -15,7 +15,7 @@ def available_capacity(
     if not 0 <= overhead_pct <= 1:
         raise ValueError("overhead_pct must be between 0 and 1")
     raw = (team_size * iteration_days) - pto_days
-    return round(raw * (1 - overhead_pct), 1)
+    return round(max(0.0, raw) * (1 - overhead_pct), 1)
 
 
 def load_percentage(committed: float, capacity: float) -> float:
