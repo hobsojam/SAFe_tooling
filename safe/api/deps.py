@@ -82,9 +82,12 @@ async def lifespan(app):
 def get_repos_dep() -> Generator[Repos, None, None]:
     # TinyDB is not thread-safe. Hold _db_lock for the duration of each request
     # so concurrent FastAPI worker threads never touch the JSON file simultaneously.
-    if _db is None:
-        raise RuntimeError("Database not initialised — lifespan not running")
+    # The None-check and Repos construction must both happen inside the lock so
+    # that lifespan() cannot set _db = None between the check and the lock
+    # acquisition (TOCTOU race during graceful shutdown).
     with _db_lock:
+        if _db is None:
+            raise RuntimeError("Database not initialised — lifespan not running")
         yield Repos(_db)
 
 
