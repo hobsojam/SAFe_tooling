@@ -26,6 +26,12 @@ class Iteration(SAFeBaseModel):
             self.name = "IP Iteration" if self.is_ip else f"Iteration {self.number}"
         return self
 
+    @model_validator(mode="after")
+    def end_date_not_before_start_date(self) -> "Iteration":
+        if self.end_date < self.start_date:
+            raise ValueError("end_date must not be before start_date")
+        return self
+
 
 class PI(SAFeBaseModel):
     name: ShortText

@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from safe.models.art import TeamTopologyType
 from safe.models.backlog import FeatureStatus, StoryStatus
@@ -65,6 +65,12 @@ class IterationCreate(BaseModel):
     start_date: date
     end_date: date
     is_ip: bool = False
+
+    @model_validator(mode="after")
+    def end_date_not_before_start_date(self) -> "IterationCreate":
+        if self.end_date < self.start_date:
+            raise ValueError("end_date must not be before start_date")
+        return self
 
 
 class IterationUpdate(BaseModel):

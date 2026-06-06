@@ -93,6 +93,18 @@ class TestIteration:
         it = self._make(name="Iteration 1")
         assert it.name == "Iteration 1"
 
+    def test_end_date_before_start_date_invalid(self):
+        with pytest.raises(ValidationError):
+            self._make(start_date=date(2026, 1, 16), end_date=date(2026, 1, 5))
+
+    def test_same_start_and_end_date_valid(self):
+        it = self._make(start_date=date(2026, 1, 5), end_date=date(2026, 1, 5))
+        assert it.start_date == it.end_date
+
+    def test_end_date_after_start_date_valid(self):
+        it = self._make(start_date=date(2026, 1, 5), end_date=date(2026, 1, 19))
+        assert it.end_date > it.start_date
+
 
 # ---------------------------------------------------------------------------
 # PI
