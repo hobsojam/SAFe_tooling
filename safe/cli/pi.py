@@ -149,7 +149,10 @@ def pi_predictability(
         raise typer.Exit(1)
     score = art_predictability(list(zip(actual, planned, strict=False)))
     rating = predictability_rating(score)
-    console.print(f"ART Predictability : [bold {rating}]{score}%[/bold {rating}]")
+    if score is None:
+        console.print("ART Predictability : [bold]N/A[/bold] (no planned business value)")
+    else:
+        console.print(f"ART Predictability : [bold {rating}]{score}%[/bold {rating}]")
 
 
 @pi_app.command("export")

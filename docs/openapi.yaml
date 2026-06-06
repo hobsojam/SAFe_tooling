@@ -2544,7 +2544,7 @@ components:
       properties:
         planned_business_value:
           type: integer
-          minimum: 1
+          minimum: 0
         actual_business_value:
           type: integer
           minimum: 0
@@ -2565,9 +2565,11 @@ components:
       - rating
       properties:
         score_pct:
-          type: number
-          format: float
-          description: ART predictability as a percentage
+          oneOf:
+          - type: number
+            format: float
+          - type: 'null'
+          description: ART predictability as a percentage, or null when no business value was planned
           example: 85.0
         rating:
           type: string
@@ -2575,7 +2577,8 @@ components:
           - green
           - yellow
           - red
-          description: green >= 80%, yellow 60-79%, red < 60%
+          - unknown
+          description: green >= 80%, yellow 60-79%, red < 60%, unknown when planned BV is 0
     RiskROAM:
       type: object
       required:
