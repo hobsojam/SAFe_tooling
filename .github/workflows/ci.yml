@@ -53,6 +53,8 @@ jobs:
           key: security-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies
         run: pip install -e ".[dev]"
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: pip-audit
         run: pip-audit
 
