@@ -36,6 +36,16 @@ def test_capacity_warning_ok():
     assert capacity_warning(30.0, 40.0) is None
 
 
+def test_available_capacity_pto_exceeds_total_days_clamps_to_zero():
+    # team_size=2, iteration_days=5 → total=10; pto_days=15 exceeds total
+    assert available_capacity(2, 5, 15.0, 0.2) == pytest.approx(0.0)
+
+
+def test_available_capacity_pto_equals_total_days_clamps_to_zero():
+    # pto_days exactly equals team_size * iteration_days → capacity is 0
+    assert available_capacity(2, 5, 10.0, 0.2) == pytest.approx(0.0)
+
+
 def test_invalid_overhead():
     with pytest.raises(ValueError):
         available_capacity(5, 10, 0, 1.5)
