@@ -177,7 +177,7 @@ export function Dependencies() {
           status: form.status,
           owner: form.owner || null,
           needed_by_date: form.needed_by_date || null,
-          resolution_notes: form.resolution_notes,
+          ...(form.resolution_notes !== "" && { resolution_notes: form.resolution_notes }),
         },
       });
     } else {
