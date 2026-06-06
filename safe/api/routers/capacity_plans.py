@@ -91,7 +91,7 @@ def create_or_update_capacity_plan(body: CapacityPlanCreate, repos: ReposDep):
         pi_id=body.pi_id, team_id=body.team_id, iteration_id=body.iteration_id
     )
     if existing:
-        plan = existing[0].model_copy(update=body.model_dump())
+        plan = existing[0].model_copy(update=body.model_dump(exclude_unset=True))
         return repos.capacity_plans.save(plan)
     plan = CapacityPlan(**body.model_dump())
     return repos.capacity_plans.save(plan)
