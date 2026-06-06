@@ -42,3 +42,15 @@ def test_empty_teams_returns_422(client):
 
 def test_missing_body_returns_422(client):
     assert client.post("/compute/predictability", json={}).status_code == 422
+
+
+def test_predictability_zero_planned_returns_null_score(client):
+    """When all teams have planned_business_value=0, score_pct must be null, not a 500."""
+    r = client.post(
+        "/compute/predictability",
+        json={"teams": [{"planned_business_value": 0, "actual_business_value": 0}]},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["score_pct"] is None
+    assert body["rating"] == "unknown"

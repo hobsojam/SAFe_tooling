@@ -216,6 +216,13 @@ class TestPIPredictability:
         result = runner.invoke(app, ["pi", "predictability", "-p", "10"])
         assert result.exit_code != 0
 
+    def test_zero_planned_prints_na(self, patch_console):
+        # planned=0 is undefined — must not crash, must print N/A
+        result = runner.invoke(app, ["pi", "predictability", "-p", "0", "-a", "0"])
+        assert result.exit_code == 0
+        output = patch_console.getvalue()
+        assert "N/A" in output
+
     def test_help_accessible(self, patch_console):
         result = runner.invoke(app, ["pi", "predictability", "--help"])
         assert result.exit_code == 0

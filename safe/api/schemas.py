@@ -270,7 +270,7 @@ class ImprovementActionUpdate(BaseModel):
 
 
 class PredictabilityTeamInput(BaseModel):
-    planned_business_value: int = Field(ge=1)
+    planned_business_value: int = Field(ge=0)
     actual_business_value: int = Field(ge=0)
 
 
@@ -279,5 +279,5 @@ class PredictabilityRequest(BaseModel):
 
 
 class PredictabilityResponse(BaseModel):
-    score_pct: float
+    score_pct: float | None
     rating: str
