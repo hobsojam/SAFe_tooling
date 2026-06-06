@@ -1,16 +1,32 @@
-import re
+from html.parser import HTMLParser
 from typing import Annotated
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, StringConstraints
 from pydantic.functional_validators import BeforeValidator
 
-_TAG_RE = re.compile(r"<[^>]*>")
+
+class _TagStripper(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self._parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        self._parts.append(data)
+
+    def get_text(self) -> str:
+        return "".join(self._parts)
+
+
+def _strip_html(value: str) -> str:
+    stripper = _TagStripper()
+    stripper.feed(value)
+    return stripper.get_text()
 
 
 def _strip_tags(v: object) -> object:
     if isinstance(v, str):
-        return _TAG_RE.sub("", v)
+        return _strip_html(v)
     return v
 
 
