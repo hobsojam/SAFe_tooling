@@ -533,7 +533,10 @@ export function Backlog() {
     features.map((f) => [f.id, allStories.filter((s) => s.feature_id === f.id).length])
   );
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["features", piId] });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["features", piId] });
+    qc.invalidateQueries({ queryKey: ["stories"] });
+  };
 
   const createMut = useMutation({
     mutationFn: (body: FeatureCreate) => api.createFeature(body),
