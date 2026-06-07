@@ -142,6 +142,18 @@ class TestPI:
         pi = self._make(iteration_ids=["i-1", "i-2", "i-3"])
         assert len(pi.iteration_ids) == 3
 
+    def test_end_date_before_start_date_rejected(self):
+        with pytest.raises(ValidationError):
+            self._make(start_date=date(2026, 6, 1), end_date=date(2026, 1, 1))
+
+    def test_same_start_end_date_accepted(self):
+        pi = self._make(start_date=date(2026, 6, 1), end_date=date(2026, 6, 1))
+        assert pi.start_date == pi.end_date
+
+    def test_end_date_after_start_date_valid(self):
+        pi = self._make(start_date=date(2026, 1, 5), end_date=date(2026, 3, 27))
+        assert pi.end_date > pi.start_date
+
 
 # ---------------------------------------------------------------------------
 # Feature

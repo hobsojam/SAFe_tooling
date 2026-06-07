@@ -279,3 +279,36 @@ def test_find_unknown_field_error_names_the_key(db: TinyDB) -> None:
     repo: Repository[Team] = Repository(db, "teams", Team)
     with pytest.raises(ValueError, match="'bad_kwarg'"):
         repo.find(bad_kwarg="oops")
+
+
+# --- get_db() thread-safety smoke test ---
+
+
+def test_get_db_returns_same_instance_concurrent(tmp_path: Path, monkeypatch) -> None:
+    """get_db() must return the same singleton even under concurrent access."""
+    import threading
+
+    monkeypatch.setattr(db_module, "_instance", None)
+    monkeypatch.setattr(db_module, "_instance_path", None)
+
+    db_path = tmp_path / "threaded.json"
+    results: list[TinyDB] = []
+    errors: list[Exception] = []
+
+    def fetch() -> None:
+        try:
+            results.append(get_db(db_path))
+        except Exception as exc:  # pragma: no cover
+            errors.append(exc)
+
+    threads = [threading.Thread(target=fetch) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert errors == [], f"Unexpected errors: {errors}"
+    assert len(results) == 8
+    # Every call must have received the same singleton instance
+    assert all(r is results[0] for r in results)
+    close_db()

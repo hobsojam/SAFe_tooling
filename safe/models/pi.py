@@ -40,3 +40,9 @@ class PI(SAFeBaseModel):
     end_date: date
     iteration_ids: list[str] = Field(default_factory=list)
     status: PIStatus = PIStatus.PLANNING
+
+    @model_validator(mode="after")
+    def end_date_not_before_start_date(self) -> "PI":
+        if self.end_date < self.start_date:
+            raise ValueError("end_date must not be before start_date")
+        return self
