@@ -167,7 +167,8 @@ def pi_export(
     except ValueError as e:
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1) from None
-    out_path = output or Path(f"{snapshot.pi.name.replace(' ', '_')}_snapshot.json")
+    safe_filename = Path(snapshot.pi.name.replace(" ", "_") + "_snapshot.json").name
+    out_path = output or Path(safe_filename)
     out_path.write_text(snapshot.model_dump_json(indent=2))
     console.print(f"Exported PI [bold]{snapshot.pi.name}[/bold] to [bold]{out_path}[/bold]")
     console.print(
@@ -233,8 +234,12 @@ def iteration_add(
         pi_id=pi_id, number=number, start_date=start_date, end_date=end_date, name=name, is_ip=is_ip
     )
     repos.iterations.save(iteration)
-    pi.iteration_ids.append(iteration.id)
-    repos.pis.save(pi)
+    try:
+        pi.iteration_ids.append(iteration.id)
+        repos.pis.save(pi)
+    except Exception:
+        repos.iterations.delete(iteration.id)
+        raise
     label = f"{'IP ' if is_ip else ''}Iteration {number}"
     console.print(f"Added {label} to PI [bold]{pi.name}[/bold] (id: {iteration.id})")
 

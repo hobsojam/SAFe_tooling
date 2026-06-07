@@ -401,6 +401,14 @@ class TestDependency:
         assert d.from_feature_id == "feat-x"
         assert d.to_feature_id == "feat-y"
 
+    def test_self_referential_dependency_rejected(self):
+        with pytest.raises(ValidationError):
+            self._make(from_feature_id="f1", to_feature_id="f1")
+
+    def test_different_features_accepted(self):
+        d = self._make(from_feature_id="f1", to_feature_id="f2")
+        assert d.from_feature_id != d.to_feature_id
+
 
 # ---------------------------------------------------------------------------
 # CapacityPlan

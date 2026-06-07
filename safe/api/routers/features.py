@@ -44,6 +44,10 @@ def list_features(
 
 @router.post("", response_model=Feature, status_code=201)
 def create_feature(body: FeatureCreate, repos: ReposDep):
+    if body.pi_id is not None and repos.pis.get(body.pi_id) is None:
+        raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
+    if body.team_id is not None and repos.teams.get(body.team_id) is None:
+        raise HTTPException(status_code=404, detail=f"Team '{body.team_id}' not found")
     feature = Feature(**body.model_dump())
     return repos.features.save(feature)
 
@@ -60,6 +64,18 @@ def get_feature(feature_id: str, repos: ReposDep):
 )
 def update_feature(feature_id: str, body: FeatureUpdate, repos: ReposDep):
     feature = _get_or_404(repos, feature_id)
+    if (
+        "pi_id" in body.model_fields_set
+        and body.pi_id is not None
+        and repos.pis.get(body.pi_id) is None
+    ):
+        raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
+    if (
+        "team_id" in body.model_fields_set
+        and body.team_id is not None
+        and repos.teams.get(body.team_id) is None
+    ):
+        raise HTTPException(status_code=404, detail=f"Team '{body.team_id}' not found")
     updated = feature.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.features.save(updated)
 

@@ -37,8 +37,12 @@ def team_create(
     team = Team(name=name, member_count=members, art_id=art_id, topology_type=topology_type)
     repos.teams.save(team)
     if art_id is not None:
-        art = art.model_copy(update={"team_ids": art.team_ids + [team.id]})
-        repos.arts.save(art)
+        try:
+            art = art.model_copy(update={"team_ids": art.team_ids + [team.id]})
+            repos.arts.save(art)
+        except Exception:
+            repos.teams.delete(team.id)
+            raise
     console.print(f"Created team [bold]{team.name}[/bold] (id: {team.id})")
 
 

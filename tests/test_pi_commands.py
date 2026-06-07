@@ -612,3 +612,58 @@ class TestIterationDelete:
     def test_missing_exits_1(self, db_path, patch_console):
         result = invoke(db_path, "pi", "iteration", "delete", "nonexistent")
         assert result.exit_code == 1
+
+
+# ---------------------------------------------------------------------------
+# pi export — filename sanitization
+# ---------------------------------------------------------------------------
+
+
+class TestPiExport:
+    def _create_pi_with_name(self, db_path: Path, name: str) -> str:
+        art_id = _create_art(db_path)
+        invoke(
+            db_path,
+            "pi",
+            "create",
+            "--name",
+            name,
+            "--art-id",
+            art_id,
+            "--start",
+            "2026-01-05",
+            "--end",
+            "2026-03-27",
+        )
+        return repos_for(db_path).pis.get_all()[0].id
+
+    def test_export_creates_file(self, db_path, patch_console, tmp_path):
+        pi_id = self._create_pi_with_name(db_path, "PI 2026.1")
+        output_file = tmp_path / "out.json"
+        result = invoke(db_path, "pi", "export", pi_id, "--output", str(output_file))
+        assert result.exit_code == 0
+        assert output_file.exists()
+
+    def test_export_default_filename_sanitized(self, db_path, patch_console, tmp_path, monkeypatch):
+        """A PI name with path separators must not cause directory traversal."""
+        # Use a name containing path separator chars
+        pi_id = self._create_pi_with_name(db_path, "../../evil_pi")
+        # Change into a clean subdirectory so the only .json files written there
+        # are from the export (not the db file which lives in tmp_path itself)
+        export_dir = tmp_path / "export_cwd"
+        export_dir.mkdir()
+        monkeypatch.chdir(export_dir)
+        result = invoke(db_path, "pi", "export", pi_id)
+        assert result.exit_code == 0
+        # The file written must be in the current directory, not a parent
+        generated = list(export_dir.glob("*.json"))
+        assert len(generated) == 1
+        # The filename must not contain path separators
+        assert "/" not in generated[0].name
+        assert "\\" not in generated[0].name
+        # The file must not have escaped outside export_dir
+        assert generated[0].parent == export_dir
+
+    def test_export_unknown_pi_exits_1(self, db_path, patch_console):
+        result = invoke(db_path, "pi", "export", "nonexistent-pi-id")
+        assert result.exit_code == 1
