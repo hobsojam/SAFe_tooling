@@ -6,17 +6,11 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import TeamCreate, TeamUpdate
+from safe.api.utils import get_or_404
 from safe.models.art import Team
 from safe.store.repos import Repos
 
 router = APIRouter(prefix="/team", tags=["Teams"])
-
-
-def _get_or_404(repos: Repos, team_id: str) -> Team:
-    team = repos.teams.get(team_id)
-    if team is None:
-        raise HTTPException(status_code=404, detail=f"Team '{team_id}' not found")
-    return team
 
 
 def _reassign_art(
@@ -70,12 +64,12 @@ def create_team(body: TeamCreate, repos: ReposDep):
 
 @router.get("/{team_id}", response_model=Team, responses={404: {"description": "Not found"}})
 def get_team(team_id: str, repos: ReposDep):
-    return _get_or_404(repos, team_id)
+    return get_or_404(repos.teams, team_id, "Team")
 
 
 @router.patch("/{team_id}", response_model=Team, responses={404: {"description": "Not found"}})
 def update_team(team_id: str, body: TeamUpdate, repos: ReposDep):
-    team = _get_or_404(repos, team_id)
+    team = get_or_404(repos.teams, team_id, "Team")
     update_data = body.model_dump(exclude_unset=True)
 
     if "art_id" in update_data and update_data["art_id"] is not None:
@@ -95,7 +89,7 @@ def update_team(team_id: str, body: TeamUpdate, repos: ReposDep):
     responses={404: {"description": "Not found"}, 409: {"description": "Conflict"}},
 )
 def delete_team(team_id: str, repos: ReposDep):
-    team = _get_or_404(repos, team_id)
+    team = get_or_404(repos.teams, team_id, "Team")
     if repos.features.find(team_id=team_id):
         raise HTTPException(status_code=409, detail="Team has features — reassign them first")
     if repos.stories.find(team_id=team_id):

@@ -6,17 +6,10 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import RiskCreate, RiskROAM, RiskUpdate
+from safe.api.utils import get_or_404
 from safe.models.risk import Risk, ROAMStatus
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/risks", tags=["Risks"])
-
-
-def _get_or_404(repos: Repos, risk_id: str) -> Risk:
-    risk = repos.risks.get(risk_id)
-    if risk is None:
-        raise HTTPException(status_code=404, detail=f"Risk '{risk_id}' not found")
-    return risk
 
 
 @router.get("", response_model=list[Risk])
@@ -53,24 +46,24 @@ def create_risk(body: RiskCreate, repos: ReposDep):
 
 @router.get("/{risk_id}", response_model=Risk, responses={404: {"description": "Not found"}})
 def get_risk(risk_id: str, repos: ReposDep):
-    return _get_or_404(repos, risk_id)
+    return get_or_404(repos.risks, risk_id, "Risk")
 
 
 @router.patch("/{risk_id}", response_model=Risk, responses={404: {"description": "Not found"}})
 def update_risk(risk_id: str, body: RiskUpdate, repos: ReposDep):
-    risk = _get_or_404(repos, risk_id)
+    risk = get_or_404(repos.risks, risk_id, "Risk")
     updated = risk.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.risks.save(updated)
 
 
 @router.post("/{risk_id}/roam", response_model=Risk, responses={404: {"description": "Not found"}})
 def roam_risk(risk_id: str, body: RiskROAM, repos: ReposDep):
-    risk = _get_or_404(repos, risk_id)
+    risk = get_or_404(repos.risks, risk_id, "Risk")
     updated = risk.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.risks.save(updated)
 
 
 @router.delete("/{risk_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_risk(risk_id: str, repos: ReposDep):
-    _get_or_404(repos, risk_id)
+    get_or_404(repos.risks, risk_id, "Risk")
     repos.risks.delete(risk_id)

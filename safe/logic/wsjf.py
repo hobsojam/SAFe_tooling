@@ -10,5 +10,5 @@ def wsjf(
     return round(cost_of_delay(user_business_value, time_criticality, risk_reduction) / job_size, 2)
 
 
-def rank_features(features: list[dict]) -> list[dict]:
-    return sorted(features, key=lambda f: f["wsjf_score"], reverse=True)
+def rank_features(features: list) -> list:
+    return sorted(features, key=lambda f: f.wsjf_score, reverse=True)
