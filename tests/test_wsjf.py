@@ -1,6 +1,7 @@
 import pytest
 
 from safe.logic.wsjf import cost_of_delay, rank_features, wsjf
+from safe.models.backlog import Feature
 
 
 def test_cost_of_delay():
@@ -22,9 +23,27 @@ def test_wsjf_zero_job_size():
 
 def test_rank_features():
     features = [
-        {"name": "A", "wsjf_score": 3.0},
-        {"name": "B", "wsjf_score": 5.0},
-        {"name": "C", "wsjf_score": 1.5},
+        Feature(
+            name="A",
+            user_business_value=1,
+            time_criticality=1,
+            risk_reduction_opportunity_enablement=1,
+            job_size=1,
+        ),
+        Feature(
+            name="B",
+            user_business_value=5,
+            time_criticality=3,
+            risk_reduction_opportunity_enablement=2,
+            job_size=2,
+        ),
+        Feature(
+            name="C",
+            user_business_value=1,
+            time_criticality=2,
+            risk_reduction_opportunity_enablement=3,
+            job_size=4,
+        ),
     ]
     ranked = rank_features(features)
-    assert [f["name"] for f in ranked] == ["B", "A", "C"]
+    assert [f.name for f in ranked] == ["B", "A", "C"]

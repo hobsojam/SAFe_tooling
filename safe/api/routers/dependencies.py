@@ -6,17 +6,10 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import DependencyCreate, DependencyStatusUpdate, DependencyUpdate
+from safe.api.utils import get_or_404
 from safe.models.dependency import Dependency
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/dependencies", tags=["Dependencies"])
-
-
-def _get_or_404(repos: Repos, dependency_id: str) -> Dependency:
-    dep = repos.dependencies.get(dependency_id)
-    if dep is None:
-        raise HTTPException(status_code=404, detail=f"Dependency '{dependency_id}' not found")
-    return dep
 
 
 @router.get("", response_model=list[Dependency])
@@ -58,7 +51,7 @@ def create_dependency(body: DependencyCreate, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def get_dependency(dependency_id: str, repos: ReposDep):
-    return _get_or_404(repos, dependency_id)
+    return get_or_404(repos.dependencies, dependency_id, "Dependency")
 
 
 @router.patch(
@@ -67,7 +60,7 @@ def get_dependency(dependency_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def update_dependency(dependency_id: str, body: DependencyUpdate, repos: ReposDep):
-    dep = _get_or_404(repos, dependency_id)
+    dep = get_or_404(repos.dependencies, dependency_id, "Dependency")
     updated = dep.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.dependencies.save(updated)
 
@@ -78,12 +71,12 @@ def update_dependency(dependency_id: str, body: DependencyUpdate, repos: ReposDe
     responses={404: {"description": "Not found"}},
 )
 def roam_dependency(dependency_id: str, body: DependencyStatusUpdate, repos: ReposDep):
-    dep = _get_or_404(repos, dependency_id)
+    dep = get_or_404(repos.dependencies, dependency_id, "Dependency")
     updated = dep.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.dependencies.save(updated)
 
 
 @router.delete("/{dependency_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_dependency(dependency_id: str, repos: ReposDep):
-    _get_or_404(repos, dependency_id)
+    get_or_404(repos.dependencies, dependency_id, "Dependency")
     repos.dependencies.delete(dependency_id)

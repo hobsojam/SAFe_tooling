@@ -6,17 +6,10 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import ImprovementActionCreate, ImprovementActionUpdate
+from safe.api.utils import get_or_404
 from safe.models.improvement_action import ImprovementAction
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/improvement-actions", tags=["ImprovementActions"])
-
-
-def _get_or_404(repos: Repos, action_id: str) -> ImprovementAction:
-    action = repos.improvement_actions.get(action_id)
-    if action is None:
-        raise HTTPException(status_code=404, detail=f"ImprovementAction '{action_id}' not found")
-    return action
 
 
 @router.get("", response_model=list[ImprovementAction])
@@ -48,7 +41,7 @@ def create_improvement_action(body: ImprovementActionCreate, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def get_improvement_action(action_id: str, repos: ReposDep):
-    return _get_or_404(repos, action_id)
+    return get_or_404(repos.improvement_actions, action_id, "ImprovementAction")
 
 
 @router.patch(
@@ -57,7 +50,7 @@ def get_improvement_action(action_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def update_improvement_action(action_id: str, body: ImprovementActionUpdate, repos: ReposDep):
-    action = _get_or_404(repos, action_id)
+    action = get_or_404(repos.improvement_actions, action_id, "ImprovementAction")
     updated = action.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.improvement_actions.save(updated)
 
@@ -68,5 +61,5 @@ def update_improvement_action(action_id: str, body: ImprovementActionUpdate, rep
     responses={404: {"description": "Not found"}},
 )
 def delete_improvement_action(action_id: str, repos: ReposDep):
-    _get_or_404(repos, action_id)
+    get_or_404(repos.improvement_actions, action_id, "ImprovementAction")
     repos.improvement_actions.delete(action_id)

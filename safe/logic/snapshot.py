@@ -203,7 +203,7 @@ def import_pi(repos: Repos, snapshot: PISnapshot) -> PI:
                 planned_business_value=o.planned_business_value,
                 actual_business_value=o.actual_business_value,
                 is_stretch=o.is_stretch,
-                feature_ids=[id_map.get(fid, fid) for fid in o.feature_ids],
+                feature_ids=[id_map[fid] for fid in o.feature_ids if fid in id_map],
             )
         )
         id_map[o.id] = new_o.id

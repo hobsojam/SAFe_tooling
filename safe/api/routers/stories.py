@@ -6,17 +6,10 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import StoryCreate, StoryUpdate
+from safe.api.utils import get_or_404
 from safe.models.backlog import Story, StoryStatus
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/stories", tags=["Stories"])
-
-
-def _get_or_404(repos: Repos, story_id: str) -> Story:
-    story = repos.stories.get(story_id)
-    if story is None:
-        raise HTTPException(status_code=404, detail=f"Story '{story_id}' not found")
-    return story
 
 
 @router.get("", response_model=list[Story])
@@ -57,12 +50,12 @@ def create_story(body: StoryCreate, repos: ReposDep):
 
 @router.get("/{story_id}", response_model=Story, responses={404: {"description": "Not found"}})
 def get_story(story_id: str, repos: ReposDep):
-    return _get_or_404(repos, story_id)
+    return get_or_404(repos.stories, story_id, "Story")
 
 
 @router.patch("/{story_id}", response_model=Story, responses={404: {"description": "Not found"}})
 def update_story(story_id: str, body: StoryUpdate, repos: ReposDep):
-    story = _get_or_404(repos, story_id)
+    story = get_or_404(repos.stories, story_id, "Story")
     update_data = body.model_dump(exclude_unset=True)
     if "feature_id" in update_data and update_data["feature_id"] is not None:
         if repos.features.get(update_data["feature_id"]) is None:
@@ -88,5 +81,5 @@ def update_story(story_id: str, body: StoryUpdate, repos: ReposDep):
 
 @router.delete("/{story_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_story(story_id: str, repos: ReposDep):
-    _get_or_404(repos, story_id)
+    get_or_404(repos.stories, story_id, "Story")
     repos.stories.delete(story_id)

@@ -6,17 +6,10 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import IterationCreate, IterationUpdate
+from safe.api.utils import get_or_404
 from safe.models.pi import Iteration
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/iterations", tags=["Iterations"])
-
-
-def _get_or_404(repos: Repos, iteration_id: str) -> Iteration:
-    iteration = repos.iterations.get(iteration_id)
-    if iteration is None:
-        raise HTTPException(status_code=404, detail=f"Iteration '{iteration_id}' not found")
-    return iteration
 
 
 @router.get(
@@ -66,7 +59,7 @@ def create_iteration(body: IterationCreate, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def get_iteration(iteration_id: str, repos: ReposDep):
-    return _get_or_404(repos, iteration_id)
+    return get_or_404(repos.iterations, iteration_id, "Iteration")
 
 
 @router.patch(
@@ -75,14 +68,14 @@ def get_iteration(iteration_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def update_iteration(iteration_id: str, body: IterationUpdate, repos: ReposDep):
-    iteration = _get_or_404(repos, iteration_id)
+    iteration = get_or_404(repos.iterations, iteration_id, "Iteration")
     updated = iteration.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.iterations.save(updated)
 
 
 @router.delete("/{iteration_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_iteration(iteration_id: str, repos: ReposDep):
-    iteration = _get_or_404(repos, iteration_id)
+    iteration = get_or_404(repos.iterations, iteration_id, "Iteration")
     for plan in repos.capacity_plans.find(iteration_id=iteration_id):
         repos.capacity_plans.delete(plan.id)
     repos.iterations.delete(iteration_id)
