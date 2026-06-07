@@ -91,6 +91,18 @@ class TestStripTagsBehaviour:
         # " and " is inside <...> so it gets stripped; rest survives
         assert "<" not in f.name or ">" not in f.name or "script" not in f.name
 
+    def test_attr_value_containing_gt_stripped(self):
+        # Regression: regex <[^>]*> matched only up to the first > inside an
+        # attribute value (e.g. <a title="x>y">) leaving "y">link</a> as
+        # output.  The HTMLParser-based implementation handles this correctly.
+        f = Feature(
+            name='<a title="x>y">link</a>',
+            **_FEATURE_DEFAULTS,
+        )
+        assert f.name == "link"
+        assert "<" not in f.name
+        assert ">" not in f.name
+
     def test_javascript_protocol_in_plain_text_survives(self):
         # "javascript:" is only dangerous in href attributes; in a plain text
         # field it's stored as-is (no angle brackets to strip).
