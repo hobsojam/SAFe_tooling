@@ -7,9 +7,9 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import CapacityPlanCreate, CapacityPlanSeed, CapacityPlanUpdate, VelocityEntry
+from safe.api.utils import get_or_404
 from safe.logic.capacity import team_velocity
 from safe.models.capacity_plan import CapacityPlan
-from safe.store.repos import Repos
 
 
 def _weekdays(start: date, end: date) -> int:
@@ -22,13 +22,6 @@ def _weekdays(start: date, end: date) -> int:
 
 
 router = APIRouter(prefix="/capacity-plans", tags=["Capacity Plans"])
-
-
-def _get_or_404(repos: Repos, plan_id: str) -> CapacityPlan:
-    plan = repos.capacity_plans.get(plan_id)
-    if plan is None:
-        raise HTTPException(status_code=404, detail=f"Capacity plan '{plan_id}' not found")
-    return plan
 
 
 @router.get("", response_model=list[CapacityPlan])
@@ -144,7 +137,7 @@ def get_velocity(
     responses={404: {"description": "Not found"}},
 )
 def get_capacity_plan(plan_id: str, repos: ReposDep):
-    return _get_or_404(repos, plan_id)
+    return get_or_404(repos.capacity_plans, plan_id, "Capacity plan")
 
 
 @router.patch(
@@ -153,12 +146,12 @@ def get_capacity_plan(plan_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def update_capacity_plan(plan_id: str, body: CapacityPlanUpdate, repos: ReposDep):
-    plan = _get_or_404(repos, plan_id)
+    plan = get_or_404(repos.capacity_plans, plan_id, "Capacity plan")
     updated = plan.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.capacity_plans.save(updated)
 
 
 @router.delete("/{plan_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_capacity_plan(plan_id: str, repos: ReposDep):
-    _get_or_404(repos, plan_id)
+    get_or_404(repos.capacity_plans, plan_id, "Capacity plan")
     repos.capacity_plans.delete(plan_id)

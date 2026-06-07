@@ -4,17 +4,10 @@ from fastapi import APIRouter, HTTPException
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import ARTCreate, ARTUpdate
+from safe.api.utils import get_or_404
 from safe.models.art import ART
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/art", tags=["ARTs"])
-
-
-def _get_or_404(repos: Repos, art_id: str) -> ART:
-    art = repos.arts.get(art_id)
-    if art is None:
-        raise HTTPException(status_code=404, detail=f"ART '{art_id}' not found")
-    return art
 
 
 @router.get("", response_model=list[ART])
@@ -30,12 +23,12 @@ def create_art(body: ARTCreate, repos: ReposDep):
 
 @router.get("/{art_id}", response_model=ART, responses={404: {"description": "Not found"}})
 def get_art(art_id: str, repos: ReposDep):
-    return _get_or_404(repos, art_id)
+    return get_or_404(repos.arts, art_id, "ART")
 
 
 @router.patch("/{art_id}", response_model=ART, responses={404: {"description": "Not found"}})
 def update_art(art_id: str, body: ARTUpdate, repos: ReposDep):
-    art = _get_or_404(repos, art_id)
+    art = get_or_404(repos.arts, art_id, "ART")
     updated = art.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.arts.save(updated)
 
@@ -46,7 +39,7 @@ def update_art(art_id: str, body: ARTUpdate, repos: ReposDep):
     responses={404: {"description": "Not found"}, 409: {"description": "Conflict"}},
 )
 def delete_art(art_id: str, repos: ReposDep):
-    _get_or_404(repos, art_id)
+    get_or_404(repos.arts, art_id, "ART")
     if repos.teams.find(art_id=art_id):
         raise HTTPException(status_code=409, detail="ART has teams — delete them first")
     if repos.pis.find(art_id=art_id):

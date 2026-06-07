@@ -6,19 +6,12 @@ from fastapi import APIRouter, HTTPException, Query
 
 from safe.api.deps import ReposDep
 from safe.api.schemas import PICreate, PIUpdate
+from safe.api.utils import get_or_404
 from safe.exceptions import IllegalPITransitionError
 from safe.logic.pi import validate_pi_transition
 from safe.models.pi import PI, PIStatus
-from safe.store.repos import Repos
 
 router = APIRouter(prefix="/pi", tags=["PIs"])
-
-
-def _get_or_404(repos: Repos, pi_id: str) -> PI:
-    pi = repos.pis.get(pi_id)
-    if pi is None:
-        raise HTTPException(status_code=404, detail=f"PI '{pi_id}' not found")
-    return pi
 
 
 @router.get("", response_model=list[PI])
@@ -41,12 +34,12 @@ def create_pi(body: PICreate, repos: ReposDep):
 
 @router.get("/{pi_id}", response_model=PI, responses={404: {"description": "Not found"}})
 def get_pi(pi_id: str, repos: ReposDep):
-    return _get_or_404(repos, pi_id)
+    return get_or_404(repos.pis, pi_id, "PI")
 
 
 @router.patch("/{pi_id}", response_model=PI, responses={404: {"description": "Not found"}})
 def update_pi(pi_id: str, body: PIUpdate, repos: ReposDep):
-    pi = _get_or_404(repos, pi_id)
+    pi = get_or_404(repos.pis, pi_id, "PI")
     updated = pi.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.pis.save(updated)
 
@@ -57,7 +50,7 @@ def update_pi(pi_id: str, body: PIUpdate, repos: ReposDep):
     responses={404: {"description": "Not found"}, 409: {"description": "Conflict"}},
 )
 def delete_pi(pi_id: str, repos: ReposDep):
-    _get_or_404(repos, pi_id)
+    get_or_404(repos.pis, pi_id, "PI")
     if repos.features.find(pi_id=pi_id):
         raise HTTPException(status_code=409, detail="PI has features — delete them first")
     if repos.objectives.find(pi_id=pi_id):
@@ -77,7 +70,7 @@ def delete_pi(pi_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}, 409: {"description": "Invalid state transition"}},
 )
 def activate_pi(pi_id: str, repos: ReposDep):
-    pi = _get_or_404(repos, pi_id)
+    pi = get_or_404(repos.pis, pi_id, "PI")
     try:
         validate_pi_transition(pi, PIStatus.ACTIVE)
     except IllegalPITransitionError as e:
@@ -99,7 +92,7 @@ def activate_pi(pi_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}, 409: {"description": "Invalid state transition"}},
 )
 def close_pi(pi_id: str, repos: ReposDep):
-    pi = _get_or_404(repos, pi_id)
+    pi = get_or_404(repos.pis, pi_id, "PI")
     try:
         validate_pi_transition(pi, PIStatus.CLOSED)
     except IllegalPITransitionError as e:
