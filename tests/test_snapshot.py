@@ -671,3 +671,39 @@ def test_import_skips_capacity_plan_with_unmapped_team(repos, populated):
     new_plans = repos.capacity_plans.find(pi_id=new_pi.id)
     # Only the real plan (mapped team) must exist; the ghost must be skipped
     assert len(new_plans) == 1
+
+
+def test_import_drops_unmapped_objective_feature_ids(repos, populated, tmp_path):
+    """Bug fix regression: objective feature_ids not in the snapshot must be dropped.
+
+    The old code used id_map.get(fid, fid) which kept the original stale ID when
+    a feature wasn't in the snapshot, creating a dangling FK.  The fix drops them.
+    """
+    snapshot = export_pi(repos, populated["pi"].id)
+
+    # Inject a second feature_id on the objective that references a feature NOT
+    # present in the snapshot (simulates a stale ID from a deleted feature).
+    stale_fid = "nonexistent-feature-id"
+    original_obj = snapshot.objectives[0]
+    patched_obj = original_obj.model_copy(
+        update={"feature_ids": original_obj.feature_ids + [stale_fid]}
+    )
+    snapshot = snapshot.model_copy(update={"objectives": [patched_obj]})
+
+    target_db = TinyDB(tmp_path / "target.json")
+    try:
+        target_repos = get_repos(target_db)
+        new_pi = import_pi(target_repos, snapshot)
+
+        new_objs = target_repos.objectives.find(pi_id=new_pi.id)
+        assert len(new_objs) == 1
+
+        imported_obj = new_objs[0]
+        # The stale ID must have been dropped, not kept
+        assert stale_fid not in imported_obj.feature_ids
+
+        # The valid feature_id (remapped) must still be present
+        new_feature_ids = {f.id for f in target_repos.features.find(pi_id=new_pi.id)}
+        assert all(fid in new_feature_ids for fid in imported_obj.feature_ids)
+    finally:
+        target_db.close()
