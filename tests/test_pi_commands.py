@@ -667,3 +667,43 @@ class TestPiExport:
     def test_export_unknown_pi_exits_1(self, db_path, patch_console):
         result = invoke(db_path, "pi", "export", "nonexistent-pi-id")
         assert result.exit_code == 1
+
+
+# ---------------------------------------------------------------------------
+# iteration add — compensating transaction on PI save failure
+# ---------------------------------------------------------------------------
+
+
+class TestIterationAddCompensation:
+    def test_iteration_deleted_when_pi_save_fails(self, db_path, patch_console, monkeypatch):
+        art_id = _create_art(db_path)
+        pi_id = _create_pi(db_path, art_id)
+        original_repos = pi_module._repos
+
+        def failing_repos():
+            repos = original_repos()
+
+            def raise_on_save(entity):
+                raise RuntimeError("simulated DB write failure")
+
+            repos.pis.save = raise_on_save
+            return repos
+
+        monkeypatch.setattr(pi_module, "_repos", failing_repos)
+        result = invoke(
+            db_path,
+            "pi",
+            "iteration",
+            "add",
+            "--pi-id",
+            pi_id,
+            "--number",
+            "1",
+            "--start",
+            "2026-01-05",
+            "--end",
+            "2026-01-18",
+        )
+
+        assert result.exit_code != 0
+        assert repos_for(db_path).iterations.get_all() == []
