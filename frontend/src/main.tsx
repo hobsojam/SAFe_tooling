@@ -28,7 +28,7 @@ export function Root() {
 
   function handleRetry() {
     setBackendDown(false);
-    void queryClient.resetQueries();
+    queryClient.resetQueries();
   }
 
   if (backendDown) return <BackendUnavailable onRetry={handleRetry} />;
