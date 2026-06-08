@@ -570,6 +570,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feature'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/ValidationError'
   /features/{feature_id}:
