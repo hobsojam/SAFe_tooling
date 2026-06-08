@@ -356,7 +356,7 @@ export function InspectAdapt() {
                                 {a.problem_statement.slice(0, 50)}
                                 {a.problem_statement.length > 50 ? "…" : ""}
                               </strong>
-                              ?
+                              {"?"}
                             </span>
                             <button
                               onClick={() => deleteActionMut.mutate(a.id)}

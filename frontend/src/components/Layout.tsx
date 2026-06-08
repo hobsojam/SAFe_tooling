@@ -145,7 +145,8 @@ export function Layout() {
     <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
       {isDemo && (
         <div
-          role="banner"
+          role="status"
+          aria-live="polite"
           className="shrink-0 w-full bg-amber-100 border-b border-amber-300 px-4 py-2 text-center text-sm font-medium text-amber-800"
         >
           Demo mode — data resets on each server restart. Do not enter real or sensitive

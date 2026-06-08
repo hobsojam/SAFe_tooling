@@ -112,15 +112,15 @@ describe("GET methods", () => {
 // POST
 // ---------------------------------------------------------------------------
 
-describe("POST methods", () => {
-  function postOpts(body: unknown) {
-    return {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    };
-  }
+function postOpts(body: unknown) {
+  return {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  };
+}
 
+describe("POST methods", () => {
   it("createPI calls POST /api/pi with body", async () => {
     resolveOk({});
     const body: PICreate = {
@@ -184,15 +184,15 @@ describe("POST methods", () => {
 // PATCH
 // ---------------------------------------------------------------------------
 
-describe("PATCH methods", () => {
-  function patchOpts(body: unknown) {
-    return {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    };
-  }
+function patchOpts(body: unknown) {
+  return {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  };
+}
 
+describe("PATCH methods", () => {
   it("updateFeature calls PATCH /api/features/:id", async () => {
     resolveOk({});
     const body: FeatureUpdate = { name: "Updated Feature" };

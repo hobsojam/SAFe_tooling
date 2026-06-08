@@ -241,7 +241,7 @@ export function Dependencies() {
                         {d.description.slice(0, 60)}
                         {d.description.length > 60 ? "…" : ""}
                       </strong>
-                      ?
+                      {"?"}
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -350,7 +350,7 @@ export function Dependencies() {
                                 {d.description.slice(0, 60)}
                                 {d.description.length > 60 ? "…" : ""}
                               </strong>
-                              ?
+                              {"?"}
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(d.id)}
