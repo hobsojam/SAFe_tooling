@@ -11,6 +11,8 @@ from safe.api.utils import get_or_404
 from safe.logic.capacity import team_velocity
 from safe.models.capacity_plan import CapacityPlan
 
+_CAPACITY_PLAN = "Capacity plan"
+
 
 def _weekdays(start: date, end: date) -> int:
     count, cur = 0, start
@@ -137,7 +139,7 @@ def get_velocity(
     responses={404: {"description": "Not found"}},
 )
 def get_capacity_plan(plan_id: str, repos: ReposDep):
-    return get_or_404(repos.capacity_plans, plan_id, "Capacity plan")
+    return get_or_404(repos.capacity_plans, plan_id, _CAPACITY_PLAN)
 
 
 @router.patch(
@@ -146,12 +148,12 @@ def get_capacity_plan(plan_id: str, repos: ReposDep):
     responses={404: {"description": "Not found"}},
 )
 def update_capacity_plan(plan_id: str, body: CapacityPlanUpdate, repos: ReposDep):
-    plan = get_or_404(repos.capacity_plans, plan_id, "Capacity plan")
+    plan = get_or_404(repos.capacity_plans, plan_id, _CAPACITY_PLAN)
     updated = plan.model_copy(update=body.model_dump(exclude_unset=True))
     return repos.capacity_plans.save(updated)
 
 
 @router.delete("/{plan_id}", status_code=204, responses={404: {"description": "Not found"}})
 def delete_capacity_plan(plan_id: str, repos: ReposDep):
-    get_or_404(repos.capacity_plans, plan_id, "Capacity plan")
+    get_or_404(repos.capacity_plans, plan_id, _CAPACITY_PLAN)
     repos.capacity_plans.delete(plan_id)
