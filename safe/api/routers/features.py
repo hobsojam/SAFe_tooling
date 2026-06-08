@@ -36,7 +36,12 @@ def list_features(
     return features
 
 
-@router.post("", response_model=Feature, status_code=201)
+@router.post(
+    "",
+    response_model=Feature,
+    status_code=201,
+    responses={404: {"description": "Not found"}},
+)
 def create_feature(body: FeatureCreate, repos: ReposDep):
     if body.pi_id is not None and repos.pis.get(body.pi_id) is None:
         raise HTTPException(status_code=404, detail=f"PI '{body.pi_id}' not found")
