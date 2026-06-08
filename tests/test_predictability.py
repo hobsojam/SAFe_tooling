@@ -36,15 +36,15 @@ def test_art_predictability_empty_returns_none():
 
 
 def test_predictability_rating_green():
-    assert predictability_rating(85.0) == "green"
+    assert predictability_rating(85) == "green"
 
 
 def test_predictability_rating_yellow():
-    assert predictability_rating(70.0) == "yellow"
+    assert predictability_rating(70) == "yellow"
 
 
 def test_predictability_rating_red():
-    assert predictability_rating(50.0) == "red"
+    assert predictability_rating(50) == "red"
 
 
 def test_predictability_rating_none_returns_unknown():
