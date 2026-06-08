@@ -331,3 +331,31 @@ class TestTeamDelete:
         result = invoke(db_path, "team", "delete", team.id)
         assert result.exit_code == 0
         assert repos_for(db_path).teams.count() == 0
+
+
+# ---------------------------------------------------------------------------
+# team create — compensating transaction on ART save failure
+# ---------------------------------------------------------------------------
+
+
+class TestTeamCreateCompensation:
+    def test_team_deleted_when_art_save_fails(self, db_path, patch_console, monkeypatch):
+        art = _create_art(db_path)
+        original_repos = team_module._repos
+
+        def failing_repos():
+            repos = original_repos()
+
+            def raise_on_save(entity):
+                raise RuntimeError("simulated DB write failure")
+
+            repos.arts.save = raise_on_save
+            return repos
+
+        monkeypatch.setattr(team_module, "_repos", failing_repos)
+        result = invoke(
+            db_path, "team", "create", "--name", "Alpha", "--members", "6", "--art-id", art.id
+        )
+
+        assert result.exit_code != 0
+        assert repos_for(db_path).teams.get_all() == []

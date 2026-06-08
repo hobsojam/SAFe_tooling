@@ -216,3 +216,98 @@ class TestFeatureDelete:
 
     def test_unknown_returns_404(self, client):
         assert client.delete("/features/no-such-id").status_code == 404
+
+
+class TestFeatureCreateFKValidation:
+    def test_invalid_pi_id_returns_404(self, client):
+        r = client.post(
+            "/features",
+            json={**FEATURE_BASE, "pi_id": "nonexistent-pi"},
+        )
+        assert r.status_code == 404
+
+    def test_invalid_team_id_returns_404(self, client):
+        r = client.post(
+            "/features",
+            json={**FEATURE_BASE, "team_id": "nonexistent-team"},
+        )
+        assert r.status_code == 404
+
+    def test_valid_pi_id_accepted(self, client):
+        art_id = _create_art(client)
+        pi_id = client.post(
+            "/pi",
+            json={
+                "name": "PI 1",
+                "art_id": art_id,
+                "start_date": "2026-01-05",
+                "end_date": "2026-03-27",
+            },
+        ).json()["id"]
+        r = client.post("/features", json={**FEATURE_BASE, "pi_id": pi_id})
+        assert r.status_code == 201
+        assert r.json()["pi_id"] == pi_id
+
+    def test_valid_team_id_accepted(self, client):
+        team_id = _create_team(client)
+        r = client.post("/features", json={**FEATURE_BASE, "team_id": team_id})
+        assert r.status_code == 201
+        assert r.json()["team_id"] == team_id
+
+    def test_no_pi_or_team_accepted(self, client):
+        r = _create_feature(client)
+        assert r.status_code == 201
+        assert r.json()["pi_id"] is None
+        assert r.json()["team_id"] is None
+
+
+class TestFeaturePatchFKValidation:
+    def test_patch_invalid_pi_id_returns_404(self, client):
+        fid = _create_feature(client).json()["id"]
+        r = client.patch(f"/features/{fid}", json={"pi_id": "nonexistent-pi"})
+        assert r.status_code == 404
+
+    def test_patch_invalid_team_id_returns_404(self, client):
+        fid = _create_feature(client).json()["id"]
+        r = client.patch(f"/features/{fid}", json={"team_id": "nonexistent-team"})
+        assert r.status_code == 404
+
+    def test_patch_valid_pi_id_accepted(self, client):
+        art_id = _create_art(client)
+        pi_id = client.post(
+            "/pi",
+            json={
+                "name": "PI 1",
+                "art_id": art_id,
+                "start_date": "2026-01-05",
+                "end_date": "2026-03-27",
+            },
+        ).json()["id"]
+        fid = _create_feature(client).json()["id"]
+        r = client.patch(f"/features/{fid}", json={"pi_id": pi_id})
+        assert r.status_code == 200
+        assert r.json()["pi_id"] == pi_id
+
+    def test_patch_valid_team_id_accepted(self, client):
+        team_id = _create_team(client)
+        fid = _create_feature(client).json()["id"]
+        r = client.patch(f"/features/{fid}", json={"team_id": team_id})
+        assert r.status_code == 200
+        assert r.json()["team_id"] == team_id
+
+    def test_patch_clear_pi_id_to_null_not_rejected(self, client):
+        # Clearing a FK to None should not trigger the 404 check
+        art_id = _create_art(client)
+        pi_id = client.post(
+            "/pi",
+            json={
+                "name": "PI 1",
+                "art_id": art_id,
+                "start_date": "2026-01-05",
+                "end_date": "2026-03-27",
+            },
+        ).json()["id"]
+        fid = client.post("/features", json={**FEATURE_BASE, "pi_id": pi_id}).json()["id"]
+        r = client.patch(f"/features/{fid}", json={"pi_id": None})
+        assert r.status_code == 200
+        assert r.json()["pi_id"] is None
