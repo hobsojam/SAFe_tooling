@@ -239,7 +239,8 @@ export function StoriesPage() {
                             <strong>
                               {s.name.slice(0, 60)}
                               {s.name.length > 60 ? "…" : ""}
-                            </strong>{"?"}
+                            </strong>
+                            {"?"}
                           </span>
                           <button
                             onClick={() => deleteMut.mutate(s.id)}

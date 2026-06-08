@@ -194,7 +194,8 @@ export function Risks() {
                       <strong>
                         {r.description.slice(0, 60)}
                         {r.description.length > 60 ? "…" : ""}
-                      </strong>{"?"}
+                      </strong>
+                      {"?"}
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -294,7 +295,8 @@ export function Risks() {
                               <strong>
                                 {r.description.slice(0, 60)}
                                 {r.description.length > 60 ? "…" : ""}
-                              </strong>{"?"}
+                              </strong>
+                              {"?"}
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(r.id)}
