@@ -271,7 +271,7 @@ function StoryPanel({
                             >
                               {STORY_STATUS_OPTIONS.map((s) => (
                                 <option key={s} value={s}>
-                                  {s.replace(/_/g, " ")}
+                                  {s.replaceAll("_", " ")}
                                 </option>
                               ))}
                             </select>
@@ -633,7 +633,7 @@ export function Backlog() {
   else featureSubmitLabel = editing ? "Save Changes" : "Add Feature";
 
   function numInput(label: string, key: NumKey, min: number, max: number) {
-    const id = `feature-${key.replace(/_/g, "-")}`;
+    const id = `feature-${key.replaceAll("_", "-")}`;
     return (
       <div>
         <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-700">

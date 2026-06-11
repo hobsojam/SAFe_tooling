@@ -213,6 +213,13 @@ export function InspectAdapt() {
     return a.is_stretch ? 1 : -1;
   });
 
+  const actionButtonLabel =
+    createActionMut.isPending || updateActionMut.isPending
+      ? "Saving…"
+      : editingAction
+        ? "Save Changes"
+        : "Add Action";
+
   return (
     <div className="p-6 space-y-8">
       <div>
@@ -540,11 +547,7 @@ export function InspectAdapt() {
               disabled={createActionMut.isPending || updateActionMut.isPending}
               className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              {createActionMut.isPending || updateActionMut.isPending
-                ? "Saving…"
-                : editingAction
-                  ? "Save Changes"
-                  : "Add Action"}
+              {actionButtonLabel}
             </button>
           </div>
         </form>

@@ -39,7 +39,7 @@ export function DepBadge({ status }: Readonly<{ status: string }>) {
     in_progress: "cyan",
     resolved: "green",
   };
-  return <Badge label={status.replace(/_/g, " ")} variant={map[status] ?? "gray"} />;
+  return <Badge label={status.replaceAll("_", " ")} variant={map[status] ?? "gray"} />;
 }
 
 export function PIStatusBadge({ status }: Readonly<{ status: string }>) {
@@ -69,7 +69,7 @@ export function StoryStatusBadge({ status }: Readonly<{ status: string }>) {
     done: "cyan",
     accepted: "green",
   };
-  return <Badge label={status.replace(/_/g, " ")} variant={map[status] ?? "gray"} />;
+  return <Badge label={status.replaceAll("_", " ")} variant={map[status] ?? "gray"} />;
 }
 
 export const TOPOLOGY_LABELS: Record<string, string> = {

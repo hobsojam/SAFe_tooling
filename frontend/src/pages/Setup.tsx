@@ -114,7 +114,7 @@ export function Setup() {
   const form = detailsForm ?? { name: pi.name, start_date: pi.start_date, end_date: pi.end_date };
 
   function startEditing() {
-    setDetailsForm({ name: pi!.name, start_date: pi!.start_date, end_date: pi!.end_date });
+    setDetailsForm({ name: pi.name, start_date: pi.start_date, end_date: pi.end_date });
     setDetailsError("");
   }
 
@@ -128,7 +128,7 @@ export function Setup() {
   }
 
   const sortedIters = [...iterations].sort((a, b) => a.number - b.number);
-  const nextNumber = sortedIters.length > 0 ? sortedIters[sortedIters.length - 1].number + 1 : 1;
+  const nextNumber = (sortedIters.at(-1)?.number ?? 0) + 1;
 
   function openIterForm() {
     setIterForm({ number: nextNumber, name: "", start_date: "", end_date: "", is_ip: false });
