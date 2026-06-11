@@ -114,7 +114,7 @@ export function Setup() {
   const form = detailsForm ?? { name: pi.name, start_date: pi.start_date, end_date: pi.end_date };
 
   function startEditing() {
-    setDetailsForm({ name: pi.name, start_date: pi.start_date, end_date: pi.end_date });
+    setDetailsForm({ name: pi!.name, start_date: pi!.start_date, end_date: pi!.end_date });
     setDetailsError("");
   }
 
