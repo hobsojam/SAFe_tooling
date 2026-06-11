@@ -242,7 +242,8 @@ export function Objectives() {
                       <strong>
                         {obj.description.slice(0, 50)}
                         {obj.description.length > 50 ? "…" : ""}
-                      </strong>{"?"}
+                      </strong>
+                      {"?"}
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -286,9 +287,7 @@ export function Objectives() {
                     </span>
                     <span>
                       Actual BV:{" "}
-                      <strong className="text-slate-700">
-                        {obj.actual_business_value ?? "—"}
-                      </strong>
+                      <strong className="text-slate-700">{obj.actual_business_value ?? "—"}</strong>
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -378,7 +377,8 @@ export function Objectives() {
                               <strong>
                                 {obj.description.slice(0, 50)}
                                 {obj.description.length > 50 ? "…" : ""}
-                              </strong>{"?"}
+                              </strong>
+                              {"?"}
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(obj.id)}
