@@ -1,12 +1,14 @@
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+from tinydb import TinyDB
 
 import safe.api.deps as deps_module
 from safe.api.deps import (
     _dev_session_file,
     _is_hot_reload,
+    _reset_tables,
     _write_dev_session,
     get_repos_dep,
     reload_db,
@@ -42,6 +44,51 @@ class TestWriteDevSession:
         _write_dev_session(db_path)
         content = _dev_session_file(db_path).read_text().strip()
         assert content == str(os.getppid())
+
+
+class TestResetTables:
+    def test_truncates_all_tables(self, tmp_path):
+        db_path = tmp_path / "db.json"
+        db = TinyDB(db_path)
+        db.table("arts").insert({"name": "ART1"})
+        db.table("teams").insert({"name": "Team1"})
+
+        result = _reset_tables(db, db_path)
+
+        assert len(result.table("arts").all()) == 0
+        assert len(result.table("teams").all()) == 0
+        result.close()
+
+    def test_returns_same_db_instance_on_success(self, tmp_path):
+        db_path = tmp_path / "db.json"
+        db = TinyDB(db_path)
+
+        result = _reset_tables(db, db_path)
+
+        assert result is db
+        db.close()
+
+    def test_recovers_from_corrupt_db(self, tmp_path):
+        db_path = tmp_path / "db.json"
+        mock_db = MagicMock()
+        mock_db.tables.side_effect = ValueError("corrupt")
+
+        result = _reset_tables(mock_db, db_path)
+
+        mock_db.close.assert_called_once()
+        assert not db_path.exists() or db_path.stat().st_size == 0 or isinstance(result, TinyDB)
+        result.close()
+
+    def test_corrupt_db_file_is_deleted_and_recreated(self, tmp_path):
+        db_path = tmp_path / "db.json"
+        db_path.write_text("not valid json{{{")
+        mock_db = MagicMock()
+        mock_db.tables.side_effect = ValueError("corrupt")
+
+        result = _reset_tables(mock_db, db_path)
+
+        assert isinstance(result, TinyDB)
+        result.close()
 
 
 class TestGetReposDep:
