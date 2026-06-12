@@ -420,7 +420,7 @@ export function StoriesPage() {
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
-                  {s.replace(/_/g, " ")}
+                  {s.replaceAll("_", " ")}
                 </option>
               ))}
             </select>

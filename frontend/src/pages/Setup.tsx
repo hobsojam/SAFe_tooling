@@ -128,7 +128,7 @@ export function Setup() {
   }
 
   const sortedIters = [...iterations].sort((a, b) => a.number - b.number);
-  const nextNumber = sortedIters.length > 0 ? sortedIters[sortedIters.length - 1].number + 1 : 1;
+  const nextNumber = (sortedIters.at(-1)?.number ?? 0) + 1;
 
   function openIterForm() {
     setIterForm({ number: nextNumber, name: "", start_date: "", end_date: "", is_ip: false });

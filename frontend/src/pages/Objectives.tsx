@@ -243,7 +243,7 @@ export function Objectives() {
                         {obj.description.slice(0, 50)}
                         {obj.description.length > 50 ? "…" : ""}
                       </strong>
-                      ?
+                      {"?"}
                     </p>
                     <div className="flex gap-3">
                       <button
@@ -287,9 +287,7 @@ export function Objectives() {
                     </span>
                     <span>
                       Actual BV:{" "}
-                      <strong className="text-slate-700">
-                        {obj.actual_business_value === null ? "—" : obj.actual_business_value}
-                      </strong>
+                      <strong className="text-slate-700">{obj.actual_business_value ?? "—"}</strong>
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -380,7 +378,7 @@ export function Objectives() {
                                 {obj.description.slice(0, 50)}
                                 {obj.description.length > 50 ? "…" : ""}
                               </strong>
-                              ?
+                              {"?"}
                             </span>
                             <button
                               onClick={() => deleteMut.mutate(obj.id)}
@@ -424,11 +422,7 @@ export function Objectives() {
                         {obj.planned_business_value}
                       </td>
                       <td className="px-4 py-2.5 tabular-nums text-slate-700">
-                        {obj.actual_business_value === null ? (
-                          <span className="text-slate-400">—</span>
-                        ) : (
-                          obj.actual_business_value
-                        )}
+                        {obj.actual_business_value ?? <span className="text-slate-400">—</span>}
                       </td>
                       <td className="px-4 py-2.5 whitespace-nowrap text-right">
                         {canScore && (
