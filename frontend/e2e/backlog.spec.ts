@@ -34,8 +34,9 @@ test('shows column headers for WSJF table', async ({ page }) => {
 });
 
 test('shows team assignments', async ({ page }) => {
-  // All features are assigned to either Alpha or Beta
-  const alphaCount = await page.getByRole('cell', { name: 'Alpha', exact: true }).count();
-  const betaCount = await page.getByRole('cell', { name: 'Beta', exact: true }).count();
-  expect(alphaCount + betaCount).toBeGreaterThanOrEqual(4);
+  // Teams are fetched in a separate query from features; wait for names to resolve
+  await expect(page.getByRole('cell', { name: /Alpha|Beta|Gamma|Delta/ }).first()).toBeVisible();
+  const teamCellCount = await page.getByRole('cell', { name: /Alpha|Beta|Gamma|Delta/ }).count();
+  // 5 features visible per page; 9 of 10 fixture features have a team assigned
+  expect(teamCellCount).toBeGreaterThanOrEqual(4);
 });
