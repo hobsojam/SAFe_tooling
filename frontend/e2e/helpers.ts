@@ -9,7 +9,13 @@ const cleanFixture = path.resolve(__dirname, '../../tests/e2e_fixture.clean.json
 const TEST_API_URL = 'http://localhost:8001';
 
 export async function waitForAppReady(page: Page): Promise<void> {
-  await page.getByLabel('Loading').waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
+  // Two-phase wait: first let the spinner appear, then wait for it to go away.
+  // waitFor({ state: 'hidden' }) returns immediately if the element is not yet in
+  // the DOM, so a single call would pass before React has committed the loading
+  // state — leaving the test to run before data has arrived.
+  const spinner = page.getByLabel('Loading');
+  await spinner.waitFor({ state: 'visible', timeout: 2_000 }).catch(() => {});
+  await spinner.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
 }
 
 export async function resetDb(): Promise<void> {
