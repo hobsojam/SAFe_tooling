@@ -1,6 +1,7 @@
 from io import StringIO
 from pathlib import Path
 
+import openpyxl
 import pytest
 from rich.console import Console
 from typer.testing import CliRunner
@@ -94,6 +95,148 @@ class TestBacklogShow:
     def test_exit_code_success(self, db_path, patch_console):
         result = invoke(db_path, "backlog", "show")
         assert result.exit_code == 0
+
+
+class TestBacklogShowTeamResolution:
+    def test_shows_team_name_not_uuid(self, db_path, patch_console):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team_id = repos_for(db_path).teams.get_all()[0].id
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        feature_id = repos_for(db_path).features.get_all()[0].id
+        invoke(db_path, "feature", "assign", feature_id, "--team-id", team_id)
+        patch_console.truncate(0)
+        patch_console.seek(0)
+        invoke(db_path, "backlog", "show")
+        output = patch_console.getvalue()
+        assert "Alpha" in output
+        assert team_id not in output
+
+
+class TestBacklogExport:
+    def test_empty_backlog_prints_message(self, db_path, patch_console, tmp_path):
+        out = tmp_path / "out.xlsx"
+        result = invoke(db_path, "backlog", "export", "--output", str(out))
+        assert result.exit_code == 0
+        assert "empty" in patch_console.getvalue().lower()
+        assert not out.exists()
+
+    def test_creates_xlsx_file(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        out = tmp_path / "out.xlsx"
+        result = invoke(db_path, "backlog", "export", "--output", str(out))
+        assert result.exit_code == 0
+        assert out.exists()
+
+    def test_xlsx_has_header_row(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--output", str(out))
+        ws = openpyxl.load_workbook(out).active
+        headers = [cell.value for cell in ws[1]]
+        assert "Feature" in headers
+        assert "WSJF" in headers
+        assert "CoD" in headers
+
+    def test_feature_appears_in_rows(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--output", str(out))
+        ws = openpyxl.load_workbook(out).active
+        all_values = [cell.value for row in ws.iter_rows(min_row=2) for cell in row]
+        assert "Auth Service" in all_values
+
+    def test_wsjf_column_is_numeric(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--output", str(out))
+        ws = openpyxl.load_workbook(out).active
+        headers = [cell.value for cell in ws[1]]
+        wsjf_col = headers.index("WSJF") + 1
+        wsjf_value = ws.cell(row=2, column=wsjf_col).value
+        assert isinstance(wsjf_value, (int, float))
+
+    def test_team_name_resolved_in_export(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "team", "create", "--name", "Alpha", "--members", "6")
+        team_id = repos_for(db_path).teams.get_all()[0].id
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        feature_id = repos_for(db_path).features.get_all()[0].id
+        invoke(db_path, "feature", "assign", feature_id, "--team-id", team_id)
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--output", str(out))
+        ws = openpyxl.load_workbook(out).active
+        all_values = [cell.value for row in ws.iter_rows(min_row=2) for cell in row]
+        assert "Alpha" in all_values
+        assert team_id not in all_values
+
+    def test_pi_filter(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "art", "create", "--name", "ART1")
+        art_id = repos_for(db_path).arts.get_all()[0].id
+        invoke(
+            db_path,
+            "pi",
+            "create",
+            "--name",
+            "PI1",
+            "--art-id",
+            art_id,
+            "--start",
+            "2026-01-05",
+            "--end",
+            "2026-03-27",
+        )
+        pi_id = repos_for(db_path).pis.get_all()[0].id
+        invoke(db_path, "feature", "add", *FEATURE_ARGS, "--pi-id", pi_id)
+        invoke(
+            db_path,
+            "feature",
+            "add",
+            "--name",
+            "Other",
+            "--user-value",
+            "1",
+            "--time-crit",
+            "1",
+            "--risk-reduction",
+            "1",
+            "--job-size",
+            "1",
+        )
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--pi-id", pi_id, "--output", str(out))
+        ws = openpyxl.load_workbook(out).active
+        rows = list(ws.iter_rows(min_row=2, values_only=True))
+        assert len(rows) == 1
+        assert rows[0][1] == "Auth Service"
+
+    def test_ranked_by_wsjf_descending(self, db_path, patch_console, tmp_path):
+        invoke(
+            db_path,
+            "feature",
+            "add",
+            "--name",
+            "Low",
+            "--user-value",
+            "1",
+            "--time-crit",
+            "1",
+            "--risk-reduction",
+            "1",
+            "--job-size",
+            "13",
+        )
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--output", str(out))
+        ws = openpyxl.load_workbook(out).active
+        rows = list(ws.iter_rows(min_row=2, values_only=True))
+        assert rows[0][1] == "Auth Service"
+        assert rows[1][1] == "Low"
+
+    def test_prints_confirmation(self, db_path, patch_console, tmp_path):
+        invoke(db_path, "feature", "add", *FEATURE_ARGS)
+        out = tmp_path / "out.xlsx"
+        invoke(db_path, "backlog", "export", "--output", str(out))
+        assert str(out) in patch_console.getvalue()
 
 
 class TestWsjfRankAlias:
