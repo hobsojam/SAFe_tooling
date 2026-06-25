@@ -38,6 +38,11 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   globalSetup: './e2e/global-setup.ts',
+  // Match actionTimeout: uvicorn cold-starts in CI can push feature API responses
+  // past the 5 s default, causing toBeVisible() to time out before data renders.
+  expect: {
+    timeout: 10_000,
+  },
   use: {
     baseURL: `http://localhost:${TEST_UI_PORT}`,
     actionTimeout: 10_000,
