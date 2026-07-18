@@ -28,3 +28,13 @@ updates:
     npm-packages:
       patterns:
         - "*"
+  ignore:
+    # TypeScript 7 (the native-port rewrite) dropped legacy compiler API
+    # functions such as ts.parseConfigFileTextToJson, which
+    # @stryker-mutator/core's tsconfig preprocessor still calls. Bumping to
+    # TS 7 crashed the nightly TQA job (Stryker: "TypeError:
+    # ts.parseConfigFileTextToJson is not a function", run 29631266894).
+    # package.json pins typescript to ~6.0.3 for the same reason. Do not
+    # upgrade until Stryker supports the TypeScript 7 API.
+    - dependency-name: "typescript"
+      versions: [">=7"]
