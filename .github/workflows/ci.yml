@@ -232,7 +232,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan screenshots-tmp
           git rm -rf --cached .
-          git add docs/screenshots/
+          # -f: docs/screenshots/*.png is gitignored on main; the PNGs are only
+          # ever committed here, on the orphan screenshots branch.
+          git add -f docs/screenshots/
           git commit -m "chore: update screenshots"
           git push origin HEAD:screenshots --force
 

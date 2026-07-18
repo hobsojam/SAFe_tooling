@@ -57,6 +57,11 @@ node_modules/
 # E2e working DB — generated from tests/e2e_fixture.clean.json at test time
 tests/e2e_fixture.db.json
 
+# Screenshots — generated locally by the e2e "screenshots" Playwright project;
+# CI publishes them to the dedicated `screenshots` branch (ci.yml uses
+# `git add -f` to bypass this ignore). Only .gitkeep is tracked on main.
+docs/screenshots/*.png
+
 
 # Claude Code — user-specific, never commit
 .claude/settings.local.json
