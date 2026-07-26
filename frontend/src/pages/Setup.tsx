@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { api } from "../api";
 import { PIStatusBadge } from "../components/Badge";
 import { Spinner } from "../components/Spinner";

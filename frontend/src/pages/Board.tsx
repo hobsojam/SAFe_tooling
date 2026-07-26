@@ -11,7 +11,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import html2canvas from "html2canvas";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { api } from "../api";
 import { DepBadge, FeatureStatusBadge, TopologyBadge } from "../components/Badge";
 import { EmptyState } from "../components/EmptyState";

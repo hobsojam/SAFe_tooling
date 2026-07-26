@@ -19,7 +19,7 @@ vi.mock("../../components/Modal", () => ({
     open ? <div role="dialog">{children}</div> : null,
 }));
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useParams: () => ({ piId: "pi-1" }),
 }));
 

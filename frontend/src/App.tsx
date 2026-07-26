@@ -1,4 +1,4 @@
-import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router";
 import { Layout } from "./components/Layout";
 import { ToastProvider } from "./components/Toaster";
 import { useBackendHeartbeat } from "./hooks/useBackendHeartbeat";

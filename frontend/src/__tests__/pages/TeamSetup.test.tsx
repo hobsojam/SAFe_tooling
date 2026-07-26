@@ -10,7 +10,7 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: vi.fn(),
 }));
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useParams: () => ({ piId: "pi-1" }),
 }));
 
