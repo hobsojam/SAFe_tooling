@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
 import { type ReactElement } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { ToastProvider } from "../components/Toaster";
 
 interface ProviderOptions extends Omit<RenderOptions, "wrapper"> {
@@ -21,7 +21,7 @@ function makeQueryClient() {
  * Renders `ui` inside QueryClientProvider + ToastProvider + MemoryRouter.
  *
  * Use for tests that exercise real providers instead of mocking the hooks.
- * For tests that vi.mock('@tanstack/react-query') or 'react-router-dom',
+ * For tests that vi.mock('@tanstack/react-query') or 'react-router',
  * plain `render` from @testing-library/react is fine.
  */
 export function renderWithProviders(

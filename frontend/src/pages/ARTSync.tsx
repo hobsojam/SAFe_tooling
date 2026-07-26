@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { api } from "../api";
 import { EmptyState } from "../components/EmptyState";
 import { Spinner } from "../components/Spinner";

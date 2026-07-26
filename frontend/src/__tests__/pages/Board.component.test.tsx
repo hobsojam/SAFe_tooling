@@ -45,7 +45,7 @@ vi.mock("@dnd-kit/core", () => ({
   useDroppable: vi.fn(() => ({ setNodeRef: vi.fn(), isOver: false })),
 }));
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useParams: () => ({ piId: "pi-1" }),
 }));
 

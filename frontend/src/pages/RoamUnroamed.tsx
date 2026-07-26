@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import { api } from "../api";
 import type { Risk, RiskUpdate, ROAMStatus } from "../types";
 import { EmptyState } from "../components/EmptyState";

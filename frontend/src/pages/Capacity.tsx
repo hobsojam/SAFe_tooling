@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { api } from "../api";
 import type { CapacityPlan, CapacityPlanCreate, VelocityEntry } from "../types";
 import { EmptyState } from "../components/EmptyState";

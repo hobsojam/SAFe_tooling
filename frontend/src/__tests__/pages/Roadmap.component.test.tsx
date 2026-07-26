@@ -6,7 +6,7 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   return { ...actual, useQuery: vi.fn(), useMutation: vi.fn(), useQueryClient: vi.fn() };
 });
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   Link: ({
     children,
     to,

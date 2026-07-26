@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { api } from "../api";
 import { FeatureStatusBadge } from "../components/Badge";
 import { EmptyState } from "../components/EmptyState";

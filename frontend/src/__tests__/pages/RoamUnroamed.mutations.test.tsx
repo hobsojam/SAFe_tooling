@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useParams: () => ({ piId: "pi-1" }),
   Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

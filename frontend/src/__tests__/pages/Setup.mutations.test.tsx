@@ -5,7 +5,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockNavigate = vi.hoisted(() => vi.fn());
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useParams: () => ({ piId: "pi-1" }),
   useNavigate: () => mockNavigate,
 }));

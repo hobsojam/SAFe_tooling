@@ -17,7 +17,7 @@ const apiMocks = vi.hoisted(() => ({
   seedCapacityPlans: vi.fn(),
 }));
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useNavigate: () => vi.fn(),
   useParams: () => ({ piId: routeState.piId }),
