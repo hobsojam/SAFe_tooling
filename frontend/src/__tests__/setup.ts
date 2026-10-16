@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 // Stub Vite's build-time define replacement for tests
 (globalThis as unknown as Record<string, unknown>).__APP_VERSION__ = "0.0.0-test";
